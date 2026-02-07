@@ -9,6 +9,8 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+# Keep vignette build fast/reliable under R CMD check; run interactively.
+knitr::opts_chunk$set(eval = interactive())
 ```
 
 ```{r}

@@ -9,16 +9,15 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+
+.has_odin2 <- requireNamespace("odin2", quietly = TRUE)
+knitr::opts_chunk$set(eval = .has_odin2)
 ```
 
-This vignette is optional and will only run if `odin2` is installed.
+This vignette is optional. If `{odin2}` is not installed, the examples are shown but not executed.
 
 ```{r}
 library(vpdsus)
-
-if (!requireNamespace("odin2", quietly = TRUE)) {
-  knitr::knit_exit()
-}
 
 mdl <- odin2_build_model("balance")
 

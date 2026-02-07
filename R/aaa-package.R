@@ -12,6 +12,5 @@
 #' - [estimate_susceptible_static()], [estimate_susceptible_cohort()]
 #' - [risk_rank()], [plot_coverage_rank()], [plot_susceptible_rank()]
 #'
-#' @docType package
 #' @name vpdsus
-NULL
+"_PACKAGE"
