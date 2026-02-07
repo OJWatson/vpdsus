@@ -21,9 +21,13 @@ vpdsus_cache_info <- function() {
 }
 
 hash_list <- function(x) {
-  # Small, deterministic hash without extra deps
-  raw <- paste(capture.output(str(x)), collapse = "\n")
-  as.character(tools::md5sum(textConnection(raw)))
+  # Small, deterministic hash without extra deps.
+  # tools::md5sum() works on files, so write to a temp file.
+  raw <- paste(utils::capture.output(str(x)), collapse = "\n")
+  f <- tempfile(fileext = ".txt")
+  on.exit(unlink(f), add = TRUE)
+  writeLines(raw, f, useBytes = TRUE)
+  unname(as.character(tools::md5sum(f)))
 }
 
 cache_paths <- function(key, ext = "json") {

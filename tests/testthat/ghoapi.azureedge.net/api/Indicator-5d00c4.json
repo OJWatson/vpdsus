@@ -1,0 +1,10 @@
+{
+    "@odata.context": "https://ghoapi.azureedge.net/api/$metadata#Indicator",
+    "value": [
+        {
+            "IndicatorCode": "Adult_curr_cig_smoking",
+            "IndicatorName": "Prevalence of current cigarette smoking among adults (%)",
+            "Language": "EN"
+        }
+    ]
+}

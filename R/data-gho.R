@@ -29,9 +29,18 @@ gho_get <- function(endpoint, query = list(), cache = TRUE, quiet = TRUE) {
     txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
   } else {
     if (!quiet) cli::cli_inform("Downloading {url}")
-    con <- url(url)
-    on.exit(try(close(con), silent = TRUE), add = TRUE)
-    txt <- paste(readLines(con, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+
+    if (!requireNamespace("httr2", quietly = TRUE)) {
+      cli::cli_abort("Package {.pkg httr2} is required to download GHO data")
+    }
+
+    resp <- httr2::request(url) |>
+      httr2::req_user_agent("vpdsus (https://github.com/OJWatson/vpdsus)") |>
+      httr2::req_retry(max_tries = 3) |>
+      httr2::req_perform()
+
+    txt <- httr2::resp_body_string(resp, encoding = "UTF-8")
+
     if (cache) {
       dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
       writeLines(txt, path, useBytes = TRUE)
