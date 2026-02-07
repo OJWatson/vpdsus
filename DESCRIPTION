@@ -9,6 +9,8 @@ Description: Tools to retrieve WHO GHO immunisation coverage and reported cases,
     produce WHO-style ranking plots, and link susceptibility to outbreak risk.
     Implements a fully reproducible workflow with caching and analysis scaffolding.
 License: MIT + file LICENSE
+Depends:
+    R (>= 4.1.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

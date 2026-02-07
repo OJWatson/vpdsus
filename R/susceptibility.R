@@ -159,6 +159,11 @@ estimate_susceptible_cohort_ve <- function(panel,
 #'
 #' @param panel Panel with births, coverage, and cases.
 #' @param rho Reporting fraction (scalar or vector).
+#' @param coverage_col Name of coverage column.
+#' @param births_col Name of births column.
+#' @param cases_col Name of reported cases column.
+#' @param pop_col Name of population column used for proportions.
+#' @param age_group Label for returned age_group column.
 #' @param s0 Optional initial susceptible count (defaults to births in first year).
 #'
 #' @return tibble with one row per iso3-year-rho.

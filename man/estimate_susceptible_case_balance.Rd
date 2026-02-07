@@ -20,6 +20,16 @@ estimate_susceptible_case_balance(
 
 \item{rho}{Reporting fraction (scalar or vector).}
 
+\item{coverage_col}{Name of coverage column.}
+
+\item{births_col}{Name of births column.}
+
+\item{cases_col}{Name of reported cases column.}
+
+\item{pop_col}{Name of population column used for proportions.}
+
+\item{age_group}{Label for returned age_group column.}
+
 \item{s0}{Optional initial susceptible count (defaults to births in first year).}
 }
 \value{
