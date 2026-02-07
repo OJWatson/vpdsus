@@ -1,6 +1,7 @@
 url: https://ojwatson.github.io/vpdsus/
 template:
   bootstrap: 5
+llm-docs: false
 reference:
 - title: Data access
   contents:
@@ -23,8 +24,10 @@ reference:
   - plot_coverage_rank
   - plot_susceptible_rank
   - plot_panel_diagnostics
+  - panel_diagnostics
 - title: Modelling
   contents:
+  - make_outcome_outbreak
   - make_modelling_panel
   - fit_outbreak_models
   - evaluate_models
@@ -33,11 +36,17 @@ reference:
   - odin2_build_model
   - odin2_simulate
   - compare_methods
+- title: Datasets and helpers
+  contents:
+  - vpdsus_example_panel
+  - vpd_panel
+  - vpd_indicators
+  - vpdsus
 articles:
 - title: Vignettes
   navbar: ~
   contents:
-  - 01_data_access
-  - 02_susceptibility_simple
-  - 03_outbreak_models
-  - 04_mechanistic_odin2
+  - data_access
+  - susceptibility_simple
+  - outbreak_models
+  - mechanistic_odin2

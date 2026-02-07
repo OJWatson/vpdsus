@@ -22,6 +22,7 @@ Most users should start with:
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://ojwatson.github.io/vpdsus/}
   \item \url{https://github.com/OJWatson/vpdsus}
   \item Report bugs at \url{https://github.com/OJWatson/vpdsus/issues}
 }

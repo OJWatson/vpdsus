@@ -20,11 +20,9 @@ Imports:
     ggplot2,
     jsonlite,
     purrr,
-    rlang,
     scales,
     tibble,
-    tidyr,
-    vctrs
+    tidyr
 Suggests:
     broom,
     covr,
@@ -41,5 +39,5 @@ Suggests:
     wpp2024
 VignetteBuilder: knitr
 Config/testthat/edition: 3
-URL: https://github.com/OJWatson/vpdsus
+URL: https://ojwatson.github.io/vpdsus/, https://github.com/OJWatson/vpdsus
 BugReports: https://github.com/OJWatson/vpdsus/issues
