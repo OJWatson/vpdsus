@@ -1,0 +1,43 @@
+url: https://ojwatson.github.io/vpdsus/
+template:
+  bootstrap: 5
+reference:
+- title: Data access
+  contents:
+  - gho_get
+  - gho_find_indicator
+  - gho_get_indicator
+  - get_coverage
+  - get_cases
+  - get_demography
+- title: Panel and susceptibility
+  contents:
+  - build_panel
+  - estimate_susceptible_static
+  - estimate_susceptible_cohort
+  - estimate_susceptible_cohort_ve
+  - estimate_susceptible_case_balance
+- title: Risk and plotting
+  contents:
+  - risk_rank
+  - plot_coverage_rank
+  - plot_susceptible_rank
+  - plot_panel_diagnostics
+- title: Modelling
+  contents:
+  - make_modelling_panel
+  - fit_outbreak_models
+  - evaluate_models
+- title: Mechanistic (optional)
+  contents:
+  - odin2_build_model
+  - odin2_simulate
+  - compare_methods
+articles:
+- title: Vignettes
+  navbar: ~
+  contents:
+  - 01_data_access
+  - 02_susceptibility_simple
+  - 03_outbreak_models
+  - 04_mechanistic_odin2

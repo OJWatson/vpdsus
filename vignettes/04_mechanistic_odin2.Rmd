@@ -1,0 +1,26 @@
+---
+title: "Mechanistic modelling in odin2 (scaffold)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Mechanistic modelling in odin2 (scaffold)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This vignette is optional and will only run if `odin2` is installed.
+
+```{r}
+library(vpdsus)
+
+if (!requireNamespace("odin2", quietly = TRUE)) {
+  knitr::knit_exit()
+}
+
+mdl <- odin2_build_model("balance")
+
+# In a full implementation, you would map your panel data into model inputs.
+```

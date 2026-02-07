@@ -1,0 +1,31 @@
+---
+title: "Susceptibility estimates and WHO-style ranking plots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Susceptibility estimates and WHO-style ranking plots}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r}
+library(vpdsus)
+
+panel <- vpdsus_example_panel()
+
+sA <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
+rank <- risk_rank(panel, sA, window_years = 3, year_end = 2020)
+
+plot_coverage_rank(rank, top_n = 3)
+plot_susceptible_rank(rank, top_n = 3)
+```
+
+Method B cohort reconstruction:
+
+```{r}
+sB <- estimate_susceptible_cohort(panel, coverage_col = "coverage", births_col = "births", pop_col = "pop_0_4")
+risk_rank(panel, sB, window_years = 3, year_end = 2020)
+```

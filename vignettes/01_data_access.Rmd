@@ -1,0 +1,31 @@
+---
+title: "Data access and caching"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data access and caching}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This vignette demonstrates the data access layer.
+
+For reproducibility and fast vignette builds, we use a shipped example panel. For live downloads, see `gho_find_indicator()` and `get_coverage()`.
+
+```{r}
+library(vpdsus)
+
+panel <- vpdsus_example_panel()
+head(panel)
+```
+
+### Live indicator discovery (optional)
+
+```{r, eval=FALSE}
+# Search the WHO GHO indicator metadata
+m <- gho_find_indicator("DTP3")
+head(m)
+```

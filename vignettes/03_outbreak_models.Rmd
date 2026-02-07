@@ -1,0 +1,26 @@
+---
+title: "Outbreak modelling"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Outbreak modelling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r}
+library(vpdsus)
+
+panel <- vpdsus_example_panel()
+
+sA <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
+mod <- make_modelling_panel(panel, sA, outcome = "outbreak_pc", lag_years = 1)
+
+fit <- fit_outbreak_models(mod)
+fit$coefficients
+
+evaluate_models(mod)
+```
