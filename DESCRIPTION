@@ -34,7 +34,8 @@ Suggests:
     testthat (>= 3.0.0),
     targets,
     tarchetypes,
-    withr,
+    withr
+Enhances:
     odin2,
     dust2,
     monty
