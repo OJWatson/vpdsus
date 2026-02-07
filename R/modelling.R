@@ -99,13 +99,34 @@ fit_outbreak_models <- function(data) {
 #' @export
 evaluate_models <- function(data, train_end = NULL) {
   assert_has_cols(data, c("year", "outcome", "susceptible_prop", "who_region"))
-  if (is.null(train_end)) train_end <- stats::quantile(data$year, probs = 0.7, na.rm = TRUE)
+
+  years <- sort(unique(stats::na.omit(as.numeric(data$year))))
+  if (length(years) < 2) {
+    cli::cli_abort("Need at least 2 distinct years to evaluate models")
+  }
+
+  if (is.null(train_end)) {
+    # Choose a cutoff that guarantees at least one year in the test set.
+    idx <- max(1, floor(0.7 * length(years)))
+    idx <- min(idx, length(years) - 1)
+    train_end <- years[[idx]]
+  }
 
   train <- dplyr::filter(data, .data$year <= train_end)
   test <- dplyr::filter(data, .data$year > train_end)
 
+  if (nrow(test) == 0) {
+    return(tibble::tibble(
+      train_end = train_end,
+      n_train = nrow(train),
+      n_test = 0L,
+      accuracy = NA_real_,
+      brier = NA_real_
+    ))
+  }
+
   fit <- fit_outbreak_models(train)$model
-  p <- stats::predict(fit, newdata = test, type = "response")
+  p <- suppressWarnings(stats::predict(fit, newdata = test, type = "response"))
   y <- test$outcome
 
   pred <- as.integer(p >= 0.5)
