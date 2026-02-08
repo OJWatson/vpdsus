@@ -1,0 +1,12 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  data_access: data_access.html
+  mechanistic_odin2: mechanistic_odin2.html
+  outbreak_models: outbreak_models.html
+  susceptibility_simple: susceptibility_simple.html
+last_built: 2026-02-08T09:08Z
+urls:
+  reference: https://ojwatson.github.io/vpdsus/reference
+  article: https://ojwatson.github.io/vpdsus/articles
