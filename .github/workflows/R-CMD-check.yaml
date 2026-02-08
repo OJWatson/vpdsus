@@ -20,6 +20,9 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # Keep odin2/wpp2024 truly optional in CI; avoid failing checks when Suggests
+      # cannot be installed on some runners.
+      _R_CHECK_FORCE_SUGGESTS_: false
 
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +35,7 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
-          dependencies: '"hard"'
+          dependencies: hard
 
       - uses: r-lib/actions/check-r-package@v2
         with:
