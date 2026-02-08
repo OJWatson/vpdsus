@@ -10,21 +10,33 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
-# This vignette is a scaffold and should NOT block CI / R CMD check.
-# Only execute odin2 code when explicitly enabled.
-.do_odin2 <- identical(Sys.getenv("VPDSUS_BUILD_ODIN2_VIGNETTE"), "1") &&
-  requireNamespace("odin2", quietly = TRUE)
-
-knitr::opts_chunk$set(eval = .do_odin2)
+# This vignette is CI-safe by default. To actually *run* the code chunks, opt in:
+#
+#   Sys.setenv(VPDSUS_BUILD_ODIN2_VIGNETTE = "1")
+#
+.has_odin2 <- requireNamespace("odin2", quietly = TRUE)
+.run_odin2 <- identical(Sys.getenv("VPDSUS_BUILD_ODIN2_VIGNETTE"), "1")
+knitr::opts_chunk$set(eval = .has_odin2 && .run_odin2)
 ```
 
+This vignette is optional.
 
-This vignette is optional. If `{odin2}` is not installed, the examples are shown but not executed.
+- If `{odin2}` is not installed, chunks are shown but not executed.
+- If `VPDSUS_BUILD_ODIN2_VIGNETTE != "1"` (the default), chunks are shown but not executed.
 
 ```{r}
 library(vpdsus)
 
-mdl <- odin2_build_model("balance")
+# Minimal discrete-time example (difference equation)
+mdl <- odin2_build_model("minimal_discrete")
+out <- odin2_simulate(
+  mdl,
+  times = 0:10,
+  pars = list(inc = 1, S0 = 0),
+  initial = list()
+)
 
-# In a full implementation, you would map your panel data into model inputs.
+out
 ```
+
+In a full implementation, you would map your panel data into model inputs.

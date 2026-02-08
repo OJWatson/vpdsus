@@ -27,6 +27,7 @@ Imports:
 Suggests:
     broom,
     covr,
+    dust2,
     httptest2,
     knitr,
     lintr,
