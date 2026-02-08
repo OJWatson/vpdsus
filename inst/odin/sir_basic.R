@@ -1,6 +1,6 @@
 # odin2 template: simple SIR with vaccination (scaffold)
 
-odin2::odin2({
+odin2::odin({
   initial(S) <- S0
   initial(I) <- I0
   initial(R) <- R0
