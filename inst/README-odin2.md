@@ -12,12 +12,21 @@ mrc-ide r-universe repository in `DESCRIPTION`:
 - `Additional_repositories: https://mrc-ide.r-universe.dev`
 
 This makes `{odin2}` and `{dust2}` discoverable to dependency solvers such as
-`pak` (used by `r-lib/actions/setup-r-dependencies@v2`).
+`pak` (used by `r-lib/actions/setup-r-dependencies@v2`). Note that `pak` does
+*not* automatically install GitHub `Remotes:`; it needs either CRAN or an
+additional repository such as r-universe.
 
 If you get errors like "Can't find package called dust2", check that:
 
 1. `DESCRIPTION` still contains the `Additional_repositories` line above.
 2. The r-universe repo is reachable from the runner/network.
+
+## Optional pinning
+
+If you need strict reproducibility for mechanistic work, you can pin GitHub
+remotes in `DESCRIPTION` by appending `@<sha>` (or a tag) in the `Remotes:`
+field, e.g. `mrc-ide/dust2@<sha>`. This is optional; by default we rely on the
+r-universe binaries/source at install time.
 
 ## Opt-in execution
 
