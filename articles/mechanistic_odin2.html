@@ -68,14 +68,28 @@
 
     
     
-<p>This vignette is optional. If <a href="https://mrc-ide.github.io/odin2" class="external-link">odin2</a> is not installed,
-the examples are shown but not executed.</p>
+<p>This vignette is optional.</p>
+<ul>
+<li>If <a href="https://mrc-ide.github.io/odin2" class="external-link">odin2</a> is not installed, chunks are shown but not
+executed.</li>
+<li>If <code>VPDSUS_BUILD_ODIN2_VIGNETTE != "1"</code> (the default),
+chunks are shown but not executed.</li>
+</ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/vpdsus/">vpdsus</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">mdl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"balance"</span><span class="op">)</span></span>
+<span><span class="co"># Minimal discrete-time example (difference equation)</span></span>
+<span><span class="va">mdl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"minimal_discrete"</span><span class="op">)</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl</span>,</span>
+<span>  times <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span>,</span>
+<span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>inc <span class="op">=</span> <span class="fl">1</span>, S0 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># In a full implementation, you would map your panel data into model inputs.</span></span></code></pre></div>
+<span><span class="va">out</span></span></code></pre></div>
+<p>In a full implementation, you would map your panel data into model
+inputs.</p>
   </main>
 </div>
 
