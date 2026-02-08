@@ -4,3 +4,6 @@
 .Ruserdata
 .DS_Store
 /docs/
+
+# OpenClaw local status (do not commit)
+.openclaw/
