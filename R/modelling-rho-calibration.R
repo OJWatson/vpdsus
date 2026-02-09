@@ -100,6 +100,13 @@ calibrate_rho_case_balance <- function(
 
   s0_use <- if (is.null(s0)) df$births[[1]] else as.numeric(s0)
 
+  # If there are no cases, rho is not identifiable: the recurrence does not
+  # depend on rho. Return the lower bound with a warning.
+  if (all(df$cases == 0)) {
+    cli::cli_warn("All cases are zero: {.arg rho} is not identifiable; returning rho_interval lower bound")
+    return(rho_interval[[1]])
+  }
+
   # Define function of rho: S(target_year) - target
   f <- function(rho) {
     rho <- as.numeric(rho)

@@ -38,29 +38,32 @@ test_that("calibrate_rho_case_balance handles default s0 and ve", {
 
   # With s0 defaulting to births[1]=100 and ve=1,
   # vaccinated in 2000 is 100*0.5=50 so S(2001)=100 + 100 - 50 - 0 = 150.
-  rho_hat <- calibrate_rho_case_balance(
-    panel,
-    iso3 = "AAA",
-    years = 2000:2001,
-    target_year = 2001,
-    target_susceptible_n = 150,
-    ve = 1,
-    rho_interval = c(0.1, 1)
+  expect_warning(
+    rho_hat <- calibrate_rho_case_balance(
+      panel,
+      iso3 = "AAA",
+      years = 2000:2001,
+      target_year = 2001,
+      target_susceptible_n = 150,
+      ve = 1,
+      rho_interval = c(0.1, 1)
+    ),
+    "not identifiable"
   )
-  # cases are 0 so rho is not identifiable; uniroot will pick something that
-  # satisfies f(rho)=0 for all rho. In this setup f is exactly 0 everywhere,
-  # so the helper will return the lower bound.
   expect_equal(rho_hat, 0.1)
 
   # With ve=0, vaccinated is 0 so S(2001)=100+100=200
-  rho_hat2 <- calibrate_rho_case_balance(
-    panel,
-    iso3 = "AAA",
-    years = 2000:2001,
-    target_year = 2001,
-    target_susceptible_n = 200,
-    ve = 0,
-    rho_interval = c(0.1, 1)
+  expect_warning(
+    rho_hat2 <- calibrate_rho_case_balance(
+      panel,
+      iso3 = "AAA",
+      years = 2000:2001,
+      target_year = 2001,
+      target_susceptible_n = 200,
+      ve = 0,
+      rho_interval = c(0.1, 1)
+    ),
+    "not identifiable"
   )
   expect_equal(rho_hat2, 0.1)
 })
