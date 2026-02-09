@@ -10,8 +10,8 @@ test_that("minimal discrete-time odin2 model compiles and runs (opt-in)", {
   out <- vpdsus::odin2_simulate(
     mdl,
     times = 0:5,
-    pars = list(inc = 1, S0 = 0),
-    initial = list()
+    pars = list(inc = 1),
+    initial = list(S = 0)
   )
 
   expect_named(out, c("time", "S"))

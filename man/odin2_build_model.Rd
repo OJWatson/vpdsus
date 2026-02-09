@@ -4,10 +4,13 @@
 \alias{odin2_build_model}
 \title{Compile an odin2 template}
 \usage{
-odin2_build_model(model = c("balance", "sir", "minimal_discrete"), file = NULL)
+odin2_build_model(
+  model = c("balance", "balance_discrete", "sir", "minimal_discrete"),
+  file = NULL
+)
 }
 \arguments{
-\item{model}{One of 'balance', 'sir', or 'minimal_discrete'.}
+\item{model}{One of 'balance', 'balance_discrete', 'sir', or 'minimal_discrete'.}
 
 \item{file}{Optional path to a custom template.}
 }

@@ -32,11 +32,22 @@ mdl <- odin2_build_model("minimal_discrete")
 out <- odin2_simulate(
   mdl,
   times = 0:10,
-  pars = list(inc = 1, S0 = 0),
-  initial = list()
+  pars = list(inc = 1),
+  initial = list(S = 0)
 )
 
 out
+
+# Next step: a simple discrete-time susceptible balance model
+mdl2 <- odin2_build_model("balance_discrete")
+out2 <- odin2_simulate(
+  mdl2,
+  times = 0:5,
+  pars = list(rho = 1, births = 0, vaccinated = 0, cases = 1),
+  initial = list(S = 3)
+)
+
+out2
 ```
 
 In a full implementation, you would map your panel data into model inputs.

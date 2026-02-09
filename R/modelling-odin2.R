@@ -1,11 +1,11 @@
 #' Compile an odin2 template
 #'
-#' @param model One of 'balance', 'sir', or 'minimal_discrete'.
+#' @param model One of 'balance', 'balance_discrete', 'sir', or 'minimal_discrete'.
 #' @param file Optional path to a custom template.
 #'
 #' @return A compiled odin2 model object.
 #' @export
-odin2_build_model <- function(model = c("balance", "sir", "minimal_discrete"), file = NULL) {
+odin2_build_model <- function(model = c("balance", "balance_discrete", "sir", "minimal_discrete"), file = NULL) {
   model <- match.arg(model)
   if (!requireNamespace("odin2", quietly = TRUE)) {
     cli::cli_abort("{.pkg odin2} is required for mechanistic modelling. Install from r-universe as documented in the vignette.")
@@ -15,6 +15,7 @@ odin2_build_model <- function(model = c("balance", "sir", "minimal_discrete"), f
     file <- switch(
       model,
       balance = system.file("odin", "susceptible_balance.R", package = "vpdsus"),
+      balance_discrete = system.file("odin", "susceptible_balance_discrete.R", package = "vpdsus"),
       sir = system.file("odin", "sir_basic.R", package = "vpdsus"),
       minimal_discrete = system.file("odin", "minimal_discrete.R", package = "vpdsus")
     )
@@ -61,7 +62,14 @@ odin2_simulate <- function(model, times, pars = list(), initial = list(), inputs
 
   # odin2::odin() returns a dust_system_generator.
   # Create a system and simulate over requested times.
-  sys <- dust2::dust_system_create(model, c(initial, pars), time = min(times))
+  sys <- dust2::dust_system_create(model, pars = pars, time = min(times))
+
+  # Set initial state (odin2 discrete-time systems do not allow initial() to
+  # depend on parameters, so we set state explicitly here).
+  if (length(initial) > 0) {
+    st <- unlist(initial, use.names = TRUE)
+    dust2::dust_system_set_state(sys, st)
+  }
 
   # TODO: support time-varying user inputs; keep this minimal for now.
   if (!is.null(inputs)) {

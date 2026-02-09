@@ -6,11 +6,12 @@
 # This file is read by vpdsus::odin2_build_model(model = "minimal_discrete").
 
 model <- odin2::odin({
-  # Parameters (override at instantiation/simulation time)
-  S0 <- parameter(0)
+  # Parameter (override at instantiation/simulation time)
   inc <- parameter(1)
 
-  initial(S) <- S0
+  # NOTE: for discrete-time odin2 models, initial() cannot depend on parameters.
+  # We set initial state via vpdsus::odin2_simulate(initial = ...).
+  initial(S) <- 0
 
   update(S) <- S + inc
 })
