@@ -35,6 +35,10 @@ reference:
   contents:
   - starts_with("odin2_")
   - compare_methods
+
+- title: Calibration
+  contents:
+  - calibrate_rho_case_balance
 - title: Datasets and helpers
   contents:
   - vpdsus_example_panel
