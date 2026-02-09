@@ -48,6 +48,22 @@ out2 <- odin2_simulate(
 )
 
 out2
+
+# Time-varying inputs (aligned to `times`)
+times <- 0:4
+out3 <- odin2_simulate(
+  mdl2,
+  times = times,
+  pars = list(rho = 1),
+  initial = list(S = 3),
+  inputs = list(
+    births = c(0, 1, 0, 0, 0),
+    vaccinated = 0,
+    cases = c(0, 0, 1, 0, 2)
+  )
+)
+
+out3
 ```
 
 In a full implementation, you would map your panel data into model inputs.

@@ -71,17 +71,70 @@ odin2_simulate <- function(model, times, pars = list(), initial = list(), inputs
     dust2::dust_system_set_state(sys, st)
   }
 
-  # TODO: support time-varying user inputs; keep this minimal for now.
-  if (!is.null(inputs)) {
-    cli::cli_warn("odin2_simulate(inputs=) is not yet supported for odin2/dust2 backends")
-  }
-
-  sim <- dust2::dust_system_simulate(sys, times)
   state_names <- sys$packer_state$names()
 
+  # Helper: extract state as a named numeric vector
+  get_state <- function() {
+    st <- dust2::dust_system_state(sys)
+    names(st) <- state_names
+    st
+  }
+
+  # No inputs -> fast path
+  if (is.null(inputs)) {
+    sim <- dust2::dust_system_simulate(sys, times)
+    out <- tibble::tibble(time = times)
+    for (i in seq_along(state_names)) {
+      out[[state_names[[i]]]] <- as.numeric(sim[i, ])
+    }
+    return(out)
+  }
+
+  # Time-varying inputs: update parameters stepwise.
+  # Inputs can be:
+  #   - scalars (recycled)
+  #   - vectors aligned to `times`
+  #   - named vectors whose names match `times` (e.g. years)
+  inputs2 <- inputs
+  for (nm in names(inputs2)) {
+    x <- inputs2[[nm]]
+    if (length(x) == 1) {
+      inputs2[[nm]] <- rep(x, length(times))
+    } else if (!is.null(names(x)) && all(as.character(times) %in% names(x))) {
+      inputs2[[nm]] <- as.numeric(x[as.character(times)])
+    } else if (length(x) == length(times)) {
+      inputs2[[nm]] <- as.numeric(x)
+    } else {
+      cli::cli_abort(
+        "Input '{nm}' must be length 1, length(times) ({length(times)}), or a named vector covering all times"
+      )
+    }
+  }
+
   out <- tibble::tibble(time = times)
-  for (i in seq_along(state_names)) {
-    out[[state_names[[i]]]] <- as.numeric(sim[i, ])
+  for (nm in state_names) {
+    out[[nm]] <- NA_real_
+  }
+
+  # Record initial state at times[1]
+  st <- get_state()
+  for (nm in state_names) {
+    out[[nm]][[1]] <- st[[nm]]
+  }
+
+  if (length(times) == 1) {
+    return(out)
+  }
+
+  for (i in 2:length(times)) {
+    pars_step <- purrr::map_dbl(inputs2, ~ .x[[i]])
+    dust2::dust_system_update_pars(sys, as.list(pars_step))
+    dust2::dust_system_run_to_time(sys, times[[i]])
+
+    st <- get_state()
+    for (nm in state_names) {
+      out[[nm]][[i]] <- st[[nm]]
+    }
   }
 
   out
