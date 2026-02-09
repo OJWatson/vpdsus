@@ -35,6 +35,7 @@ reference:
   contents:
   - odin2_build_model
   - odin2_simulate
+  - odin2_inputs_from_tibble
   - compare_methods
 - title: Datasets and helpers
   contents:
