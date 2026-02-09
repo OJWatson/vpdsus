@@ -63,7 +63,7 @@ estimate_susceptible_cohort <- function(panel,
     dplyr::arrange(.data$iso3, .data$year)
 
   # Cohort susceptibility contribution for birth year c evaluated at year y uses coverage in c
-  births_by_cohort <- dplyr::select(df, .data$iso3, cohort_year = .data$year, births = .data$births, cov_eff = .data$cov_eff)
+  births_by_cohort <- dplyr::select(df, "iso3", cohort_year = "year", births = "births", cov_eff = "cov_eff")
 
   out <- df |>
     dplyr::group_by(.data$iso3) |>
@@ -89,7 +89,7 @@ estimate_susceptible_cohort <- function(panel,
       method = "cohort",
       assumptions = list(list(years_back = years_back, coverage_col = coverage_col, births_col = births_col, pop_col = pop_col))
     ) |>
-    dplyr::select(.data$iso3, .data$year, .data$age_group, .data$susceptible_n, .data$susceptible_prop, .data$method, .data$assumptions)
+    dplyr::select("iso3", "year", "age_group", "susceptible_n", "susceptible_prop", "method", "assumptions")
 
   out
 }
@@ -128,7 +128,7 @@ estimate_susceptible_cohort_ve <- function(panel,
   p_protected <- 1 - (1 - df$c1 * ve1) * (1 - df$c2 * ve2)
   df$cov_eff <- pmin(pmax(p_protected, 0), 1)
 
-  births_by_cohort <- dplyr::select(df, .data$iso3, cohort_year = .data$year, births = .data$births, cov_eff = .data$cov_eff)
+  births_by_cohort <- dplyr::select(df, "iso3", cohort_year = "year", births = "births", cov_eff = "cov_eff")
 
   out <- df |>
     dplyr::arrange(.data$iso3, .data$year) |>
@@ -150,7 +150,7 @@ estimate_susceptible_cohort_ve <- function(panel,
       method = "cohort_ve",
       assumptions = list(list(years_back = years_back, c1_col = c1_col, c2_col = c2_col, ve1 = ve1, ve2 = ve2))
     ) |>
-    dplyr::select(.data$iso3, .data$year, .data$age_group, .data$susceptible_n, .data$susceptible_prop, .data$method, .data$assumptions)
+    dplyr::select("iso3", "year", "age_group", "susceptible_n", "susceptible_prop", "method", "assumptions")
 
   out
 }
@@ -217,6 +217,6 @@ estimate_susceptible_case_balance <- function(panel,
       )
   })
 
-  dplyr::select(out, .data$iso3, .data$year, .data$age_group, .data$rho,
-                .data$susceptible_n, .data$susceptible_prop, .data$method, .data$assumptions)
+  dplyr::select(out, "iso3", "year", "age_group", "rho",
+                "susceptible_n", "susceptible_prop", "method", "assumptions")
 }
