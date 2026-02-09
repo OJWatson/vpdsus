@@ -56,3 +56,25 @@ target susceptible count at a chosen time.
 \details{
 This helper does not require \code{{odin2}}.
 }
+\examples{
+panel <- data.frame(
+  iso3 = rep("AAA", 4),
+  year = 2000:2003,
+  births = 0,
+  coverage = 0,
+  cases = 10
+)
+
+# With s0=100, cases=10, rho=0.5 implies depletion per step = 10/0.5=20:
+# S: 100, 80, 60, 40
+calibrate_rho_case_balance(
+  panel,
+  iso3 = "AAA",
+  years = 2000:2003,
+  target_year = 2003,
+  target_susceptible_n = 40,
+  s0 = 100,
+  rho_interval = c(0.1, 1)
+)
+
+}

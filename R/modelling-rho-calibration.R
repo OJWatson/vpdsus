@@ -23,6 +23,28 @@
 #' @param rho_interval Search interval for rho.
 #'
 #' @return A scalar numeric rho.
+#'
+#' @examples
+#' panel <- data.frame(
+#'   iso3 = rep("AAA", 4),
+#'   year = 2000:2003,
+#'   births = 0,
+#'   coverage = 0,
+#'   cases = 10
+#' )
+#'
+#' # With s0=100, cases=10, rho=0.5 implies depletion per step = 10/0.5=20:
+#' # S: 100, 80, 60, 40
+#' calibrate_rho_case_balance(
+#'   panel,
+#'   iso3 = "AAA",
+#'   years = 2000:2003,
+#'   target_year = 2003,
+#'   target_susceptible_n = 40,
+#'   s0 = 100,
+#'   rho_interval = c(0.1, 1)
+#' )
+#'
 #' @export
 calibrate_rho_case_balance <- function(
     panel,

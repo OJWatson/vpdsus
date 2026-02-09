@@ -37,6 +37,10 @@ A few helpers are provided to prepare model inputs without requiring `{odin2}`:
 
 These are useful for building and validating inputs before running any mechanistic code.
 
+## Calibration helpers
+
+- `calibrate_rho_case_balance()`: solve for `rho` in the case-balance recurrence to match a target susceptible count at a chosen year.
+
 ## Opt-in execution
 
 The mechanistic vignette and mechanistic tests are **opt-in** and will only run
