@@ -64,6 +64,24 @@ out3 <- odin2_simulate(
 )
 
 out3
+
+# End-to-end example using the bundled example panel
+panel_path <- system.file("extdata", "example_panel_small.csv", package = "vpdsus")
+panel <- utils::read.csv(panel_path)
+
+iso3 <- panel$iso3[[1]]
+times <- sort(unique(panel$year))
+inputs <- odin2_balance_inputs_from_panel(panel, times = times, iso3 = iso3)
+
+out4 <- odin2_simulate(
+  mdl2,
+  times = times,
+  pars = list(rho = 1),
+  initial = list(S = 0),
+  inputs = inputs
+)
+
+out4
 ```
 
 In a full implementation, you would map your panel data into model inputs.
