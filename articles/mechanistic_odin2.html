@@ -83,11 +83,22 @@ chunks are shown but not executed.</li>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
 <span>  <span class="va">mdl</span>,</span>
 <span>  times <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span>,</span>
-<span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>inc <span class="op">=</span> <span class="fl">1</span>, S0 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>inc <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out</span></span></code></pre></div>
+<span><span class="va">out</span></span>
+<span></span>
+<span><span class="co"># Next step: a simple discrete-time susceptible balance model</span></span>
+<span><span class="va">mdl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"balance_discrete"</span><span class="op">)</span></span>
+<span><span class="va">out2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl2</span>,</span>
+<span>  times <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span>,</span>
+<span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">1</span>, births <span class="op">=</span> <span class="fl">0</span>, vaccinated <span class="op">=</span> <span class="fl">0</span>, cases <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">out2</span></span></code></pre></div>
 <p>In a full implementation, you would map your panel data into model
 inputs.</p>
   </main>
