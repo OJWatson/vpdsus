@@ -28,6 +28,15 @@ remotes in `DESCRIPTION` by appending `@<sha>` (or a tag) in the `Remotes:`
 field, e.g. `mrc-ide/dust2@<sha>`. This is optional; by default we rely on the
 r-universe binaries/source at install time.
 
+## Convenience adapters
+
+A few helpers are provided to prepare model inputs without requiring `{odin2}`:
+
+- `odin2_inputs_from_tibble()`: year-keyed tibble → `inputs=` list aligned to `times`
+- `odin2_balance_inputs_from_panel()`: panel (`iso3`, `year`, `births`, `coverage`, `cases`) → balance-model inputs
+
+These are useful for building and validating inputs before running any mechanistic code.
+
 ## Opt-in execution
 
 The mechanistic vignette and mechanistic tests are **opt-in** and will only run
