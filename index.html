@@ -91,6 +91,12 @@
 <li>Vignettes are designed to run quickly using shipped example datasets.</li>
 <li>A full end-to-end pipeline scaffold is provided under <code>analysis/targets/</code>.</li>
 </ul>
+<div class="section level3">
+<h3 id="non-cran-suggests">Non-CRAN Suggests<a class="anchor" aria-label="anchor" href="#non-cran-suggests"></a>
+</h3>
+<p>This package has optional features that use packages not on CRAN (currently including <code>odin2</code>, <code>dust2</code>, and <code>wpp2024</code>). CI is configured to keep checks green without forcing installation of Suggests (i.e. <code>_R_CHECK_FORCE_SUGGESTS_=false</code>).</p>
+<p>Mechanistic functionality (odin2/dust2) is additionally guarded behind <code>VPDSUS_BUILD_ODIN2_VIGNETTE=1</code>.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
