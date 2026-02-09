@@ -114,7 +114,25 @@ chunks are shown but not executed.</li>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out3</span></span></code></pre></div>
+<span><span class="va">out3</span></span>
+<span></span>
+<span><span class="co"># End-to-end example using the bundled example panel</span></span>
+<span><span class="va">panel_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_panel_small.csv"</span>, package <span class="op">=</span> <span class="st">"vpdsus"</span><span class="op">)</span></span>
+<span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">panel_path</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">iso3</span> <span class="op">&lt;-</span> <span class="va">panel</span><span class="op">$</span><span class="va">iso3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">panel</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_balance_inputs_from_panel.html">odin2_balance_inputs_from_panel</a></span><span class="op">(</span><span class="va">panel</span>, times <span class="op">=</span> <span class="va">times</span>, iso3 <span class="op">=</span> <span class="va">iso3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">out4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl2</span>,</span>
+<span>  times <span class="op">=</span> <span class="va">times</span>,</span>
+<span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  inputs <span class="op">=</span> <span class="va">inputs</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">out4</span></span></code></pre></div>
 <p>In a full implementation, you would map your panel data into model
 inputs.</p>
   </main>
