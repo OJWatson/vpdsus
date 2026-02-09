@@ -82,7 +82,7 @@ calibrate_rho_case_balance <- function(
       births = as.numeric(.data[[births_col]]),
       cov = pmin(pmax(as.numeric(.data[[coverage_col]]), 0), 1),
       cases = pmax(as.numeric(.data[[cases_col]]), 0),
-      vaccinated = as.numeric(.data[[births_col]]) * cov * ve
+      vaccinated = as.numeric(.data[[births_col]]) * .data$cov * ve
     ) |>
     dplyr::filter(.data$iso3 == standardise_iso3(iso3), .data$year %in% years) |>
     dplyr::arrange(.data$year)

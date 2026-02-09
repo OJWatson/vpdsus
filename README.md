@@ -32,6 +32,15 @@ p2
 - Vignettes are designed to run quickly using shipped example datasets.
 - A full end-to-end pipeline scaffold is provided under `analysis/targets/`.
 
+### Non-CRAN Suggests
+
+This package has optional features that use packages not on CRAN (currently including
+`odin2`, `dust2`, and `wpp2024`). CI is configured to keep checks green without forcing
+installation of Suggests (i.e. `_R_CHECK_FORCE_SUGGESTS_=false`).
+
+Mechanistic functionality (odin2/dust2) is additionally guarded behind
+`VPDSUS_BUILD_ODIN2_VIGNETTE=1`.
+
 ## License
 
 MIT.
