@@ -59,6 +59,13 @@ calibrate_rho_case_balance <- function(
     ve = 1,
     rho_interval = c(1e-4, 1)) {
   assert_is_scalar_chr(iso3)
+  rho_interval <- as.numeric(rho_interval)
+  if (length(rho_interval) != 2 || anyNA(rho_interval) || rho_interval[[1]] <= 0 ||
+      rho_interval[[2]] <= rho_interval[[1]]) {
+    cli::cli_abort(
+      "{.arg rho_interval} must be a numeric length-2 vector with 0 < lower < upper"
+    )
+  }
   if (!is.data.frame(panel)) {
     cli::cli_abort("{.arg panel} must be a data.frame")
   }
@@ -75,7 +82,7 @@ calibrate_rho_case_balance <- function(
       births = as.numeric(.data[[births_col]]),
       cov = pmin(pmax(as.numeric(.data[[coverage_col]]), 0), 1),
       cases = pmax(as.numeric(.data[[cases_col]]), 0),
-      vaccinated = as.numeric(.data[[births_col]]) * pmin(pmax(as.numeric(.data[[coverage_col]]), 0), 1) * ve
+      vaccinated = as.numeric(.data[[births_col]]) * cov * ve
     ) |>
     dplyr::filter(.data$iso3 == standardise_iso3(iso3), .data$year %in% years) |>
     dplyr::arrange(.data$year)

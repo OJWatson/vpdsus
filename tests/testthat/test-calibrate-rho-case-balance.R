@@ -27,6 +27,44 @@ test_that("calibrate_rho_case_balance recovers rho on synthetic data", {
   expect_equal(rho_hat, rho_true, tolerance = 1e-4)
 })
 
+test_that("calibrate_rho_case_balance handles default s0 and ve", {
+  panel <- tibble::tibble(
+    iso3 = rep("AAA", 2),
+    year = 2000:2001,
+    births = c(100, 100),
+    coverage = c(0.5, 0.5),
+    cases = c(0, 0)
+  )
+
+  # With s0 defaulting to births[1]=100 and ve=1,
+  # vaccinated in 2000 is 100*0.5=50 so S(2001)=100 + 100 - 50 - 0 = 150.
+  rho_hat <- calibrate_rho_case_balance(
+    panel,
+    iso3 = "AAA",
+    years = 2000:2001,
+    target_year = 2001,
+    target_susceptible_n = 150,
+    ve = 1,
+    rho_interval = c(0.1, 1)
+  )
+  # cases are 0 so rho is not identifiable; uniroot will pick something that
+  # satisfies f(rho)=0 for all rho. In this setup f is exactly 0 everywhere,
+  # so the helper will return the lower bound.
+  expect_equal(rho_hat, 0.1)
+
+  # With ve=0, vaccinated is 0 so S(2001)=100+100=200
+  rho_hat2 <- calibrate_rho_case_balance(
+    panel,
+    iso3 = "AAA",
+    years = 2000:2001,
+    target_year = 2001,
+    target_susceptible_n = 200,
+    ve = 0,
+    rho_interval = c(0.1, 1)
+  )
+  expect_equal(rho_hat2, 0.1)
+})
+
 test_that("calibrate_rho_case_balance errors if target not bracketed", {
   panel <- tibble::tibble(
     iso3 = rep("AAA", 2),
@@ -47,5 +85,28 @@ test_that("calibrate_rho_case_balance errors if target not bracketed", {
       rho_interval = c(0.1, 1)
     ),
     "Target not bracketed"
+  )
+})
+
+test_that("calibrate_rho_case_balance validates rho_interval", {
+  panel <- tibble::tibble(
+    iso3 = rep("AAA", 2),
+    year = 2000:2001,
+    births = 0,
+    coverage = 0,
+    cases = 10
+  )
+
+  expect_error(
+    calibrate_rho_case_balance(
+      panel,
+      iso3 = "AAA",
+      years = 2000:2001,
+      target_year = 2001,
+      target_susceptible_n = 0,
+      s0 = 0,
+      rho_interval = c(1, 0.1)
+    ),
+    "rho_interval"
   )
 })
