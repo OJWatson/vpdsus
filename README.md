@@ -1,6 +1,38 @@
 # vpdsus
 
-`vpdsus` is an R package to retrieve WHO Global Health Observatory (GHO) immunisation coverage and reported cases, combine them with demography, estimate vaccine-preventable disease susceptibility via progressive methods (A–E), and produce WHO-style risk ranking plots and modelling outputs.
+`vpdsus` is an R package to:
+
+- retrieve WHO Global Health Observatory (GHO) immunisation **coverage** and reported **cases**,
+- combine them with demography,
+- estimate vaccine-preventable disease (VPD) susceptibility via progressive methods (A–D), and
+- produce WHO-style risk ranking plots and modelling-ready outputs.
+
+## Status (PDF spec milestones)
+
+This repository is being aligned to the original PDF plan (“Blueprint for an R package to estimate VPD susceptibility and link it to outbreak risk”).
+
+- Milestone definitions (v2, with explicit DoD): [`milestones_v2.md`](milestones_v2.md)
+- Current gap review vs PDF: [`spec_review_vs_pdf.md`](spec_review_vs_pdf.md)
+
+Current implementation status (high-level):
+
+- **M0 (scaffolding + spec alignment):** in progress (this README + milestone/spec docs).
+- **M1 (WHO coverage + cases access):** implemented (GHO helpers), indicator mappings need verification/pinning.
+- **M2 (demography + panel building):** partial (example demography + optional WPP adapter).
+- **M3 (susceptibility + WHO-style outputs):** partial-to-good (methods A–D + ranking plots exist; “golden figure” reproduction pending).
+- **M4–M7 (modelling/mechanistic/inference/public reproducibility):** present as scaffolding; not yet at PDF “end-to-end reproducible” bar.
+
+## Supported antigens / diseases (current scope)
+
+The package is currently wired for a small, explicit set of GHO series via `vpd_indicators()`:
+
+- **Coverage (antigens):** `MCV1`, `MCV2`, `DTP1`, `DTP3`
+- **Cases (diseases):** `measles`
+
+Notes:
+
+- WHO GHO indicator codes can be discovered with `gho_find_indicator()` and overridden in `get_coverage(..., indicator_code=)` / `get_cases(..., indicator_code=)`.
+- The built-in defaults are intended as a starting point and will be tightened/verified under milestone **M1**.
 
 ## Installation
 
@@ -19,18 +51,29 @@ panel <- vpdsus_example_panel()
 sA <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
 rank <- risk_rank(panel = panel, suscept = sA)
 
-p1 <- plot_coverage_rank(rank)
-p2 <- plot_susceptible_rank(rank)
-
-p1
-p2
+plot_coverage_rank(rank)
+plot_susceptible_rank(rank)
 ```
 
-## Reproducibility
+## Reproduce (targets pipeline)
 
-- Data access functions are cache-aware and record provenance.
+A small `targets` pipeline scaffold lives in [`analysis/targets/_targets.R`](analysis/targets/_targets.R) and runs on shipped example data.
+
+```r
+# install.packages("targets")
+setwd("analysis/targets")
+
+targets::tar_make()
+
+# Inspect outputs
+targets::tar_read(coverage_plot)
+targets::tar_read(susceptible_plot)
+```
+
+## Reproducibility + optional features
+
+- Data access helpers are cache-aware (local JSON caching for WHO GHO responses).
 - Vignettes are designed to run quickly using shipped example datasets.
-- A full end-to-end pipeline scaffold is provided under `analysis/targets/`.
 
 ### Non-CRAN Suggests
 
