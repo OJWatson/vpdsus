@@ -14,15 +14,9 @@ gho_base_url <- function() {
 gho_get <- function(endpoint, query = list(), cache = TRUE, quiet = TRUE) {
   assert_is_scalar_chr(endpoint)
 
-  # Build URL
-  base <- gho_base_url()
-  url <- paste0(base, "/", endpoint)
-  if (length(query)) {
-    qs <- paste0(utils::URLencode(names(query)), "=", utils::URLencode(as.character(query)), collapse = "&")
-    url <- paste0(url, "?", qs)
-  }
+  url <- gho_build_url(endpoint, query)
 
-  key <- paste0(gsub("[^A-Za-z0-9]+", "_", endpoint), "_", hash_list(list(url = url)))
+  key <- gho_cache_key(endpoint, query)
   path <- cache_paths(key, ext = "json")
 
   if (cache && file.exists(path)) {
@@ -47,11 +41,7 @@ gho_get <- function(endpoint, query = list(), cache = TRUE, quiet = TRUE) {
     }
   }
 
-  parsed <- jsonlite::fromJSON(txt, simplifyVector = TRUE)
-
-  # Most endpoints return a list with $value
-  value <- parsed$value %||% parsed
-  tibble::as_tibble(value)
+  gho_parse_json(txt)
 }
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
@@ -70,6 +60,9 @@ gho_find_indicator <- function(keyword, top_n = 50) {
     `$top` = top_n
   )
   out <- gho_get("Indicator", query = q)
+  if (!all(c("IndicatorCode", "IndicatorName") %in% names(out))) {
+    return(tibble::tibble(indicator_code = character(), indicator_name = character()))
+  }
   dplyr::transmute(
     out,
     indicator_code = .data$IndicatorCode,
@@ -104,12 +97,12 @@ vpd_indicators <- function() {
     antigen_or_disease = c("MCV1", "MCV2", "measles", "DTP1", "DTP3"),
     indicator_code = c(
       # WHO GHO indicator codes are discoverable and may change; users can override.
-      # These defaults are placeholders that work for discovery via vignette.
-      "MCV1",
-      "MCV2",
-      "MEASLESCASES",
-      "DTP1",
-      "DTP3"
+      # Defaults here are verified via gho_find_indicator() (see M1 fixtures/tests).
+      "WHS8_110", # MCV1 coverage
+      "MCV2",     # MCV2 coverage (indicator search returns code 'MCV2')
+      "WHS3_62",  # measles cases
+      "DTP1",     # TODO(M1): verify
+      "WHS4_100"  # DTP3 coverage (indicator search includes WHS4_100)
     )
   )
 }
@@ -136,17 +129,7 @@ get_coverage <- function(antigen, indicator_code = NULL, years = NULL, countries
 
   raw <- gho_get_indicator(indicator_code)
 
-  # Try to standardise common GHO column names
-  out <- dplyr::transmute(
-    raw,
-    iso3 = standardise_iso3(.data$SpatialDim %||% .data$SpatialDimValueCode %||% .data$COUNTRY_CODE),
-    year = as.integer(.data$TimeDim %||% .data$TimeDimValueCode %||% .data$YEAR),
-    coverage = as.numeric(.data$Value)
-  )
-
-  out <- dplyr::filter(out, !is.na(.data$iso3), !is.na(.data$year))
-  # Normalise to proportion in [0,1]
-  out <- dplyr::mutate(out, coverage = dplyr::if_else(.data$coverage > 1, .data$coverage / 100, .data$coverage))
+  out <- gho_standardise_coverage(raw)
 
   if (!is.null(years)) out <- dplyr::filter(out, .data$year %in% years)
   if (!is.null(countries)) out <- dplyr::filter(out, .data$iso3 %in% standardise_iso3(countries))
@@ -175,14 +158,7 @@ get_cases <- function(disease, indicator_code = NULL, years = NULL, countries = 
   }
 
   raw <- gho_get_indicator(indicator_code)
-  out <- dplyr::transmute(
-    raw,
-    iso3 = standardise_iso3(.data$SpatialDim %||% .data$SpatialDimValueCode %||% .data$COUNTRY_CODE),
-    year = as.integer(.data$TimeDim %||% .data$TimeDimValueCode %||% .data$YEAR),
-    cases = as.numeric(.data$Value)
-  )
-
-  out <- dplyr::filter(out, !is.na(.data$iso3), !is.na(.data$year))
+  out <- gho_standardise_cases(raw)
   if (!is.null(years)) out <- dplyr::filter(out, .data$year %in% years)
   if (!is.null(countries)) out <- dplyr::filter(out, .data$iso3 %in% standardise_iso3(countries))
 

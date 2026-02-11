@@ -1,0 +1,7 @@
+{
+  "endpoint": "WHS8_110",
+  "url": "https://ghoapi.azureedge.net/api/WHS8_110?$filter=SpatialDim%20eq%20'USA'%20and%20TimeDim%20eq%202020&$top=5",
+  "filter": "SpatialDim eq 'USA' and TimeDim eq 2020",
+  "top": 5,
+  "retrievedAtUtc": "2026-02-11 15:00:02 UTC"
+}
