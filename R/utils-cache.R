@@ -10,6 +10,10 @@ vpdsus_clear_cache <- function() {
   invisible(TRUE)
 }
 
+#' Cache information
+#'
+#' @return A tibble with cache directory, number of files, and total size.
+#' @export
 vpdsus_cache_info <- function() {
   dir <- vpdsus_cache_dir(create = FALSE)
   files <- if (dir.exists(dir)) list.files(dir, recursive = TRUE, full.names = TRUE) else character()

@@ -12,3 +12,5 @@
 
 # pkgdown output (GitHub Pages deploy uses gh-pages branch)
 /site/
+/doc/
+/Meta/

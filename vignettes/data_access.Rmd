@@ -13,13 +13,30 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 This vignette demonstrates the data access layer.
 
-For reproducibility and fast vignette builds, we use a shipped example panel. For live downloads, see `gho_find_indicator()` and `get_coverage()`.
+For reproducibility and fast vignette builds, we use shipped example data and pinned fixtures.
+
+The core public helpers are:
+
+- `gho_find_indicator()`: search the WHO GHO indicator catalogue
+- `get_coverage()`: download and standardise a coverage series (returns `iso3`, `year`, `coverage`)
+- `get_cases()`: download and standardise a cases series (returns `iso3`, `year`, `cases`)
+
+The returned `iso3` values are standardised to ISO3 codes and `year` is an integer year.
 
 ```{r}
 library(vpdsus)
 
 panel <- vpdsus_example_panel()
 head(panel)
+```
+
+### Caching
+
+Live downloads are cached as JSON under the user cache directory. You can inspect
+the cache location and size:
+
+```{r}
+vpdsus_cache_info()
 ```
 
 ### Indicator discovery (deterministic example)
@@ -34,4 +51,52 @@ This vignette uses a pinned fixture so it can run deterministically in CI:
 # Search the WHO GHO indicator metadata (offline fixture for this vignette)
 m <- gho_find_indicator("measles", top_n = 10, offline = TRUE)
 print(m)
+
+# Two useful measles-related indicators in this list are:
+# - WHS8_110: MCV1 coverage
+# - WHS3_62: reported measles cases
+```
+
+### Coverage + cases (fixture-based examples)
+
+To keep this vignette deterministic, we use pinned single-country fixtures for:
+
+- MCV1 coverage (USA, 2020) via indicator code `WHS8_110`
+- measles cases (USA, 2020) via indicator code `WHS3_62`
+
+The corresponding live calls would be:
+
+```{r, eval=FALSE}
+get_coverage("MCV1")
+get_cases("measles")
+```
+
+Here we read the pinned raw JSON and standardise it to the package output columns.
+
+```{r}
+# Coverage fixture
+p_cov <- system.file("extdata", "fixtures", "gho_WHS8_110_USA_2020.json", package = "vpdsus")
+txt_cov <- paste(readLines(p_cov, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+raw_cov <- jsonlite::fromJSON(txt_cov)$value
+cov <- tibble::as_tibble(raw_cov) |>
+  dplyr::transmute(
+    iso3 = toupper(trimws(as.character(.data$SpatialDim))),
+    year = as.integer(.data$TimeDim),
+    coverage = as.numeric(.data$Value) / 100
+  )
+
+cov
+
+# Cases fixture
+p_cases <- system.file("extdata", "fixtures", "gho_WHS3_62_USA_2020.json", package = "vpdsus")
+txt_cases <- paste(readLines(p_cases, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+raw_cases <- jsonlite::fromJSON(txt_cases)$value
+cases <- tibble::as_tibble(raw_cases) |>
+  dplyr::transmute(
+    iso3 = toupper(trimws(as.character(.data$SpatialDim))),
+    year = as.integer(.data$TimeDim),
+    cases = as.numeric(.data$Value)
+  )
+
+cases
 ```
