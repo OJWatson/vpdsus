@@ -9,3 +9,6 @@
 
 # R CMD check artefacts
 ..Rcheck/
+
+# pkgdown output (GitHub Pages deploy uses gh-pages branch)
+/site/

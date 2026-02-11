@@ -1,6 +1,8 @@
 url: https://ojwatson.github.io/vpdsus/
 template:
   bootstrap: 5
+
+destination: site
 llm-docs: false
 reference:
 - title: Data access
