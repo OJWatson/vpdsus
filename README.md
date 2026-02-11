@@ -7,22 +7,14 @@
 - estimate vaccine-preventable disease (VPD) susceptibility via progressive methods (A–D), and
 - produce WHO-style risk ranking plots and modelling-ready outputs.
 
-## Status (PDF spec milestones)
+## What it does
 
-This repository is being aligned to the original PDF plan (“Blueprint for an R package to estimate VPD susceptibility and link it to outbreak risk”).
+`vpdsus` helps you:
 
-- Milestone definitions (v2, with explicit DoD): [`milestones_v2.md`](milestones_v2.md)
-- Current gap review vs PDF: [`spec_review_vs_pdf.md`](spec_review_vs_pdf.md)
-- Roadmap (canonical): [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- Current status (canonical): [`docs/STATUS.md`](docs/STATUS.md)
-
-Current implementation status (high-level):
-
-- **M0 (scaffolding + spec alignment):** in progress (this README + milestone/spec docs).
-- **M1 (WHO coverage + cases access):** implemented (GHO helpers), indicator mappings need verification/pinning.
-- **M2 (demography + panel building):** partial (example demography + optional WPP adapter).
-- **M3 (susceptibility + WHO-style outputs):** partial-to-good (methods A–D + ranking plots exist; “golden figure” reproduction pending).
-- **M4–M7 (modelling/mechanistic/inference/public reproducibility):** present as scaffolding; not yet at PDF “end-to-end reproducible” bar.
+- fetch WHO GHO immunisation **coverage** and reported **cases** time series,
+- join them to demography into a country-year panel,
+- estimate susceptibility using a small set of progressive methods, and
+- produce WHO-style ranking plots and modelling-ready outputs.
 
 ## Supported antigens / diseases (current scope)
 

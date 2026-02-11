@@ -4,12 +4,16 @@
 \alias{gho_find_indicator}
 \title{Search GHO indicator metadata by keyword}
 \usage{
-gho_find_indicator(keyword, top_n = 50)
+gho_find_indicator(keyword, top_n = 50, offline = FALSE)
 }
 \arguments{
 \item{keyword}{Keyword to search within IndicatorName.}
 
 \item{top_n}{Maximum number of results.}
+
+\item{offline}{If \code{TRUE}, use a pinned fixture (if available) instead of
+calling the live API. This is intended for vignettes/tests that must be
+deterministic.}
 }
 \value{
 tibble with indicator codes and names.

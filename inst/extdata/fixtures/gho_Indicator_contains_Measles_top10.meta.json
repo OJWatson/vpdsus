@@ -1,0 +1,7 @@
+{
+  "endpoint": "Indicator",
+  "url": "https://ghoapi.azureedge.net/api/Indicator?$filter=contains(IndicatorName,'Measles')&$top=10",
+  "filter": "contains(IndicatorName,'Measles')",
+  "top": 10,
+  "retrievedAtUtc": "2026-02-11 21:38:42 UTC"
+}

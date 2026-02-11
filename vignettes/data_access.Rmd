@@ -22,10 +22,16 @@ panel <- vpdsus_example_panel()
 head(panel)
 ```
 
-### Live indicator discovery (optional)
+### Indicator discovery (deterministic example)
 
-```{r, eval=FALSE}
-# Search the WHO GHO indicator metadata
-m <- gho_find_indicator("DTP3")
-head(m)
+The WHO GHO API exposes an indicator catalogue. Use `gho_find_indicator()` to
+search for the code you need, then pass that code into `get_coverage()` or
+`get_cases()`.
+
+This vignette uses a pinned fixture so it can run deterministically in CI:
+
+```{r}
+# Search the WHO GHO indicator metadata (offline fixture for this vignette)
+m <- gho_find_indicator("measles", top_n = 10, offline = TRUE)
+print(m)
 ```

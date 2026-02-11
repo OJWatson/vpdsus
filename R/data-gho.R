@@ -50,19 +50,44 @@ gho_get <- function(endpoint, query = list(), cache = TRUE, quiet = TRUE) {
 #'
 #' @param keyword Keyword to search within IndicatorName.
 #' @param top_n Maximum number of results.
+#' @param offline If `TRUE`, use a pinned fixture (if available) instead of
+#'   calling the live API. This is intended for vignettes/tests that must be
+#'   deterministic.
 #'
 #' @return tibble with indicator codes and names.
 #' @export
-gho_find_indicator <- function(keyword, top_n = 50) {
+gho_find_indicator <- function(keyword, top_n = 50, offline = FALSE) {
   assert_is_scalar_chr(keyword)
-  q <- list(
-    `$filter` = sprintf("contains(IndicatorName,'%s')", gsub("'", "''", keyword)),
-    `$top` = top_n
-  )
-  out <- gho_get("Indicator", query = q)
+
+  if (isTRUE(offline)) {
+    # Currently we only ship a small fixture for a representative keyword used in
+    # vignettes; fall back to live mode for other queries.
+    if (identical(tolower(keyword), "measles") && top_n <= 10) {
+      path <- system.file(
+        "extdata", "fixtures", "gho_Indicator_contains_Measles_top10.json",
+        package = "vpdsus"
+      )
+      if (!identical(path, "")) {
+        txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+        out <- gho_parse_json(txt)
+      } else {
+        out <- tibble::tibble()
+      }
+    } else {
+      out <- tibble::tibble()
+    }
+  } else {
+    q <- list(
+      `$filter` = sprintf("contains(IndicatorName,'%s')", gsub("'", "''", keyword)),
+      `$top` = top_n
+    )
+    out <- gho_get("Indicator", query = q)
+  }
+
   if (!all(c("IndicatorCode", "IndicatorName") %in% names(out))) {
     return(tibble::tibble(indicator_code = character(), indicator_name = character()))
   }
+
   dplyr::transmute(
     out,
     indicator_code = .data$IndicatorCode,
