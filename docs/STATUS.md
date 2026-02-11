@@ -1,9 +1,9 @@
 ```pm-status
 milestone: M7
 state: waiting-for-ci
-headSha: 777dde9546e7dbe87282d1caf64c4e2ee5b8f878
-ciRunUrl: (pending)
-updatedAtUtc: 2026-02-11T18:00:49Z
+headSha: 28a0fe33339577cad94766cf36548f98eff183d2
+ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21916834356, https://github.com/OJWatson/vpdsus/actions/runs/21916834366, https://github.com/OJWatson/vpdsus/actions/runs/21916834355
+updatedAtUtc: 2026-02-11T18:01:31Z
 ```
 
 Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
