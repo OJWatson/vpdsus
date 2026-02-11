@@ -168,6 +168,19 @@
 <li>Vignettes are designed to run quickly using shipped example datasets.</li>
 </ul>
 <div class="section level3">
+<h3 id="demography-sources">Demography sources<a class="anchor" aria-label="anchor" href="#demography-sources"></a>
+</h3>
+<p><code><a href="reference/get_demography.html">get_demography()</a></code> supports:</p>
+<ul>
+<li>
+<code>source = "example"</code> (default): uses shipped example data (no external dependencies)</li>
+<li>
+<code>source = "fixture_wpp"</code>: uses a tiny shipped WPP-like fixture (deterministic; no external dependencies)</li>
+<li>
+<code>source = "wpp"</code>: uses <a href="http://population.un.org/wpp" class="external-link">wpp2024</a> if installed (optional)</li>
+</ul>
+</div>
+<div class="section level3">
 <h3 id="non-cran-suggests">Non-CRAN Suggests<a class="anchor" aria-label="anchor" href="#non-cran-suggests"></a>
 </h3>
 <p>This package has optional features that use packages not on CRAN (currently including <code>odin2</code>, <code>dust2</code>, and <code>wpp2024</code>). CI is configured to keep checks green without forcing installation of Suggests (i.e. <code>_R_CHECK_FORCE_SUGGESTS_=false</code>).</p>
