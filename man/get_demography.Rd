@@ -4,14 +4,18 @@
 \alias{get_demography}
 \title{Get demography series}
 \usage{
-get_demography(years = NULL, countries = NULL, source = c("example", "wpp"))
+get_demography(
+  years = NULL,
+  countries = NULL,
+  source = c("example", "fixture_wpp", "wpp")
+)
 }
 \arguments{
 \item{years}{Optional integer vector.}
 
 \item{countries}{Optional ISO3 vector.}
 
-\item{source}{One of "example" (default) or "wpp" (optional).}
+\item{source}{One of "example" (default), "wpp" (optional), or "fixture_wpp".}
 }
 \value{
 tibble with iso3, year, pop_total, pop_0_4, pop_5_14, births.

@@ -7,20 +7,25 @@
 #'
 #' @param years Optional integer vector.
 #' @param countries Optional ISO3 vector.
-#' @param source One of "example" (default) or "wpp" (optional).
+#' @param source One of "example" (default), "wpp" (optional), or "fixture_wpp".
 #'
 #' @return tibble with iso3, year, pop_total, pop_0_4, pop_5_14, births.
 #' @export
-get_demography <- function(years = NULL, countries = NULL, source = c("example", "wpp")) {
+get_demography <- function(years = NULL, countries = NULL, source = c("example", "fixture_wpp", "wpp")) {
   source <- match.arg(source)
 
   if (source == "wpp") {
     if (!requireNamespace("wpp2024", quietly = TRUE)) {
-      cli::cli_abort("Package {.pkg wpp2024} is required for source='wpp'. Install it or use source='example'.")
+      cli::cli_abort("Package {.pkg wpp2024} is required for source='wpp'. Install it or use source='example'/'fixture_wpp'.")
     }
 
     wpp_demography <- wpp_get_demography(years = years, countries = countries)
     return(wpp_demography)
+  }
+
+  if (source == "fixture_wpp") {
+    out <- demography_from_wpp_like_fixture(years = years, countries = countries)
+    return(out)
   }
 
   panel <- vpdsus_example_panel()
