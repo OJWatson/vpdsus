@@ -7,3 +7,6 @@
 
 # OpenClaw local status (do not commit)
 .openclaw/
+
+# R CMD check artefacts
+..Rcheck/
