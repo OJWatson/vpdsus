@@ -132,7 +132,39 @@ chunks are shown but not executed.</li>
 <span>  inputs <span class="op">=</span> <span class="va">inputs</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out4</span></span></code></pre></div>
+<span><span class="va">out4</span></span>
+<span></span>
+<span><span class="co"># Optional: calibrate rho (reporting fraction) to a target susceptibility</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># This is a minimal "inference hook" example. Here we create a target</span></span>
+<span><span class="co"># susceptible count and solve for rho such that the case-balance recurrence</span></span>
+<span><span class="co"># matches that target in a chosen year.</span></span>
+<span></span>
+<span><span class="va">target_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">times</span><span class="op">)</span></span>
+<span><span class="co"># For demonstration only: choose an arbitrary target susceptible count.</span></span>
+<span><span class="co"># In practice this could come from a cohort method estimate.</span></span>
+<span><span class="va">target_susceptible_n</span> <span class="op">&lt;-</span> <span class="fl">1e6</span></span>
+<span></span>
+<span><span class="va">rho_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate_rho_case_balance.html">calibrate_rho_case_balance</a></span><span class="op">(</span></span>
+<span>  <span class="va">panel</span>,</span>
+<span>  iso3 <span class="op">=</span> <span class="va">iso3</span>,</span>
+<span>  years <span class="op">=</span> <span class="va">times</span>,</span>
+<span>  target_year <span class="op">=</span> <span class="va">target_year</span>,</span>
+<span>  target_susceptible_n <span class="op">=</span> <span class="va">target_susceptible_n</span>,</span>
+<span>  rho_interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rho_hat</span></span>
+<span></span>
+<span><span class="va">out5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl2</span>,</span>
+<span>  times <span class="op">=</span> <span class="va">times</span>,</span>
+<span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="va">rho_hat</span><span class="op">)</span>,</span>
+<span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  inputs <span class="op">=</span> <span class="va">inputs</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">out5</span></span></code></pre></div>
 <p>In a full implementation, you would map your panel data into model
 inputs.</p>
   </main>
