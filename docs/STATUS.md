@@ -2,11 +2,13 @@
 milestone: M7
 state: waiting-for-ci
 headSha: 8b592227d682f5827ce07e979f5a89d4fafb6d4e
-ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21917119063, https://github.com/OJWatson/vpdsus/actions/runs/21917119059, https://github.com/OJWatson/vpdsus/actions/runs/21917119061
-updatedAtUtc: 2026-02-11T18:18:52Z
+ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21917492403, https://github.com/OJWatson/vpdsus/actions/runs/21917492397, https://github.com/OJWatson/vpdsus/actions/runs/21917492383
+updatedAtUtc: 2026-02-11T18:21:13Z
 ```
 
 Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
+
+Note: current git HEAD is a docs-only STATUS update commit; `headSha` above tracks the last non-doc change.
 
 ## Next steps (M7)
 
