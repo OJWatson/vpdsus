@@ -1,9 +1,9 @@
 ```pm-status
 milestone: M7
-state: running
-headSha: dd8ac8792362700bb53dc44d9db0ead94568e55c
-ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21923375234, https://github.com/OJWatson/vpdsus/actions/runs/21923375258, https://github.com/OJWatson/vpdsus/actions/runs/21923375264, https://github.com/OJWatson/vpdsus/actions/runs/21923431838
-updatedAtUtc: 2026-02-11T21:24:33Z
+state: waiting-for-ci
+headSha: 42ba738c9ebb710a5042f63bb0d465cc4dc3e99e
+ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21924111055, https://github.com/OJWatson/vpdsus/actions/runs/21924111045, https://github.com/OJWatson/vpdsus/actions/runs/21924111059
+updatedAtUtc: 2026-02-11T21:40:44Z
 ```
 
 Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
@@ -15,5 +15,5 @@ Note: current git HEAD is a docs-only STATUS update commit; `headSha` above trac
 - Local as-cran check: run `R CMD check --as-cran` with Suggests not forced; address any new NOTES/WARNINGS.
   - Remaining expected NOTES: `Remotes` field + non-CRAN Suggests; "unable to verify current time" can occur in sandboxed environments.
 - Verify pkgdown/site deploy is stable (builds into `site/`; `docs/` is reserved for markdown).
-- Review README for user-facing installation, minimum supported scope, and reproducibility path.
+- Expand vignettes to teach the workflow end-to-end (data access → susceptibility → ranking → modelling), including key columns/parameters.
 - Confirm optional dependencies and gating are clearly documented.
