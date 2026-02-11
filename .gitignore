@@ -3,8 +3,7 @@
 .Rdata
 .Ruserdata
 .DS_Store
-/docs/
-!/docs/
+/docs/**
 !/docs/ROADMAP.md
 !/docs/STATUS.md
 
