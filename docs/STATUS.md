@@ -12,7 +12,8 @@ Note: current git HEAD is a docs-only STATUS update commit; `headSha` above trac
 
 ## Next steps (M7)
 
-- Run a full local R CMD check (as-cran) with Suggests not forced; address any new NOTES/WARNINGS.
+- Local as-cran check: run `R CMD check --as-cran` with Suggests not forced; address any new NOTES/WARNINGS.
+  - Remaining expected NOTES: `Remotes` field + non-CRAN Suggests; "unable to verify current time" can occur in sandboxed environments.
 - Verify pkgdown/site deploy is stable (builds into `site/`; `docs/` is reserved for markdown).
 - Review README for user-facing installation, minimum supported scope, and reproducibility path.
 - Confirm optional dependencies and gating are clearly documented.
