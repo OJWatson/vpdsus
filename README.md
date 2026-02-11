@@ -95,6 +95,14 @@ targets::tar_read(susceptible_plot)
 - Data access helpers are cache-aware (local JSON caching for WHO GHO responses).
 - Vignettes are designed to run quickly using shipped example datasets.
 
+### Demography sources
+
+`get_demography()` supports:
+
+- `source = "example"` (default): uses shipped example data (no external dependencies)
+- `source = "fixture_wpp"`: uses a tiny shipped WPP-like fixture (deterministic; no external dependencies)
+- `source = "wpp"`: uses `{wpp2024}` if installed (optional)
+
 ### Non-CRAN Suggests
 
 This package has optional features that use packages not on CRAN (currently including
