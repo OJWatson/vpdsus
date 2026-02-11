@@ -82,6 +82,38 @@ out4 <- odin2_simulate(
 )
 
 out4
+
+# Optional: calibrate rho (reporting fraction) to a target susceptibility
+#
+# This is a minimal "inference hook" example. Here we create a target
+# susceptible count and solve for rho such that the case-balance recurrence
+# matches that target in a chosen year.
+
+target_year <- max(times)
+# For demonstration only: choose an arbitrary target susceptible count.
+# In practice this could come from a cohort method estimate.
+target_susceptible_n <- 1e6
+
+rho_hat <- calibrate_rho_case_balance(
+  panel,
+  iso3 = iso3,
+  years = times,
+  target_year = target_year,
+  target_susceptible_n = target_susceptible_n,
+  rho_interval = c(0.01, 1)
+)
+
+rho_hat
+
+out5 <- odin2_simulate(
+  mdl2,
+  times = times,
+  pars = list(rho = rho_hat),
+  initial = list(S = 0),
+  inputs = inputs
+)
+
+out5
 ```
 
 In a full implementation, you would map your panel data into model inputs.
