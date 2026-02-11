@@ -13,6 +13,8 @@ This repository is being aligned to the original PDF plan (“Blueprint for an R
 
 - Milestone definitions (v2, with explicit DoD): [`milestones_v2.md`](milestones_v2.md)
 - Current gap review vs PDF: [`spec_review_vs_pdf.md`](spec_review_vs_pdf.md)
+- Roadmap (canonical): [`docs/ROADMAP.md`](docs/ROADMAP.md)
+- Current status (canonical): [`docs/STATUS.md`](docs/STATUS.md)
 
 Current implementation status (high-level):
 
