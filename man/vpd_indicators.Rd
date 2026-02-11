@@ -10,5 +10,7 @@ vpd_indicators()
 tibble.
 }
 \description{
-Built-in mapping of common indicators
+\code{vpdsus} aims to provide conservative defaults that are known to work.
+Additional indicators can be discovered via \code{\link[=gho_find_indicator]{gho_find_indicator()}} and passed
+explicitly to \code{\link[=get_coverage]{get_coverage()}} / \code{\link[=get_cases]{get_cases()}}.
 }

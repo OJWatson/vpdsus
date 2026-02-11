@@ -33,8 +33,30 @@ Milestones in the PDF are M0–M7:
 ## Current repository: status vs spec
 
 ### M0 — Repository skeleton and professional scaffolding
-**Implemented:** yes (CI, lint, tests, pkgdown, vignettes).  
-**Notes:** CI is stable; odin2 is opt-in via `VPDSUS_BUILD_ODIN2_VIGNETTE=1` (good).
+**Implemented:** mostly.
+
+**Concrete gaps/corrections vs spec1.pdf:**
+
+- **Scope needs to be explicit.** The PDF expects a *minimum supported set* of antigens/diseases with clear defaults. The repo currently includes multiple placeholders/partially-verified indicator codes; this should be tightened so new users don’t accidentally rely on unverified defaults.
+- **Reproducibility story needs a clearer "happy path".** The PDF emphasises end-to-end reproduction; the repo has vignettes + `analysis/targets/`, but the README does not yet clearly explain the reproducibility workflow (what is downloaded live vs cached/fixture, how to re-run).
+- **Definition of Done (DoD) for M0 wasn’t explicitly stated.** Add a checklist that must be satisfied before advancing to M1.
+
+**M0 Definition of Done (DoD):**
+
+1) **Project scaffolding**
+   - CI (R-CMD-check + lint + pkgdown) green on `main`.
+   - `.Rbuildignore` / `.gitignore` exclude local tooling artefacts and hidden dirs (no accidental notes).
+
+2) **User-facing docs**
+   - README has: package purpose, *minimum supported scope* (antigens/diseases), installation, quick-start, and a reproducibility section.
+   - README explicitly documents optional/non-CRAN Suggests and the mechanistic gate (`VPDSUS_BUILD_ODIN2_VIGNETTE=1`).
+
+3) **Scope + defaults**
+   - `vpd_indicators()` defaults are either (a) verified, or (b) clearly flagged as unverified and not used implicitly.
+   - Any “discovery” helpers (e.g., `gho_find_indicator()`) are documented as the way to find indicator codes.
+
+4) **Spec alignment**
+   - `spec_review_vs_pdf.md` includes concrete corrections/gaps and points to the next milestone (M1) with acceptance criteria.
 
 ### M1 — Data access: WHO coverage and cases
 **Implemented:** mostly.

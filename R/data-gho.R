@@ -82,6 +82,10 @@ gho_get_indicator <- function(indicator_code) {
 
 #' Built-in mapping of common indicators
 #'
+#' `vpdsus` aims to provide conservative defaults that are known to work.
+#' Additional indicators can be discovered via [gho_find_indicator()] and passed
+#' explicitly to [get_coverage()] / [get_cases()].
+#'
 #' @return tibble.
 #' @export
 vpd_indicators <- function() {
@@ -89,20 +93,15 @@ vpd_indicators <- function() {
     key = c(
       "mcv1_coverage",
       "mcv2_coverage",
-      "measles_cases",
-      "dtp1_coverage",
-      "dtp3_coverage"
+      "measles_cases"
     ),
-    type = c("coverage", "coverage", "cases", "coverage", "coverage"),
-    antigen_or_disease = c("MCV1", "MCV2", "measles", "DTP1", "DTP3"),
+    type = c("coverage", "coverage", "cases"),
+    antigen_or_disease = c("MCV1", "MCV2", "measles"),
     indicator_code = c(
-      # WHO GHO indicator codes are discoverable and may change; users can override.
-      # Defaults here are verified via gho_find_indicator() (see M1 fixtures/tests).
+      # Verified via gho_find_indicator() and pinned fixtures/tests.
       "WHS8_110", # MCV1 coverage
-      "MCV2",     # MCV2 coverage (indicator search returns code 'MCV2')
-      "WHS3_62",  # measles cases
-      "DTP1",     # TODO(M1): verify
-      "WHS4_100"  # DTP3 coverage (indicator search includes WHS4_100)
+      "MCV2",     # MCV2 coverage
+      "WHS3_62"   # measles cases
     )
   )
 }

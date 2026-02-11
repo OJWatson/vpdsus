@@ -24,15 +24,17 @@ Current implementation status (high-level):
 
 ## Supported antigens / diseases (current scope)
 
-The package is currently wired for a small, explicit set of GHO series via `vpd_indicators()`:
+**Minimum verified defaults** (intended to work out-of-the-box via `vpd_indicators()`):
 
-- **Coverage (antigens):** `MCV1`, `MCV2`, `DTP1`, `DTP3`
+- **Coverage (antigens):** `MCV1`, `MCV2` *(measles-containing vaccine dose 1/2)*
 - **Cases (diseases):** `measles`
+
+Other antigens/diseases may work by supplying an explicit `indicator_code`.
 
 Notes:
 
 - WHO GHO indicator codes can be discovered with `gho_find_indicator()` and overridden in `get_coverage(..., indicator_code=)` / `get_cases(..., indicator_code=)`.
-- The built-in defaults are intended as a starting point and will be tightened/verified under milestone **M1**.
+- Defaults will remain conservative: if a mapping is not verified, it should not be used implicitly.
 
 ## Installation
 
