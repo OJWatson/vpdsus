@@ -10,8 +10,22 @@ test_that("gho_build_url constructs expected OData URL", {
   expect_match(url, "SpatialDim")
 })
 
-test_that("fixture parsing + standardisation works for coverage", {
+test_that("fixture parsing + standardisation works for coverage (MCV1)", {
   path <- system.file("extdata", "fixtures", "gho_WHS8_110_USA_2020.json", package = "vpdsus")
+  txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  raw <- gho_parse_json(txt)
+  std <- gho_standardise_coverage(raw)
+
+  expect_true(is.data.frame(std))
+  expect_true(all(c("iso3", "year", "coverage") %in% names(std)))
+  expect_true(nrow(std) >= 1)
+  expect_true(all(std$iso3 == "USA"))
+  expect_true(all(std$year == 2020L))
+  expect_true(all(std$coverage >= 0 & std$coverage <= 1))
+})
+
+test_that("fixture parsing + standardisation works for coverage (MCV2)", {
+  path <- system.file("extdata", "fixtures", "gho_MCV2_USA_2020.json", package = "vpdsus")
   txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
   raw <- gho_parse_json(txt)
   std <- gho_standardise_coverage(raw)
