@@ -7,3 +7,7 @@
 ^_pkgdown\.yml$
 ^docs$
 ^\.lintr$
+^\.openclaw$
+^site$
+^milestones_v2\.md$
+^spec_review_vs_pdf\.md$
