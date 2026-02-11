@@ -45,6 +45,22 @@ Notes:
 remotes::install_github("OJWatson/vpdsus")
 ```
 
+### Optional dependencies (non-CRAN)
+
+Some optional features rely on packages not on CRAN (e.g. the mechanistic odin2 stack).
+These are **not required** for the core workflow.
+
+If you want mechanistic functionality, install `odin2` and `dust2` from the mrc-ide r-universe:
+
+```r
+options(repos = c(
+  getOption("repos"),
+  "mrc-ide" = "https://mrc-ide.r-universe.dev"
+))
+
+install.packages(c("odin2", "dust2"))
+```
+
 ## Quick start (example data)
 
 ```r
