@@ -88,12 +88,27 @@ and <code><a href="../reference/get_coverage.html">get_coverage()</a></code>.</p
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> NGA   Nigeria     AFR         <span style="text-decoration: underline;">2</span>020     0.57  <span style="text-decoration: underline;">8</span>800 206<span style="text-decoration: underline;">100</span>000 35<span style="text-decoration: underline;">000</span>000 63<span style="text-decoration: underline;">000</span>000</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: births &lt;int&gt;</span></span></span></code></pre></div>
 <div class="section level3">
-<h3 id="live-indicator-discovery-optional">Live indicator discovery (optional)<a class="anchor" aria-label="anchor" href="#live-indicator-discovery-optional"></a>
+<h3 id="indicator-discovery-deterministic-example">Indicator discovery (deterministic example)<a class="anchor" aria-label="anchor" href="#indicator-discovery-deterministic-example"></a>
 </h3>
+<p>The WHO GHO API exposes an indicator catalogue. Use
+<code><a href="../reference/gho_find_indicator.html">gho_find_indicator()</a></code> to search for the code you need, then
+pass that code into <code><a href="../reference/get_coverage.html">get_coverage()</a></code> or
+<code><a href="../reference/get_cases.html">get_cases()</a></code>.</p>
+<p>This vignette uses a pinned fixture so it can run deterministically
+in CI:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Search the WHO GHO indicator metadata</span></span>
-<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gho_find_indicator.html">gho_find_indicator</a></span><span class="op">(</span><span class="st">"DTP3"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Search the WHO GHO indicator metadata (offline fixture for this vignette)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gho_find_indicator.html">gho_find_indicator</a></span><span class="op">(</span><span class="st">"measles"</span>, top_n <span class="op">=</span> <span class="fl">10</span>, offline <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;   indicator_code indicator_name                                                 </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> MCV2           Measles-containing-vaccine second-dose (MCV2) immunization cov…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> mslv           Measles immunization coverage among one-year-olds (%)          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> vmsl           Measles immunization coverage among one-year-olds (%)          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> WHS2_168       Distribution of causes of death among children aged &lt;5 years (…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> WHS3_62        Measles - number of reported cases                             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> WHS8_110       Measles-containing-vaccine first-dose (MCV1) immunization cove…</span></span></code></pre></div>
 </div>
   </main>
 </div>

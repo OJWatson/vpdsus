@@ -66,31 +66,14 @@
 <li>produce WHO-style risk ranking plots and modelling-ready outputs.</li>
 </ul>
 <div class="section level2">
-<h2 id="status-pdf-spec-milestones">Status (PDF spec milestones)<a class="anchor" aria-label="anchor" href="#status-pdf-spec-milestones"></a>
+<h2 id="what-it-does">What it does<a class="anchor" aria-label="anchor" href="#what-it-does"></a>
 </h2>
-<p>This repository is being aligned to the original PDF plan (“Blueprint for an R package to estimate VPD susceptibility and link it to outbreak risk”).</p>
+<p><code>vpdsus</code> helps you:</p>
 <ul>
-<li>Milestone definitions (v2, with explicit DoD): <a href="milestones_v2.html"><code>milestones_v2.md</code></a>
-</li>
-<li>Current gap review vs PDF: <a href="spec_review_vs_pdf.html"><code>spec_review_vs_pdf.md</code></a>
-</li>
-<li>Roadmap (canonical): <a href="docs/ROADMAP.html"><code>docs/ROADMAP.md</code></a>
-</li>
-<li>Current status (canonical): <a href="docs/STATUS.html"><code>docs/STATUS.md</code></a>
-</li>
-</ul>
-<p>Current implementation status (high-level):</p>
-<ul>
-<li>
-<strong>M0 (scaffolding + spec alignment):</strong> in progress (this README + milestone/spec docs).</li>
-<li>
-<strong>M1 (WHO coverage + cases access):</strong> implemented (GHO helpers), indicator mappings need verification/pinning.</li>
-<li>
-<strong>M2 (demography + panel building):</strong> partial (example demography + optional WPP adapter).</li>
-<li>
-<strong>M3 (susceptibility + WHO-style outputs):</strong> partial-to-good (methods A–D + ranking plots exist; “golden figure” reproduction pending).</li>
-<li>
-<strong>M4–M7 (modelling/mechanistic/inference/public reproducibility):</strong> present as scaffolding; not yet at PDF “end-to-end reproducible” bar.</li>
+<li>fetch WHO GHO immunisation <strong>coverage</strong> and reported <strong>cases</strong> time series,</li>
+<li>join them to demography into a country-year panel,</li>
+<li>estimate susceptibility using a small set of progressive methods, and</li>
+<li>produce WHO-style ranking plots and modelling-ready outputs.</li>
 </ul>
 </div>
 <div class="section level2">
