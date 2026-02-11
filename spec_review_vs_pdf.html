@@ -66,8 +66,38 @@
 <h2 id="current-repository-status-vs-spec">Current repository: status vs spec<a class="anchor" aria-label="anchor" href="#current-repository-status-vs-spec"></a></h2>
 <div class="section level3">
 <h3 id="m0--repository-skeleton-and-professional-scaffolding">M0 — Repository skeleton and professional scaffolding<a class="anchor" aria-label="anchor" href="#m0--repository-skeleton-and-professional-scaffolding"></a></h3>
-<p><strong>Implemented:</strong> yes (CI, lint, tests, pkgdown, vignettes).<br><strong>Notes:</strong> CI is stable; odin2 is opt-in via <code>VPDSUS_BUILD_ODIN2_VIGNETTE=1</code> (good).</p>
-</div>
+<p><strong>Implemented:</strong> mostly.</p>
+<p><strong>Concrete gaps/corrections vs spec1.pdf:</strong></p>
+<ul><li>
+<strong>Scope needs to be explicit.</strong> The PDF expects a <em>minimum supported set</em> of antigens/diseases with clear defaults. The repo currently includes multiple placeholders/partially-verified indicator codes; this should be tightened so new users don’t accidentally rely on unverified defaults.</li>
+<li>
+<strong>Reproducibility story needs a clearer “happy path”.</strong> The PDF emphasises end-to-end reproduction; the repo has vignettes + <code>analysis/targets/</code>, but the README does not yet clearly explain the reproducibility workflow (what is downloaded live vs cached/fixture, how to re-run).</li>
+<li>
+<strong>Definition of Done (DoD) for M0 wasn’t explicitly stated.</strong> Add a checklist that must be satisfied before advancing to M1.</li>
+</ul><p><strong>M0 Definition of Done (DoD):</strong></p>
+<ol style="list-style-type: decimal"><li>
+<strong>Project scaffolding</strong>
+<ul><li>CI (R-CMD-check + lint + pkgdown) green on <code>main</code>.</li>
+<li>
+<code>.Rbuildignore</code> / <code>.gitignore</code> exclude local tooling artefacts and hidden dirs (no accidental notes).</li>
+</ul></li>
+<li>
+<strong>User-facing docs</strong>
+<ul><li>README has: package purpose, <em>minimum supported scope</em> (antigens/diseases), installation, quick-start, and a reproducibility section.</li>
+<li>README explicitly documents optional/non-CRAN Suggests and the mechanistic gate (<code>VPDSUS_BUILD_ODIN2_VIGNETTE=1</code>).</li>
+</ul></li>
+<li>
+<strong>Scope + defaults</strong>
+<ul><li>
+<code><a href="reference/vpd_indicators.html">vpd_indicators()</a></code> defaults are either (a) verified, or (b) clearly flagged as unverified and not used implicitly.</li>
+<li>Any “discovery” helpers (e.g., <code><a href="reference/gho_find_indicator.html">gho_find_indicator()</a></code>) are documented as the way to find indicator codes.</li>
+</ul></li>
+<li>
+<strong>Spec alignment</strong>
+<ul><li>
+<code>spec_review_vs_pdf.md</code> includes concrete corrections/gaps and points to the next milestone (M1) with acceptance criteria.</li>
+</ul></li>
+</ol></div>
 <div class="section level3">
 <h3 id="m1--data-access-who-coverage-and-cases">M1 — Data access: WHO coverage and cases<a class="anchor" aria-label="anchor" href="#m1--data-access-who-coverage-and-cases"></a></h3>
 <p><strong>Implemented:</strong> mostly. - <code><a href="reference/gho_get.html">gho_get()</a></code>, <code><a href="reference/gho_find_indicator.html">gho_find_indicator()</a></code>, <code><a href="reference/get_coverage.html">get_coverage()</a></code>, <code><a href="reference/get_cases.html">get_cases()</a></code> exist.</p>

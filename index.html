@@ -92,19 +92,20 @@
 <div class="section level2">
 <h2 id="supported-antigens--diseases-current-scope">Supported antigens / diseases (current scope)<a class="anchor" aria-label="anchor" href="#supported-antigens--diseases-current-scope"></a>
 </h2>
-<p>The package is currently wired for a small, explicit set of GHO series via <code><a href="reference/vpd_indicators.html">vpd_indicators()</a></code>:</p>
+<p><strong>Minimum verified defaults</strong> (intended to work out-of-the-box via <code><a href="reference/vpd_indicators.html">vpd_indicators()</a></code>):</p>
 <ul>
 <li>
-<strong>Coverage (antigens):</strong> <code>MCV1</code>, <code>MCV2</code>, <code>DTP1</code>, <code>DTP3</code>
+<strong>Coverage (antigens):</strong> <code>MCV1</code>, <code>MCV2</code> <em>(measles-containing vaccine dose 1/2)</em>
 </li>
 <li>
 <strong>Cases (diseases):</strong> <code>measles</code>
 </li>
 </ul>
+<p>Other antigens/diseases may work by supplying an explicit <code>indicator_code</code>.</p>
 <p>Notes:</p>
 <ul>
 <li>WHO GHO indicator codes can be discovered with <code><a href="reference/gho_find_indicator.html">gho_find_indicator()</a></code> and overridden in <code>get_coverage(..., indicator_code=)</code> / <code>get_cases(..., indicator_code=)</code>.</li>
-<li>The built-in defaults are intended as a starting point and will be tightened/verified under milestone <strong>M1</strong>.</li>
+<li>Defaults will remain conservative: if a mapping is not verified, it should not be used implicitly.</li>
 </ul>
 </div>
 <div class="section level2">
