@@ -58,7 +58,55 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="vpdsus">vpdsus<a class="anchor" aria-label="anchor" href="#vpdsus"></a>
 </h1></div>
-<p><code>vpdsus</code> is an R package to retrieve WHO Global Health Observatory (GHO) immunisation coverage and reported cases, combine them with demography, estimate vaccine-preventable disease susceptibility via progressive methods (A–E), and produce WHO-style risk ranking plots and modelling outputs.</p>
+<p><code>vpdsus</code> is an R package to:</p>
+<ul>
+<li>retrieve WHO Global Health Observatory (GHO) immunisation <strong>coverage</strong> and reported <strong>cases</strong>,</li>
+<li>combine them with demography,</li>
+<li>estimate vaccine-preventable disease (VPD) susceptibility via progressive methods (A–D), and</li>
+<li>produce WHO-style risk ranking plots and modelling-ready outputs.</li>
+</ul>
+<div class="section level2">
+<h2 id="status-pdf-spec-milestones">Status (PDF spec milestones)<a class="anchor" aria-label="anchor" href="#status-pdf-spec-milestones"></a>
+</h2>
+<p>This repository is being aligned to the original PDF plan (“Blueprint for an R package to estimate VPD susceptibility and link it to outbreak risk”).</p>
+<ul>
+<li>Milestone definitions (v2, with explicit DoD): <a href="milestones_v2.html"><code>milestones_v2.md</code></a>
+</li>
+<li>Current gap review vs PDF: <a href="spec_review_vs_pdf.html"><code>spec_review_vs_pdf.md</code></a>
+</li>
+</ul>
+<p>Current implementation status (high-level):</p>
+<ul>
+<li>
+<strong>M0 (scaffolding + spec alignment):</strong> in progress (this README + milestone/spec docs).</li>
+<li>
+<strong>M1 (WHO coverage + cases access):</strong> implemented (GHO helpers), indicator mappings need verification/pinning.</li>
+<li>
+<strong>M2 (demography + panel building):</strong> partial (example demography + optional WPP adapter).</li>
+<li>
+<strong>M3 (susceptibility + WHO-style outputs):</strong> partial-to-good (methods A–D + ranking plots exist; “golden figure” reproduction pending).</li>
+<li>
+<strong>M4–M7 (modelling/mechanistic/inference/public reproducibility):</strong> present as scaffolding; not yet at PDF “end-to-end reproducible” bar.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="supported-antigens--diseases-current-scope">Supported antigens / diseases (current scope)<a class="anchor" aria-label="anchor" href="#supported-antigens--diseases-current-scope"></a>
+</h2>
+<p>The package is currently wired for a small, explicit set of GHO series via <code><a href="reference/vpd_indicators.html">vpd_indicators()</a></code>:</p>
+<ul>
+<li>
+<strong>Coverage (antigens):</strong> <code>MCV1</code>, <code>MCV2</code>, <code>DTP1</code>, <code>DTP3</code>
+</li>
+<li>
+<strong>Cases (diseases):</strong> <code>measles</code>
+</li>
+</ul>
+<p>Notes:</p>
+<ul>
+<li>WHO GHO indicator codes can be discovered with <code><a href="reference/gho_find_indicator.html">gho_find_indicator()</a></code> and overridden in <code>get_coverage(..., indicator_code=)</code> / <code>get_cases(..., indicator_code=)</code>.</li>
+<li>The built-in defaults are intended as a starting point and will be tightened/verified under milestone <strong>M1</strong>.</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -77,19 +125,29 @@
 <span><span class="va">sA</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/estimate_susceptible_static.html">estimate_susceptible_static</a></span><span class="op">(</span><span class="va">panel</span>, coverage_col <span class="op">=</span> <span class="st">"coverage"</span>, pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span><span class="op">)</span></span>
 <span><span class="va">rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/risk_rank.html">risk_rank</a></span><span class="op">(</span>panel <span class="op">=</span> <span class="va">panel</span>, suscept <span class="op">=</span> <span class="va">sA</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_coverage_rank.html">plot_coverage_rank</a></span><span class="op">(</span><span class="va">rank</span><span class="op">)</span></span>
-<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">rank</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">p1</span></span>
-<span><span class="va">p2</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/plot_coverage_rank.html">plot_coverage_rank</a></span><span class="op">(</span><span class="va">rank</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">rank</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="reproducibility">Reproducibility<a class="anchor" aria-label="anchor" href="#reproducibility"></a>
+<h2 id="reproduce-targets-pipeline">Reproduce (targets pipeline)<a class="anchor" aria-label="anchor" href="#reproduce-targets-pipeline"></a>
+</h2>
+<p>A small <code>targets</code> pipeline scaffold lives in <a href="analysis/targets/_targets.R"><code>analysis/targets/_targets.R</code></a> and runs on shipped example data.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("targets")</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">"analysis/targets"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">targets</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_make.html" class="external-link">tar_make</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Inspect outputs</span></span>
+<span><span class="fu">targets</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_read.html" class="external-link">tar_read</a></span><span class="op">(</span><span class="va">coverage_plot</span><span class="op">)</span></span>
+<span><span class="fu">targets</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/targets/reference/tar_read.html" class="external-link">tar_read</a></span><span class="op">(</span><span class="va">susceptible_plot</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="reproducibility--optional-features">Reproducibility + optional features<a class="anchor" aria-label="anchor" href="#reproducibility--optional-features"></a>
 </h2>
 <ul>
-<li>Data access functions are cache-aware and record provenance.</li>
+<li>Data access helpers are cache-aware (local JSON caching for WHO GHO responses).</li>
 <li>Vignettes are designed to run quickly using shipped example datasets.</li>
-<li>A full end-to-end pipeline scaffold is provided under <code>analysis/targets/</code>.</li>
 </ul>
 <div class="section level3">
 <h3 id="non-cran-suggests">Non-CRAN Suggests<a class="anchor" aria-label="anchor" href="#non-cran-suggests"></a>
