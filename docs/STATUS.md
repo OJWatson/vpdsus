@@ -1,9 +1,9 @@
 ```pm-status
 milestone: M7
-state: running
-headSha: 74adb359597c49efd63165c10c453c90028649a6
-ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21916214031
-updatedAtUtc: 2026-02-11T17:45:13Z
+state: waiting-for-ci
+headSha: 88a335861d6d5de453038e82fc265e0d60859419
+ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21916538155, https://github.com/OJWatson/vpdsus/actions/runs/21916538194
+updatedAtUtc: 2026-02-11T17:55:18Z
 ```
 
 ## Next steps (M7)
