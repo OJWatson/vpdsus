@@ -4,6 +4,9 @@
 .Ruserdata
 .DS_Store
 /docs/
+!/docs/
+!/docs/ROADMAP.md
+!/docs/STATUS.md
 
 # R CMD check artefacts
 ..Rcheck/
