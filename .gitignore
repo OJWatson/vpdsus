@@ -14,3 +14,7 @@
 /site/
 /doc/
 /Meta/
+
+# Vignette build artefacts
+/vignettes/*.html
+/vignettes/*.R
