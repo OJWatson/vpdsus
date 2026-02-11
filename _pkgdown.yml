@@ -13,6 +13,7 @@ reference:
   - get_coverage
   - get_cases
   - get_demography
+  - vpdsus_cache_info
 - title: Panel and susceptibility
   contents:
   - build_panel
