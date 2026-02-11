@@ -69,9 +69,23 @@
     
     
 <p>This vignette demonstrates the data access layer.</p>
-<p>For reproducibility and fast vignette builds, we use a shipped
-example panel. For live downloads, see <code><a href="../reference/gho_find_indicator.html">gho_find_indicator()</a></code>
-and <code><a href="../reference/get_coverage.html">get_coverage()</a></code>.</p>
+<p>For reproducibility and fast vignette builds, we use shipped example
+data and pinned fixtures.</p>
+<p>The core public helpers are:</p>
+<ul>
+<li>
+<code><a href="../reference/gho_find_indicator.html">gho_find_indicator()</a></code>: search the WHO GHO indicator
+catalogue</li>
+<li>
+<code><a href="../reference/get_coverage.html">get_coverage()</a></code>: download and standardise a coverage
+series (returns <code>iso3</code>, <code>year</code>,
+<code>coverage</code>)</li>
+<li>
+<code><a href="../reference/get_cases.html">get_cases()</a></code>: download and standardise a cases series
+(returns <code>iso3</code>, <code>year</code>, <code>cases</code>)</li>
+</ul>
+<p>The returned <code>iso3</code> values are standardised to ISO3 codes
+and <code>year</code> is an integer year.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/vpdsus/">vpdsus</a></span><span class="op">)</span></span>
 <span></span>
@@ -88,6 +102,18 @@ and <code><a href="../reference/get_coverage.html">get_coverage()</a></code>.</p
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> NGA   Nigeria     AFR         <span style="text-decoration: underline;">2</span>020     0.57  <span style="text-decoration: underline;">8</span>800 206<span style="text-decoration: underline;">100</span>000 35<span style="text-decoration: underline;">000</span>000 63<span style="text-decoration: underline;">000</span>000</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: births &lt;int&gt;</span></span></span></code></pre></div>
 <div class="section level3">
+<h3 id="caching">Caching<a class="anchor" aria-label="anchor" href="#caching"></a>
+</h3>
+<p>Live downloads are cached as JSON under the user cache directory. You
+can inspect the cache location and size:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/vpdsus_cache_info.html">vpdsus_cache_info</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
+<span><span class="co">#&gt;   cache_dir                    n_files bytes</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> /home/runner/.cache/R/vpdsus       0     0</span></span></code></pre></div>
+</div>
+<div class="section level3">
 <h3 id="indicator-discovery-deterministic-example">Indicator discovery (deterministic example)<a class="anchor" aria-label="anchor" href="#indicator-discovery-deterministic-example"></a>
 </h3>
 <p>The WHO GHO API exposes an indicator catalogue. Use
@@ -96,7 +122,7 @@ pass that code into <code><a href="../reference/get_coverage.html">get_coverage(
 <code><a href="../reference/get_cases.html">get_cases()</a></code>.</p>
 <p>This vignette uses a pinned fixture so it can run deterministically
 in CI:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Search the WHO GHO indicator metadata (offline fixture for this vignette)</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gho_find_indicator.html">gho_find_indicator</a></span><span class="op">(</span><span class="st">"measles"</span>, top_n <span class="op">=</span> <span class="fl">10</span>, offline <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
@@ -108,9 +134,68 @@ in CI:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> vmsl           Measles immunization coverage among one-year-olds (%)          </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> WHS2_168       Distribution of causes of death among children aged &lt;5 years (…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> WHS3_62        Measles - number of reported cases                             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> WHS8_110       Measles-containing-vaccine first-dose (MCV1) immunization cove…</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> WHS8_110       Measles-containing-vaccine first-dose (MCV1) immunization cove…</span></span>
+<span></span>
+<span><span class="co"># Two useful measles-related indicators in this list are:</span></span>
+<span><span class="co"># - WHS8_110: MCV1 coverage</span></span>
+<span><span class="co"># - WHS3_62: reported measles cases</span></span></code></pre></div>
 </div>
-  </main>
+<div class="section level3">
+<h3 id="coverage-cases-fixture-based-examples">Coverage + cases (fixture-based examples)<a class="anchor" aria-label="anchor" href="#coverage-cases-fixture-based-examples"></a>
+</h3>
+<p>To keep this vignette deterministic, we use pinned single-country
+fixtures for:</p>
+<ul>
+<li>MCV1 coverage (USA, 2020) via indicator code
+<code>WHS8_110</code>
+</li>
+<li>measles cases (USA, 2020) via indicator code
+<code>WHS3_62</code>
+</li>
+</ul>
+<p>The corresponding live calls would be:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_coverage.html">get_coverage</a></span><span class="op">(</span><span class="st">"MCV1"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_cases.html">get_cases</a></span><span class="op">(</span><span class="st">"measles"</span><span class="op">)</span></span></code></pre></div>
+<p>Here we read the pinned raw JSON and standardise it to the package
+output columns.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Coverage fixture</span></span>
+<span><span class="va">p_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"fixtures"</span>, <span class="st">"gho_WHS8_110_USA_2020.json"</span>, package <span class="op">=</span> <span class="st">"vpdsus"</span><span class="op">)</span></span>
+<span><span class="va">txt_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">p_cov</span>, warn <span class="op">=</span> <span class="cn">FALSE</span>, encoding <span class="op">=</span> <span class="st">"UTF-8"</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="va">raw_cov</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="va">txt_cov</span><span class="op">)</span><span class="op">$</span><span class="va">value</span></span>
+<span><span class="va">cov</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">raw_cov</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
+<span>    iso3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html" class="external-link">toupper</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">SpatialDim</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">TimeDim</span><span class="op">)</span>,</span>
+<span>    coverage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">Value</span><span class="op">)</span> <span class="op">/</span> <span class="fl">100</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">cov</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
+<span><span class="co">#&gt;   iso3   year coverage</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> USA    <span style="text-decoration: underline;">2</span>020     0.91</span></span>
+<span></span>
+<span><span class="co"># Cases fixture</span></span>
+<span><span class="va">p_cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"fixtures"</span>, <span class="st">"gho_WHS3_62_USA_2020.json"</span>, package <span class="op">=</span> <span class="st">"vpdsus"</span><span class="op">)</span></span>
+<span><span class="va">txt_cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">p_cases</span>, warn <span class="op">=</span> <span class="cn">FALSE</span>, encoding <span class="op">=</span> <span class="st">"UTF-8"</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="va">raw_cases</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="va">txt_cases</span><span class="op">)</span><span class="op">$</span><span class="va">value</span></span>
+<span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">raw_cases</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
+<span>    iso3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html" class="external-link">toupper</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">SpatialDim</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">TimeDim</span><span class="op">)</span>,</span>
+<span>    cases <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">Value</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">cases</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
+<span><span class="co">#&gt;   iso3   year cases</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> USA    <span style="text-decoration: underline;">2</span>020  <span style="text-decoration: underline;">1</span>275</span></span></code></pre></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
