@@ -15,4 +15,5 @@ Guidelines:
 - 2026-02-12: Dropped `Remotes` from DESCRIPTION (keep `Additional_repositories`) and updated README notes; local `R CMD check --as-cran --no-manual` now avoids the `Remotes` NOTE.
 - 2026-02-12: Fixed CI dependency resolution for optional `{odin2}`/`{dust2}` by adding `extra-repositories: https://mrc-ide.r-universe.dev` to GitHub Actions workflows (R-CMD-check/pkgdown/lint).
 - 2026-02-12: Removed unsupported `extra-repositories` input from `r-lib/actions/setup-r-dependencies@v2` in CI workflows (it was breaking all matrix jobs with "Unexpected input(s) 'extra-repositories'").
-- 2026-02-12: Fixed CI failure where `setup-r-dependencies@v2` expects the `dependencies` input as an R expression (e.g. `dependencies: '"hard"'` / `dependencies: '"all"'`); unquoted `hard`/`all` makes the action error before running checks.
+- 2026-02-12: Fixed CI failure (https://github.com/OJWatson/vpdsus/actions/runs/21942187968) where `setup-r-dependencies@v2` was given `dependencies: '"hard"'` / `dependencies: '"all"'`; restored the intended values `dependencies: hard` and `dependencies: all`.
+- 2026-02-12: Updated docs/STATUS.md to track CI run https://github.com/OJWatson/vpdsus/actions/runs/21942468631 after pushing workflow quoting fix.
