@@ -25,3 +25,4 @@ Guidelines:
 - 2026-02-12: Fixed R-CMD-check workflow to install only "hard" deps (avoid non-CRAN Suggests like `{odin2}`/`{dust2}` on macOS/Windows); will re-run CI to confirm green.
 - 2026-02-12: Added `workflow_dispatch` to the R-CMD-check workflow to allow manual reruns; pushed `af0ef85`.
 - 2026-02-12: Fixed R-CMD-check CI failure on macOS by removing an invalid `needs: '"hard"'` input from `setup-r-dependencies@v2`; pushed `b5142fa`.
+- 2026-02-12: Updated docs/STATUS.md timestamp + clarified next step: wait for CI outcomes on b5142fa (runs #142/#143 + lint/pkgdown) before flipping M7 to done/tagging.
