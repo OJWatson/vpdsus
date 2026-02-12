@@ -1,34 +1,14 @@
 # vpdsus
 
-`vpdsus` is an R package to:
+`vpdsus` is an R package for building simple, reproducible country–year panels for
+vaccine-preventable disease (VPD) surveillance and risk ranking.
 
-- retrieve WHO Global Health Observatory (GHO) immunisation **coverage** and reported **cases**,
-- combine them with demography,
-- estimate vaccine-preventable disease (VPD) susceptibility via progressive methods (A–D), and
-- produce WHO-style risk ranking plots and modelling-ready outputs.
+It supports:
 
-## What it does
-
-`vpdsus` helps you:
-
-- fetch WHO GHO immunisation **coverage** and reported **cases** time series,
-- join them to demography into a country-year panel,
-- estimate susceptibility using a small set of progressive methods, and
-- produce WHO-style ranking plots and modelling-ready outputs.
-
-## Supported antigens / diseases (current scope)
-
-**Minimum verified defaults** (intended to work out-of-the-box via `vpd_indicators()`):
-
-- **Coverage (antigens):** `MCV1`, `MCV2` *(measles-containing vaccine dose 1/2)*
-- **Cases (diseases):** `measles`
-
-Other antigens/diseases may work by supplying an explicit `indicator_code`.
-
-Notes:
-
-- WHO GHO indicator codes can be discovered with `gho_find_indicator()` and overridden in `get_coverage(..., indicator_code=)` / `get_cases(..., indicator_code=)`.
-- Defaults will remain conservative: if a mapping is not verified, it should not be used implicitly.
+- WHO Global Health Observatory (GHO) data access for immunisation **coverage** and reported **cases**
+- panel construction (coverage + cases + demography)
+- susceptibility estimation (progressive methods)
+- WHO-style ranking plots and modelling-ready outputs
 
 ## Installation
 
@@ -37,72 +17,69 @@ Notes:
 remotes::install_github("OJWatson/vpdsus")
 ```
 
-### Optional dependencies (non-CRAN)
+### Optional (mechanistic modelling)
 
-Some optional features rely on packages not on CRAN (e.g. the mechanistic odin2 stack).
-These are **not required** for the core workflow.
-
-If you want mechanistic functionality, install `odin2` and `dust2` from the mrc-ide r-universe:
+Mechanistic examples use `{odin2}` + `{dust2}` (not on CRAN). These are **optional**.
 
 ```r
 options(repos = c(
   getOption("repos"),
   "mrc-ide" = "https://mrc-ide.r-universe.dev"
 ))
-
 install.packages(c("odin2", "dust2"))
 ```
 
-## Quick start (example data)
+## Quick start (shipped example data)
 
 ```r
 library(vpdsus)
 
 panel <- vpdsus_example_panel()
 
-sA <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
-rank <- risk_rank(panel = panel, suscept = sA)
+# Method A: static susceptibility estimate
+suscept <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
 
-plot_coverage_rank(rank)
-plot_susceptible_rank(rank)
+# Risk ranking + plots
+rank <- risk_rank(panel, suscept, window_years = 3, year_end = 2020)
+plot_coverage_rank(rank, top_n = 10)
+plot_susceptible_rank(rank, top_n = 10)
 ```
 
-## Reproduce (targets pipeline)
+## What the main columns mean
 
-A small `targets` pipeline scaffold lives in [`analysis/targets/_targets.R`](analysis/targets/_targets.R) and runs on shipped example data.
+In the standard panel used throughout the package:
+
+- `coverage`: vaccination coverage as a proportion in `[0, 1]`
+- `cases`: reported cases (integer, may be missing)
+- `year`: calendar year
+- `iso3`: country ISO3 code
+- population columns are named `pop_*` (e.g. `pop_0_4`, `pop_total`)
+
+## Tutorials (vignettes)
+
+- `vignette("data_access", package = "vpdsus")`: indicator discovery + coverage/cases access
+- `vignette("susceptibility_simple", package = "vpdsus")`: susceptibility + ranking parameters (`window_years`, `year_end`) + risk categories
+- `vignette("outbreak_models", package = "vpdsus")`: modelling panel + baseline model fit + evaluation
+
+## Indicator defaults (current verified scope)
+
+Verified defaults via `vpd_indicators()`:
+
+- Coverage: `MCV1`, `MCV2`
+- Cases: `measles`
+
+You can discover WHO indicator codes with `gho_find_indicator()` and override them in
+`get_coverage(..., indicator_code = )` and `get_cases(..., indicator_code = )`.
+
+## Reproduce (targets pipeline scaffold)
+
+A small `{targets}` scaffold lives in `analysis/targets/_targets.R`.
 
 ```r
 # install.packages("targets")
 setwd("analysis/targets")
-
 targets::tar_make()
-
-# Inspect outputs
-targets::tar_read(coverage_plot)
-targets::tar_read(susceptible_plot)
 ```
-
-## Reproducibility + optional features
-
-- Data access helpers are cache-aware (local JSON caching for WHO GHO responses).
-- Vignettes are designed to run quickly using shipped example datasets.
-
-### Demography sources
-
-`get_demography()` supports:
-
-- `source = "example"` (default): uses shipped example data (no external dependencies)
-- `source = "fixture_wpp"`: uses a tiny shipped WPP-like fixture (deterministic; no external dependencies)
-- `source = "wpp"`: uses `{wpp2024}` if installed (optional)
-
-### Non-CRAN Suggests
-
-This package has optional features that use packages not on CRAN (currently including
-`odin2`, `dust2`, and `wpp2024`). CI is configured to keep checks green without forcing
-installation of Suggests (i.e. `_R_CHECK_FORCE_SUGGESTS_=false`).
-
-Mechanistic functionality (odin2/dust2) is additionally guarded behind
-`VPDSUS_BUILD_ODIN2_VIGNETTE=1`.
 
 ## License
 
