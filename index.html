@@ -156,6 +156,8 @@
 <p>Notes:</p>
 <ul>
 <li>Optional dependencies in <code>Suggests</code> (e.g. <a href="https://mrc-ide.github.io/odin2" class="external-link">odin2</a> / <a href="https://github.com/mrc-ide/dust2" class="external-link">dust2</a>) remain <strong>opt-in</strong>. The mechanistic vignette and its integration test only run when <code>VPDSUS_BUILD_ODIN2_VIGNETTE=1</code> is set.</li>
+<li>
+<code>R CMD check --as-cran</code> may emit a NOTE about the <code>Remotes</code> field. This is expected here because <a href="https://mrc-ide.github.io/odin2" class="external-link">odin2</a> / <a href="https://github.com/mrc-ide/dust2" class="external-link">dust2</a> are <strong>not on CRAN</strong> but are supported as optional extras (installable via r-universe, see above).</li>
 <li>In some environments you may see benign NOTES such as “unable to verify current time”.</li>
 </ul>
 </div>
