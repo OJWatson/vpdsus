@@ -100,3 +100,35 @@ cases <- tibble::as_tibble(raw_cases) |>
 
 cases
 ```
+
+### Where to go next (end-to-end workflow)
+
+The functions above focus on data retrieval and standardisation. A typical end-to-end
+analysis then:
+
+1. builds a modelling-ready panel (coverage + cases + demography),
+2. estimates susceptibility, and
+3. produces a WHO-style risk ranking (and optionally fits outbreak models).
+
+This repository ships `vpdsus_example_panel()` so the workflow can be demonstrated
+deterministically without live downloads:
+
+```{r}
+panel <- vpdsus_example_panel()
+
+# 1) Susceptibility estimation (simple static method)
+sus <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
+
+# 2) Risk ranking (summarise recent coverage and take susceptibility at a year)
+r <- risk_rank(panel, sus, window_years = 3, year_end = 2020)
+
+# 3) Inspect / plot
+head(r)
+plot_coverage_rank(r, top_n = 5)
+plot_susceptible_rank(r, top_n = 5)
+```
+
+See the other vignettes for method choices and modelling:
+
+- *Susceptibility estimates and WHO-style ranking plots*
+- *Outbreak models*
