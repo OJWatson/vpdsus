@@ -11,6 +11,26 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
+This vignette shows how to:
+
+- estimate susceptibility from a panel (methods A and B), and
+- produce WHO-style ranking plots with [risk_rank()], [plot_coverage_rank()], and
+  [plot_susceptible_rank()].
+
+Key columns in the example panel:
+
+- `coverage`: vaccination coverage as a proportion in [0, 1]
+- `pop_0_4`: population aged 0–4 (used as a simple denominator in the static method)
+- `births`: births (used by the cohort reconstruction)
+
+Key ranking parameters:
+
+- `window_years`: the number of years used to compute a mean coverage (`coverage_mean`)
+- `year_end`: the year at which susceptibility is taken for ranking
+
+Risk categories are derived from `coverage_mean` cutpoints (see `breaks` argument
+in [risk_rank()]).
+
 ```{r}
 library(vpdsus)
 
