@@ -1,9 +1,9 @@
 ```pm-status
 milestone: M7
 state: running
-headSha: f4f743d2d41c8db97c1ae09ed03c21c380fc89bb
-ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21936959652, https://github.com/OJWatson/vpdsus/actions/runs/21936959658, https://github.com/OJWatson/vpdsus/actions/runs/21936959654
-updatedAtUtc: 2026-02-12T08:44:13Z
+headSha: 8b7bf56af1bdbcd9a317b0f2114a924e5a4a026c
+ciRunUrl: (pending)
+updatedAtUtc: 2026-02-12T09:13:06Z
 ```
 
 Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
@@ -12,10 +12,11 @@ Note: current git HEAD may include docs-only commits; `headSha` above tracks the
 
 ## Next steps (M7)
 
-- (Done) Local as-cran check: ran `R CMD check --as-cran` with Suggests not forced.
-  - Remaining expected NOTES: `Remotes` field + non-CRAN Suggests; "unable to verify current time" can occur in sandboxed environments.
+- (Done) Local as-cran check: ran `R CMD check --as-cran --no-manual` with Suggests not forced.
+  - Remaining expected NOTES: non-CRAN Suggests (resolved via `Additional_repositories`) + "unable to verify current time" can occur in sandboxed environments.
 - (Done) Verify pkgdown/site deploy is stable (builds into `site/`; `docs/` is reserved for markdown).
   - Verified locally via `pkgdown::build_site(override = list(destination = "site"), preview = FALSE)`.
 - (Done) Expand vignettes to teach the workflow end-to-end (data access → susceptibility → ranking → modelling), including key columns/parameters.
   - Added a short end-to-end modelling example linking the susceptibility estimate into `make_modelling_panel()` / `fit_outbreak_models()` and showing how to inspect predicted probabilities.
-- Next step: monitor CI for the current release head, then decide whether to keep the `Remotes` field long-term (it triggers an `--as-cran` NOTE) or replace it with a CRAN-friendlier approach (e.g. rely on `Additional_repositories` + README instructions only).
+- (Done) Removed the `Remotes` field from DESCRIPTION and relied on `Additional_repositories` + README guidance for optional r-universe extras.
+- Next step: monitor CI for the current release head (update `ciRunUrl` once it starts) and confirm R-CMD-check is green.
