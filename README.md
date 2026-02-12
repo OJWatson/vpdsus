@@ -99,6 +99,9 @@ Notes:
 - Optional dependencies in `Suggests` (e.g. `{odin2}` / `{dust2}`) remain **opt-in**.
   The mechanistic vignette and its integration test only run when
   `VPDSUS_BUILD_ODIN2_VIGNETTE=1` is set.
+- `R CMD check --as-cran` may emit a NOTE about the `Remotes` field. This is expected
+  here because `{odin2}` / `{dust2}` are **not on CRAN** but are supported as optional
+  extras (installable via r-universe, see above).
 - In some environments you may see benign NOTES such as "unable to verify current time".
 
 ## Reproduce (targets pipeline scaffold)
