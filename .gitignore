@@ -4,6 +4,7 @@
 .Ruserdata
 .DS_Store
 /docs/**
+!/docs/WORKLOG.md
 !/docs/ROADMAP.md
 !/docs/STATUS.md
 
