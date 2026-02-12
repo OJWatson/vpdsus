@@ -26,3 +26,4 @@ Guidelines:
 - 2026-02-12: Added `workflow_dispatch` to the R-CMD-check workflow to allow manual reruns; pushed `af0ef85`.
 - 2026-02-12: Fixed R-CMD-check CI failure on macOS by removing an invalid `needs: '"hard"'` input from `setup-r-dependencies@v2`; pushed `b5142fa`.
 - 2026-02-12: Updated docs/STATUS.md timestamp + clarified next step: wait for CI outcomes on b5142fa (runs #142/#143 + lint/pkgdown) before flipping M7 to done/tagging.
+- 2026-02-12: Fixed CI failures: pkgdown now installs pandoc via apt (avoid setup-pandoc download 500s) and workflows configure CRAN + mrc-ide r-universe via .Rprofile (written in Rscript for Windows) so pak can resolve optional odin2/dust2 during dependency discovery. (Green run: https://github.com/OJWatson/vpdsus/actions/runs/21946714629)
