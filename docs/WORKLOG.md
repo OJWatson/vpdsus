@@ -23,3 +23,4 @@ Guidelines:
 - 2026-02-12: Fixed CI failure (https://github.com/OJWatson/vpdsus/actions/runs/21943256516) where `setup-r-dependencies@v2` rejects the `extra-repositories` input; removed `extra-repositories` from workflows and pushed `7caeee4` (tracking run https://github.com/OJWatson/vpdsus/actions/runs/21943592138).
 - 2026-02-12: Updated `docs/STATUS.md` to reflect the current release-head CI run (`7caeee4`) and the next action (confirm green → mark M7 done/tag release); ran `devtools::test()` locally (PASS).
 - 2026-02-12: Fixed R-CMD-check workflow to install only "hard" deps (avoid non-CRAN Suggests like `{odin2}`/`{dust2}` on macOS/Windows); will re-run CI to confirm green.
+- 2026-02-12: Added `workflow_dispatch` to the R-CMD-check workflow to allow manual reruns; pushed `af0ef85`.

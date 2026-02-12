@@ -1,9 +1,9 @@
 ```pm-status
 milestone: M7
 state: running
-headSha: d047d69fe07c3c2a9565e3683c08502f4ffca2cf
-ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21944962712
-updatedAtUtc: 2026-02-12T11:35:24Z
+headSha: af0ef85cd57b5ffbf42199de140f0302fc16900a
+ciRunUrl: https://github.com/OJWatson/vpdsus/actions/workflows/R-CMD-check.yaml
+updatedAtUtc: 2026-02-12T11:56:40Z
 ```
 
 Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
@@ -19,4 +19,4 @@ Note: current git HEAD may include docs-only commits; `headSha` above tracks the
 - (Done) Expand vignettes to teach the workflow end-to-end (data access → susceptibility → ranking → modelling), including key columns/parameters.
   - Added a short end-to-end modelling example linking the susceptibility estimate into `make_modelling_panel()` / `fit_outbreak_models()` and showing how to inspect predicted probabilities.
 - (Done) Removed the `Remotes` field from DESCRIPTION and relied on `Additional_repositories` + README guidance for optional r-universe extras.
-- Next step: re-run CI on the updated R-CMD-check workflow (avoid installing non-CRAN Suggests on macOS/Windows) and confirm green for the release head; then flip M7 to `done` + cut the release/tag.
+- Next step: wait for CI to go green on `af0ef85` (R-CMD-check/lint/pkgdown); then flip M7 to `done` + cut the release/tag.
