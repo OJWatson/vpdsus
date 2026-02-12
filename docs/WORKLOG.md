@@ -9,3 +9,4 @@ Guidelines:
 
 - 2026-02-12: Marked M7 as running (CI green) and expanded `vignettes/outbreak_models.Rmd` to explain the default time split + interpretation of accuracy/Brier.
 - 2026-02-12: Fixed `evaluate_models()` prediction robustness by aligning test-set factor encodings with the trained model, and extended `vignettes/outbreak_models.Rmd` to show how to inspect predicted probabilities.
+- 2026-02-12: Clarified optional `{odin2}`/`{dust2}` dependencies and the opt-in `VPDSUS_BUILD_ODIN2_VIGNETTE=1` gating for mechanistic vignette/tests in README.
