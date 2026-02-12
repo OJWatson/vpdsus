@@ -13,3 +13,4 @@ Guidelines:
 - 2026-02-12: Removed non-installable `{wpp2024}` from Suggests/Remotes and dropped `source="wpp"` from `get_demography()` so `R CMD check --as-cran --no-manual` runs without errors.
 - 2026-02-12: Documented the expected `R CMD check --as-cran` NOTE for `Remotes` (optional `{odin2}` / `{dust2}` via r-universe) in README.
 - 2026-02-12: Dropped `Remotes` from DESCRIPTION (keep `Additional_repositories`) and updated README notes; local `R CMD check --as-cran --no-manual` now avoids the `Remotes` NOTE.
+- 2026-02-12: Fixed CI dependency resolution for optional `{odin2}`/`{dust2}` by adding `extra-repositories: https://mrc-ide.r-universe.dev` to GitHub Actions workflows (R-CMD-check/pkgdown/lint).
