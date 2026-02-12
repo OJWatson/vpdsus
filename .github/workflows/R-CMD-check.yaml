@@ -32,6 +32,15 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
 
+      - name: Configure repositories (CRAN + mrc-ide r-universe)
+        run: |
+          cat <<'EOF' >> ~/.Rprofile
+          options(repos = c(
+            MRCIDE = 'https://mrc-ide.r-universe.dev',
+            CRAN = 'https://cran.rstudio.com'
+          ))
+          EOF
+
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
