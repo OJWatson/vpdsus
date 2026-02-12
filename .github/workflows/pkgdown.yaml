@@ -23,6 +23,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, any::rmarkdown
+          extra-repositories: https://mrc-ide.r-universe.dev
           needs: website
           dependencies: '"all"'
       - name: Build site

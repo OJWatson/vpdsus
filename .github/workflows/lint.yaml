@@ -13,6 +13,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::lintr
+          extra-repositories: https://mrc-ide.r-universe.dev
           dependencies: '"hard"'
       - name: Lint
         run: lintr::lint_package()
