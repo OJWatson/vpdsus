@@ -17,9 +17,13 @@ It supports:
 remotes::install_github("OJWatson/vpdsus")
 ```
 
-### Optional (mechanistic modelling)
+### Optional (mechanistic modelling + inference hooks)
 
-Mechanistic examples use `{odin2}` + `{dust2}` (not on CRAN). These are **optional**.
+`vpdsus` has an **opt-in** mechanistic scaffold built around `{odin2}` + `{dust2}`.
+These packages are **not on CRAN** and are listed in `Suggests`, so they are not
+required for installation, `R CMD check`, or the default vignettes/tests.
+
+Install them from r-universe:
 
 ```r
 options(repos = c(
@@ -28,6 +32,16 @@ options(repos = c(
 ))
 install.packages(c("odin2", "dust2"))
 ```
+
+To **execute** the mechanistic vignette and the opt-in integration test locally,
+set:
+
+```r
+Sys.setenv(VPDSUS_BUILD_ODIN2_VIGNETTE = "1")
+```
+
+Then run the vignette `vignette("mechanistic_odin2", package = "vpdsus")` (or
+re-run checks/tests).
 
 ## Quick start (shipped example data)
 
