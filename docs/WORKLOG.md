@@ -24,3 +24,4 @@ Guidelines:
 - 2026-02-12: Updated `docs/STATUS.md` to reflect the current release-head CI run (`7caeee4`) and the next action (confirm green → mark M7 done/tag release); ran `devtools::test()` locally (PASS).
 - 2026-02-12: Fixed R-CMD-check workflow to install only "hard" deps (avoid non-CRAN Suggests like `{odin2}`/`{dust2}` on macOS/Windows); will re-run CI to confirm green.
 - 2026-02-12: Added `workflow_dispatch` to the R-CMD-check workflow to allow manual reruns; pushed `af0ef85`.
+- 2026-02-12: Fixed R-CMD-check CI failure on macOS by removing an invalid `needs: '"hard"'` input from `setup-r-dependencies@v2`; pushed `b5142fa`.
