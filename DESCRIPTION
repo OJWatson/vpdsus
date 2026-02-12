@@ -4,6 +4,8 @@ Version: 0.0.1
 Authors@R: c(
     person("Oliver", "Watson", email = "ojwatson@users.noreply.github.com", role = c("aut", "cre"))
   )
+Author: Oliver Watson [aut, cre]
+Maintainer: Oliver Watson <ojwatson@users.noreply.github.com>
 Description: Tools to retrieve WHO GHO immunisation coverage and reported cases,
     combine them with demography, estimate susceptibility via progressive methods,
     produce WHO-style ranking plots, and link susceptibility to outbreak risk.
