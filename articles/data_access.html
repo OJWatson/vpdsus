@@ -194,6 +194,49 @@ output columns.</p>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> USA    <span style="text-decoration: underline;">2</span>020  <span style="text-decoration: underline;">1</span>275</span></span></code></pre></div>
 </div>
+<div class="section level3">
+<h3 id="where-to-go-next-end-to-end-workflow">Where to go next (end-to-end workflow)<a class="anchor" aria-label="anchor" href="#where-to-go-next-end-to-end-workflow"></a>
+</h3>
+<p>The functions above focus on data retrieval and standardisation. A
+typical end-to-end analysis then:</p>
+<ol style="list-style-type: decimal">
+<li>builds a modelling-ready panel (coverage + cases + demography),</li>
+<li>estimates susceptibility, and</li>
+<li>produces a WHO-style risk ranking (and optionally fits outbreak
+models).</li>
+</ol>
+<p>This repository ships <code><a href="../reference/vpdsus_example_panel.html">vpdsus_example_panel()</a></code> so the
+workflow can be demonstrated deterministically without live
+downloads:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vpdsus_example_panel.html">vpdsus_example_panel</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 1) Susceptibility estimation (simple static method)</span></span>
+<span><span class="va">sus</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_static.html">estimate_susceptible_static</a></span><span class="op">(</span><span class="va">panel</span>, coverage_col <span class="op">=</span> <span class="st">"coverage"</span>, pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 2) Risk ranking (summarise recent coverage and take susceptibility at a year)</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/risk_rank.html">risk_rank</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">sus</span>, window_years <span class="op">=</span> <span class="fl">3</span>, year_end <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 3) Inspect / plot</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 9</span></span></span>
+<span><span class="co">#&gt;   iso3  coverage_mean who_region country   susceptible_n susceptible_prop method</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> NGA           0.557 AFR        Nigeria        15<span style="text-decoration: underline;">050</span>000             0.43 static</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> PHL           0.73  WPR        Philippi…       3<span style="text-decoration: underline;">045</span>000             0.29 static</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AFG           0.67  EMR        Afghanis…       2<span style="text-decoration: underline;">145</span>000             0.33 static</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: risk_category &lt;fct&gt;, rank_global &lt;int&gt;</span></span></span>
+<span><span class="fu"><a href="../reference/plot_coverage_rank.html">plot_coverage_rank</a></span><span class="op">(</span><span class="va">r</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p><img src="data_access_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="700"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">r</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p><img src="data_access_files/figure-html/unnamed-chunk-6-2.png" class="r-plt" alt="" width="700"></p>
+<p>See the other vignettes for method choices and modelling:</p>
+<ul>
+<li><em>Susceptibility estimates and WHO-style ranking plots</em></li>
+<li><em>Outbreak models</em></li>
+</ul>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
