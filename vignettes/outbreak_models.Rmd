@@ -67,6 +67,17 @@ fit$coefficients
 `evaluate_models()` performs a time split by year (train on earlier years, test on
 later years) and reports a basic accuracy and Brier score.
 
+By default, the split chooses a `train_end` year that guarantees at least one
+distinct year is held out for testing.
+
 ```{r}
-evaluate_models(mod)
+ev <- evaluate_models(mod)
+ev
 ```
+
+Interpretation:
+
+- `train_end`: last year included in training
+- `n_train` / `n_test`: number of rows used for training/testing
+- `accuracy`: fraction of correctly classified outcomes at a 0.5 probability threshold
+- `brier`: mean squared error of predicted probabilities (lower is better; 0 is perfect)
