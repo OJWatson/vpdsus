@@ -11,3 +11,4 @@ Guidelines:
 - 2026-02-12: Fixed `evaluate_models()` prediction robustness by aligning test-set factor encodings with the trained model, and extended `vignettes/outbreak_models.Rmd` to show how to inspect predicted probabilities.
 - 2026-02-12: Clarified optional `{odin2}`/`{dust2}` dependencies and the opt-in `VPDSUS_BUILD_ODIN2_VIGNETTE=1` gating for mechanistic vignette/tests in README.
 - 2026-02-12: Removed non-installable `{wpp2024}` from Suggests/Remotes and dropped `source="wpp"` from `get_demography()` so `R CMD check --as-cran --no-manual` runs without errors.
+- 2026-02-12: Documented the expected `R CMD check --as-cran` NOTE for `Remotes` (optional `{odin2}` / `{dust2}` via r-universe) in README.
