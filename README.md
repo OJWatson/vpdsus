@@ -85,6 +85,22 @@ Verified defaults via `vpd_indicators()`:
 You can discover WHO indicator codes with `gho_find_indicator()` and override them in
 `get_coverage(..., indicator_code = )` and `get_cases(..., indicator_code = )`.
 
+## Reproducibility and local checks
+
+For a release-style check, prefer the base toolchain:
+
+```sh
+R CMD build .
+R CMD check --as-cran vpdsus_*.tar.gz
+```
+
+Notes:
+
+- Optional dependencies in `Suggests` (e.g. `{odin2}` / `{dust2}`) remain **opt-in**.
+  The mechanistic vignette and its integration test only run when
+  `VPDSUS_BUILD_ODIN2_VIGNETTE=1` is set.
+- In some environments you may see benign NOTES such as "unable to verify current time".
+
 ## Reproduce (targets pipeline scaffold)
 
 A small `{targets}` scaffold lives in `analysis/targets/_targets.R`.

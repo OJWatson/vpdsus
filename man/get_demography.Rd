@@ -7,7 +7,7 @@
 get_demography(
   years = NULL,
   countries = NULL,
-  source = c("example", "fixture_wpp", "wpp")
+  source = c("example", "fixture_wpp")
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ get_demography(
 
 \item{countries}{Optional ISO3 vector.}
 
-\item{source}{One of "example" (default), "wpp" (optional), or "fixture_wpp".}
+\item{source}{One of "example" (default) or "fixture_wpp".}
 }
 \value{
 tibble with iso3, year, pop_total, pop_0_4, pop_5_14, births.

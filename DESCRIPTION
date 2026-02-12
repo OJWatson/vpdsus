@@ -39,8 +39,7 @@ Suggests:
     testthat (>= 3.0.0),
     targets,
     tarchetypes,
-    withr,
-    wpp2024
+    withr
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://ojwatson.github.io/vpdsus/, https://github.com/OJWatson/vpdsus
@@ -49,5 +48,4 @@ Additional_repositories:
     https://mrc-ide.r-universe.dev
 Remotes:
     mrc-ide/odin2,
-    mrc-ide/dust2,
-    PPgp/wpp2024
+    mrc-ide/dust2
