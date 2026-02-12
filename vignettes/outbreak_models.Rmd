@@ -81,3 +81,26 @@ Interpretation:
 - `n_train` / `n_test`: number of rows used for training/testing
 - `accuracy`: fraction of correctly classified outcomes at a 0.5 probability threshold
 - `brier`: mean squared error of predicted probabilities (lower is better; 0 is perfect)
+
+### Inspect predicted probabilities
+
+If you want to see the actual predicted probabilities used in the evaluation,
+repeat the same split and call `predict()` on the fitted model:
+
+```{r}
+# Use the same train_end chosen by evaluate_models()
+train_end <- ev$train_end
+
+train <- subset(mod, year <= train_end)
+test <- subset(mod, year > train_end)
+
+fit2 <- fit_outbreak_models(train)$model
+p <- predict(fit2, newdata = test, type = "response")
+
+out <- transform(test,
+  prob_outbreak = p,
+  pred_outbreak = as.integer(p >= 0.5)
+)
+
+out[, c("iso3", "year", "year_next", "outcome", "prob_outbreak", "pred_outbreak")]
+```

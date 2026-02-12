@@ -126,8 +126,18 @@ evaluate_models <- function(data, train_end = NULL) {
   }
 
   fit <- fit_outbreak_models(train)$model
-  p <- suppressWarnings(stats::predict(fit, newdata = test, type = "response"))
-  y <- test$outcome
+
+  # Ensure test data matches training encodings (notably factor levels) so predict()
+  # does not silently drop rows.
+  who_levels <- fit$xlevels$who_region %||% NULL
+  test2 <- tibble::as_tibble(test) |>
+    dplyr::mutate(
+      year = as.numeric(.data$year),
+      who_region = if (is.null(who_levels)) as.factor(.data$who_region) else factor(.data$who_region, levels = who_levels)
+    )
+
+  p <- suppressWarnings(stats::predict(fit, newdata = test2, type = "response"))
+  y <- test2$outcome
 
   pred <- as.integer(p >= 0.5)
   acc <- mean(pred == y)
