@@ -31,10 +31,20 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install dependencies (Linux; include r-universe)
+        if: runner.os == 'Linux'
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::knitr, any::rmarkdown
           extra-repositories: https://mrc-ide.r-universe.dev
+          needs: check
+          dependencies: '"hard"'
+
+      - name: Install dependencies (macOS/Windows)
+        if: runner.os != 'Linux'
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::knitr, any::rmarkdown
           needs: check
           dependencies: '"hard"'
 
