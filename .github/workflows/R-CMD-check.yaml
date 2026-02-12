@@ -36,6 +36,7 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
           dependencies: '"hard"'
+          extra-repositories: 'https://mrc-ide.r-universe.dev'
 
       - uses: r-lib/actions/check-r-package@v2
         with:
