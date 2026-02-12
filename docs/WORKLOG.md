@@ -19,3 +19,4 @@ Guidelines:
 - 2026-02-12: Fixed CI failure (https://github.com/OJWatson/vpdsus/actions/runs/21942398114) where `setup-r-dependencies@v2` treated `dependencies: hard` as an R symbol (`object 'hard' not found`) by quoting the input (`dependencies: '"hard"'` / `dependencies: '"all"'`).
 - 2026-02-12: Updated docs/STATUS.md to track CI run https://github.com/OJWatson/vpdsus/actions/runs/21942468631 after pushing workflow quoting fix.
 - 2026-02-12: Re-added `extra-repositories: https://mrc-ide.r-universe.dev` to `setup-r-dependencies@v2` so pak can resolve optional Suggests (`odin2`, `dust2`) during the pandoc/deps scan on macOS/Windows.
+- 2026-02-12: Fixed CI failures on macOS/Windows by only passing `extra-repositories` to `setup-r-dependencies@v2` on Linux in R-CMD-check workflow; pushed `3358aea` and tracking run https://github.com/OJWatson/vpdsus/actions/runs/21943239823.

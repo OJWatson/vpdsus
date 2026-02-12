@@ -1,9 +1,9 @@
 ```pm-status
 milestone: M7
 state: running
-headSha: 11493672235c9a0676999df01423bae90bdaf8a8
-ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21942693267
-updatedAtUtc: 2026-02-12T10:23:41Z
+headSha: 3358aea6ca2b81f7b007b86b128870bf161d1f74
+ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21943239823
+updatedAtUtc: 2026-02-12T10:40:31Z
 ```
 
 Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
@@ -19,4 +19,4 @@ Note: current git HEAD may include docs-only commits; `headSha` above tracks the
 - (Done) Expand vignettes to teach the workflow end-to-end (data access → susceptibility → ranking → modelling), including key columns/parameters.
   - Added a short end-to-end modelling example linking the susceptibility estimate into `make_modelling_panel()` / `fit_outbreak_models()` and showing how to inspect predicted probabilities.
 - (Done) Removed the `Remotes` field from DESCRIPTION and relied on `Additional_repositories` + README guidance for optional r-universe extras.
-- Next step: monitor CI for `8217bad` and confirm R-CMD-check + lint + pkgdown are green (previous run failed because `setup-r-dependencies@v2` does not accept `extra-repositories`).
+- Next step: monitor CI for `3358aea` and confirm R-CMD-check + lint + pkgdown are green (previous run failed on macOS/Windows in `setup-r-dependencies@v2`).
