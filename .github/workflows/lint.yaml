@@ -14,7 +14,6 @@ jobs:
         with:
           extra-packages: any::lintr
           dependencies: '"hard"'
-          extra-repositories: 'https://mrc-ide.r-universe.dev'
       - name: Lint
         run: lintr::lint_package()
         shell: Rscript {0}
