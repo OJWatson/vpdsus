@@ -9,20 +9,64 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-# Keep vignette build fast/reliable under R CMD check; run interactively.
-knitr::opts_chunk$set(eval = interactive())
 ```
+
+This vignette demonstrates the minimal outbreak-modelling workflow on the shipped
+example dataset.
+
+The key steps are:
+
+1. Create a modelling-ready dataset using [make_modelling_panel()].
+2. Fit a simple baseline model with [fit_outbreak_models()].
+3. Evaluate predictive performance with [evaluate_models()].
+
+All examples here run without network access.
+
+## Build the modelling panel
 
 ```{r}
 library(vpdsus)
 
 panel <- vpdsus_example_panel()
 
-sA <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
-mod <- make_modelling_panel(panel, sA, outcome = "outbreak_pc", lag_years = 1)
+# Susceptibility method A (static): uses a population column and a coverage column
+suscept <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
 
+# Create a modelling dataset with a 1-year lag between predictors and outcome.
+# outcome='outbreak_pc' uses a simple per-100k threshold defined in
+# make_outcome_outbreak().
+mod <- make_modelling_panel(panel, suscept, outcome = "outbreak_pc", lag_years = 1)
+mod
+```
+
+Columns in `mod`:
+
+- `susceptible_prop`: predictor (fraction susceptible)
+- `outcome`: binary outbreak indicator in `year_next`
+- `cases_per_100k` is available from [make_outcome_outbreak()] on the original panel
+
+## Fit a baseline outbreak model
+
+`fit_outbreak_models()` currently fits a simple logistic regression:
+
+- outcome ~ susceptible_prop + year + who_region
+
+```{r}
 fit <- fit_outbreak_models(mod)
-fit$coefficients
+fit$model
+```
 
+### Coefficients
+
+```{r}
+fit$coefficients
+```
+
+## Simple time-aware evaluation
+
+`evaluate_models()` performs a time split by year (train on earlier years, test on
+later years) and reports a basic accuracy and Brier score.
+
+```{r}
 evaluate_models(mod)
 ```
