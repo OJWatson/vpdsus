@@ -28,3 +28,5 @@ Guidelines:
 - 2026-02-12: Updated docs/STATUS.md timestamp + clarified next step: wait for CI outcomes on b5142fa (runs #142/#143 + lint/pkgdown) before flipping M7 to done/tagging.
 - 2026-02-12: Fixed CI failures: pkgdown now installs pandoc via apt (avoid setup-pandoc download 500s) and workflows configure CRAN + mrc-ide r-universe via .Rprofile (written in Rscript for Windows) so pak can resolve optional odin2/dust2 during dependency discovery. (Green run: https://github.com/OJWatson/vpdsus/actions/runs/21946714629)
 - 2026-02-12: Confirmed commit `28262a6` has successful status checks (5/5), ran `devtools::test()` locally (PASS), and flipped M7 to `done` in docs/STATUS.md; next action is to cut the release/tag.
+
+- 2026-02-13: Cut GitHub release v0.0.1 from release head 28262a6 (CI success: https://github.com/OJWatson/vpdsus/actions/runs/21946714629) and marked M7 complete in docs/STATUS.md.
