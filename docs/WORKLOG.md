@@ -32,3 +32,4 @@ Guidelines:
 - 2026-02-13: Cut GitHub release v0.0.1 from release head 28262a6 (CI success: https://github.com/OJWatson/vpdsus/actions/runs/21946714629) and marked M7 complete in docs/STATUS.md.
 
 - 2026-02-13: Verified tag v0.0.1 points to 28262a6 and the GitHub release page exists; updated docs/STATUS.md timestamp + marked release step done.
+- 2026-02-13: Post-release tidy: confirmed ROADMAP ends at M7 (no next milestone) and refreshed STATUS timestamp.
