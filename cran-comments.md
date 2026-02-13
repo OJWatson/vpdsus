@@ -3,11 +3,14 @@
 ## Test environments
 
 - local: Ubuntu 22.04.5 LTS, R 4.5.2
-- GitHub Actions: (fill in)
+- GitHub Actions: ubuntu-latest (R release), macos-latest (R release), windows-latest (R release)
 
 ## R CMD check results
 
-- `R CMD check --as-cran --no-manual`: 0 errors ✔ | 0 warnings ✔ | 0 notes ✔ (local)
+- `R CMD check --as-cran --no-manual`: 0 errors ✔ | 0 warnings ✔ | 1 note (local)
+
+  - NOTE: New submission (expected)
+  - NOTE: Suggests not in mainstream repositories (`odin2`, `dust2`); available via `Additional_repositories` and fully optional
 
 ## Reverse dependencies
 
@@ -17,6 +20,7 @@
 
 - This is an initial submission.
 - The package optionally suggests non-CRAN packages (`odin2`, `dust2`) for mechanistic examples; core functionality does not require them.
+- `Additional_repositories` is included to make those optional packages discoverable for users who want the mechanistic extras; `R CMD check --as-cran` succeeds without installing them.
 
 ## Submission checklist (working)
 
