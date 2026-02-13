@@ -37,3 +37,4 @@ Guidelines:
 - 2026-02-13: Added ROADMAP M8 (optional CRAN submission) and marked M8 as running in docs/STATUS.md.
 - 2026-02-13: Drafted `cran-comments.md` template, added it to `.Rbuildignore`, and confirmed local `R CMD check --as-cran --no-manual` is clean (0 errors/warnings/notes).
 - 2026-02-13: Filled `cran-comments.md` test environments + recorded the expected `--as-cran` NOTE(s) for a new submission and optional non-CRAN Suggests (`odin2`, `dust2`); re-ran `R CMD check --as-cran --no-manual` locally (0 errors/warnings; 1 NOTE).
+- 2026-02-13: Added docs/CRAN_CHECKLIST.md capturing the CRAN submission checklist + highlighted likely policy friction (non-CRAN Suggests / Additional_repositories); ran `R CMD check --as-cran --no-manual .` (warnings/notes expected when checking the repo directory rather than a built tarball).
