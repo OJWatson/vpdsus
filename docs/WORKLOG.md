@@ -35,3 +35,4 @@ Guidelines:
 - 2026-02-13: Post-release tidy: confirmed ROADMAP ends at M7 (no next milestone) and refreshed STATUS timestamp.
 
 - 2026-02-13: Added ROADMAP M8 (optional CRAN submission) and marked M8 as running in docs/STATUS.md.
+- 2026-02-13: Drafted `cran-comments.md` template, added it to `.Rbuildignore`, and confirmed local `R CMD check --as-cran --no-manual` is clean (0 errors/warnings/notes).
