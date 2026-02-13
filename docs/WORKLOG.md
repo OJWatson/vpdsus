@@ -30,3 +30,5 @@ Guidelines:
 - 2026-02-12: Confirmed commit `28262a6` has successful status checks (5/5), ran `devtools::test()` locally (PASS), and flipped M7 to `done` in docs/STATUS.md; next action is to cut the release/tag.
 
 - 2026-02-13: Cut GitHub release v0.0.1 from release head 28262a6 (CI success: https://github.com/OJWatson/vpdsus/actions/runs/21946714629) and marked M7 complete in docs/STATUS.md.
+
+- 2026-02-13: Verified tag v0.0.1 points to 28262a6 and the GitHub release page exists; updated docs/STATUS.md timestamp + marked release step done.

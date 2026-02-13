@@ -3,7 +3,7 @@ milestone: M7
 state: complete
 headSha: 28262a6570c5d0bef8483d15bf4745a6760ccb5f
 ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21946714629
-updatedAtUtc: 2026-02-13T04:22:33Z
+updatedAtUtc: 2026-02-13T04:41:06Z
 ```
 
 Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
@@ -19,4 +19,4 @@ Note: current git HEAD may include docs-only commits; `headSha` above tracks the
 - (Done) Expand vignettes to teach the workflow end-to-end (data access → susceptibility → ranking → modelling), including key columns/parameters.
   - Added a short end-to-end modelling example linking the susceptibility estimate into `make_modelling_panel()` / `fit_outbreak_models()` and showing how to inspect predicted probabilities.
 - (Done) Removed the `Remotes` field from DESCRIPTION and relied on `Additional_repositories` + README guidance for optional r-universe extras.
-- Next step: cut a GitHub release + tag from `28262a6` (CI green: status checks 5/5) and publish release notes.
+- (Done) Cut GitHub release + tag `v0.0.1` from `28262a6` (CI green: status checks 5/5) and published release notes.
