@@ -33,3 +33,5 @@ Guidelines:
 
 - 2026-02-13: Verified tag v0.0.1 points to 28262a6 and the GitHub release page exists; updated docs/STATUS.md timestamp + marked release step done.
 - 2026-02-13: Post-release tidy: confirmed ROADMAP ends at M7 (no next milestone) and refreshed STATUS timestamp.
+
+- 2026-02-13: Added ROADMAP M8 (optional CRAN submission) and marked M8 as running in docs/STATUS.md.

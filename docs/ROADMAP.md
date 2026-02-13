@@ -2,7 +2,7 @@
 
 This file is the canonical milestone plan.
 
-## Milestones (M0–M7)
+## Milestones (M0–M8)
 
 ### M0 — Repository skeleton and professional scaffolding
 - CI green (R-CMD-check, lint, pkgdown)
@@ -41,3 +41,8 @@ This file is the canonical milestone plan.
 - Release-readiness checklist passes (local check, site build, docs)
 - Clear reproducibility path documented
 - CI green on release head
+
+### M8 — CRAN submission (optional)
+- Ensure `R CMD check --as-cran` is clean on Linux/macOS/Windows (no ERROR/WARNING; minimise NOTEs)
+- Review DESCRIPTION/README for CRAN policies (URLs, non-CRAN Suggests guidance, additional repos)
+- Prepare `cran-comments.md` and a submission tag (e.g. `v0.0.2-rc1`)
