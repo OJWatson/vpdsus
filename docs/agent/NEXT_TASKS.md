@@ -1,4 +1,4 @@
-Now: M0.3 — Rename and standardise vignette structure (01_data_access etc)
+Now: M1.1 — Implement get_country_metadata() and expand vpd_indicators() per spec
 
 Next:
-- M1.1 — Implement get_country_metadata() and expand vpd_indicators() per spec
+- M1.2 — Add tests + pinned fixtures for additional indicators (coverage + cases)

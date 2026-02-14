@@ -52,7 +52,7 @@ articles:
 - title: Vignettes
   navbar: ~
   contents:
-  - data_access
-  - susceptibility_simple
-  - outbreak_models
-  - mechanistic_odin2
+  - 01_data_access
+  - 02_susceptibility_simple
+  - 03_outbreak_models
+  - 04_mechanistic_odin2

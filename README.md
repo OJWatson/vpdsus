@@ -44,10 +44,10 @@ plot_susceptible_rank(rank, top_n = 10)
 
 Vignettes are intended to be **offline-friendly**: they should run without live downloads.
 
-- `vignette("data_access", package = "vpdsus")`: indicator discovery + coverage/cases access
-- `vignette("susceptibility_simple", package = "vpdsus")`: susceptibility methods + ranking parameters
-- `vignette("outbreak_models", package = "vpdsus")`: modelling panel + baseline models + evaluation
-- `vignette("mechanistic_odin2", package = "vpdsus")`: mechanistic workflow (under redevelopment)
+- `vignette("01_data_access", package = "vpdsus")`: indicator discovery + coverage/cases access
+- `vignette("02_susceptibility_simple", package = "vpdsus")`: susceptibility methods + ranking parameters
+- `vignette("03_outbreak_models", package = "vpdsus")`: modelling panel + baseline models + evaluation
+- `vignette("04_mechanistic_odin2", package = "vpdsus")`: mechanistic workflow (under redevelopment)
 
 Live data acquisition and full report pipelines belong under `analysis/`.
 
