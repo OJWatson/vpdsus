@@ -12,6 +12,7 @@ reference:
   - gho_get_indicator
   - get_coverage
   - get_cases
+  - get_country_metadata
   - get_demography
   - vpdsus_cache_info
 - title: Panel and susceptibility
