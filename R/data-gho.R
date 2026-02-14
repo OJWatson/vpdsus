@@ -118,15 +118,21 @@ vpd_indicators <- function() {
     key = c(
       "mcv1_coverage",
       "mcv2_coverage",
-      "measles_cases"
+      "dtp3_coverage",
+      "pol3_coverage",
+      "measles_cases",
+      "rubella_cases"
     ),
-    type = c("coverage", "coverage", "cases"),
-    antigen_or_disease = c("MCV1", "MCV2", "measles"),
+    type = c("coverage", "coverage", "coverage", "coverage", "cases", "cases"),
+    antigen_or_disease = c("MCV1", "MCV2", "DTP3", "POL3", "measles", "rubella"),
     indicator_code = c(
-      # Verified via gho_find_indicator() and pinned fixtures/tests.
+      # Verified via gho_find_indicator()/live API and pinned fixtures/tests.
       "WHS8_110", # MCV1 coverage
       "MCV2",     # MCV2 coverage
-      "WHS3_62"   # measles cases
+      "WHS4_100", # DTP3 coverage
+      "WHS4_544", # Polio (Pol3) coverage
+      "WHS3_62",  # measles cases
+      "WHS3_57"   # rubella cases
     )
   )
 }
