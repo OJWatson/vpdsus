@@ -1,0 +1,7 @@
+{
+  "endpoint": "Indicator",
+  "url": "https://ghoapi.azureedge.net/api/Indicator?%24filter=contains%28IndicatorName%2C%27PCV3%27%29&%24top=10",
+  "filter": "contains(IndicatorName,'PCV3')",
+  "top": 10,
+  "retrievedAtUtc": "2026-02-14 20:04:30 UTC"
+}

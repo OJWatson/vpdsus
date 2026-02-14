@@ -27,4 +27,20 @@ test_that("gho_find_indicator(offline=TRUE) returns pinned fixtures for addition
   mcv2 <- gho_find_indicator("MCV2", top_n = 10, offline = TRUE)
   expect_true(nrow(mcv2) >= 1)
   expect_true(any(mcv2$indicator_code == "MCV2"))
+
+  hepb3 <- gho_find_indicator("HEPB3", top_n = 10, offline = TRUE)
+  expect_true(nrow(hepb3) >= 1)
+  expect_true(any(hepb3$indicator_code == "WHS4_117"))
+
+  hib3 <- gho_find_indicator("HIB3", top_n = 10, offline = TRUE)
+  expect_true(nrow(hib3) >= 1)
+  expect_true(any(hib3$indicator_code == "WHS4_129"))
+
+  pcv3 <- gho_find_indicator("PCV3", top_n = 10, offline = TRUE)
+  expect_true(nrow(pcv3) >= 1)
+  expect_true(any(pcv3$indicator_code == "PCV3"))
+
+  pertussis <- gho_find_indicator("pertussis", top_n = 10, offline = TRUE)
+  expect_true(nrow(pertussis) >= 1)
+  expect_true(any(pertussis$indicator_code == "WHS3_43"))
 })

@@ -1,0 +1,7 @@
+{
+  "endpoint": "WHS3_43",
+  "url": "https://ghoapi.azureedge.net/api/WHS3_43?%24filter=SpatialDim%20eq%20%27USA%27%20and%20TimeDim%20eq%202020&%24top=5",
+  "filter": "SpatialDim eq 'USA' and TimeDim eq 2020",
+  "top": 5,
+  "retrievedAtUtc": "2026-02-14 20:04:31 UTC"
+}

@@ -29,12 +29,20 @@ gho_parse_json <- function(txt) {
   tibble::as_tibble(value)
 }
 
+gho_parse_number <- function(x) {
+  # GHO sometimes returns formatted numbers like "18 617".
+  # Strip non-numeric formatting before coercion.
+  x <- as.character(x)
+  x <- gsub("[^0-9\\.-]", "", x)
+  suppressWarnings(as.numeric(x))
+}
+
 gho_standardise_coverage <- function(raw) {
   out <- dplyr::transmute(
     raw,
     iso3 = standardise_iso3(.data$SpatialDim %||% .data$SpatialDimValueCode %||% .data$COUNTRY_CODE),
     year = as.integer(.data$TimeDim %||% .data$TimeDimValueCode %||% .data$YEAR),
-    coverage = as.numeric(.data$Value)
+    coverage = gho_parse_number(.data$Value)
   )
   out <- dplyr::filter(out, !is.na(.data$iso3), !is.na(.data$year))
   dplyr::mutate(out, coverage = dplyr::if_else(.data$coverage > 1, .data$coverage / 100, .data$coverage))
@@ -45,7 +53,7 @@ gho_standardise_cases <- function(raw) {
     raw,
     iso3 = standardise_iso3(.data$SpatialDim %||% .data$SpatialDimValueCode %||% .data$COUNTRY_CODE),
     year = as.integer(.data$TimeDim %||% .data$TimeDimValueCode %||% .data$YEAR),
-    cases = as.numeric(.data$Value)
+    cases = gho_parse_number(.data$Value)
   )
   dplyr::filter(out, !is.na(.data$iso3), !is.na(.data$year))
 }

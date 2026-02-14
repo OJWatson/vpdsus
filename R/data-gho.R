@@ -74,6 +74,10 @@ gho_find_indicator <- function(keyword, top_n = 50, offline = FALSE) {
         "rubella" = "gho_Indicator_contains_Rubella_top10.json",
         "mcv1" = "gho_Indicator_contains_MCV1_top10.json",
         "mcv2" = "gho_Indicator_contains_MCV2_top10.json",
+        "hepb3" = "gho_Indicator_contains_HEPB3_top10.json",
+        "hib3" = "gho_Indicator_contains_HIB3_top10.json",
+        "pcv3" = "gho_Indicator_contains_PCV3_top10.json",
+        "pertussis" = "gho_Indicator_contains_pertussis_top10.json",
         NULL
       )
     }
@@ -133,19 +137,35 @@ vpd_indicators <- function() {
       "mcv2_coverage",
       "dtp3_coverage",
       "pol3_coverage",
+      "hepb3_coverage",
+      "hib3_coverage",
+      "pcv3_coverage",
       "measles_cases",
-      "rubella_cases"
+      "rubella_cases",
+      "pertussis_cases"
     ),
-    type = c("coverage", "coverage", "coverage", "coverage", "cases", "cases"),
-    antigen_or_disease = c("MCV1", "MCV2", "DTP3", "POL3", "measles", "rubella"),
+    type = c(
+      "coverage", "coverage", "coverage", "coverage",
+      "coverage", "coverage", "coverage",
+      "cases", "cases", "cases"
+    ),
+    antigen_or_disease = c(
+      "MCV1", "MCV2", "DTP3", "POL3",
+      "HEPB3", "HIB3", "PCV3",
+      "measles", "rubella", "pertussis"
+    ),
     indicator_code = c(
       # Verified via gho_find_indicator()/live API and pinned fixtures/tests.
       "WHS8_110", # MCV1 coverage
       "MCV2",     # MCV2 coverage
       "WHS4_100", # DTP3 coverage
       "WHS4_544", # Polio (Pol3) coverage
+      "WHS4_117", # HepB3 coverage
+      "WHS4_129", # Hib3 coverage
+      "PCV3",     # PCV3 coverage
       "WHS3_62",  # measles cases
-      "WHS3_57"   # rubella cases
+      "WHS3_57",  # rubella cases
+      "WHS3_43"   # pertussis cases
     )
   )
 }
