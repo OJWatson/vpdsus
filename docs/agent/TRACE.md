@@ -26,3 +26,9 @@ Fields:
   branch: main
   commit_parent: 9eafc2df12afb3954476c69b031c68e3910c5948
   timestamp: 2026-02-13T21:07:00Z
+
+- task_id: M1.1
+  branch: subagent/M1.1-country-metadata
+  commit_parent: 5dca686ca07fd4c552d35c5054dc5a4c724197c9
+  timestamp: 2026-02-14T11:40:37Z
+  head_after: 4addeadda9c018546eedc8c3c97277cbe8ef5ebf

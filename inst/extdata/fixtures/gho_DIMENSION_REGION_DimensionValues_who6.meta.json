@@ -1,0 +1,7 @@
+{
+  "url": "https://ghoapi.azureedge.net/api/DIMENSION/REGION/DimensionValues?$select=Code,Title&$filter=Code%20eq%20'AFR'%20or%20Code%20eq%20'AMR'%20or%20Code%20eq%20'EMR'%20or%20Code%20eq%20'EUR'%20or%20Code%20eq%20'SEAR'%20or%20Code%20eq%20'WPR'",
+  "retrieved_at_utc": "2026-02-14T11:38:31Z",
+  "endpoint": "DIMENSION/REGION/DimensionValues",
+  "select": "Code,Title",
+  "filter": "Code eq 'AFR' or Code eq 'AMR' or Code eq 'EMR' or Code eq 'EUR' or Code eq 'SEAR' or Code eq 'WPR'"
+}

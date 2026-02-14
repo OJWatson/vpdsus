@@ -1,0 +1,1 @@
+{"@odata.context":"https://ghoapi.azureedge.net/api/$metadata#Collection(Default.DIMENSION_VALUE)","value":[{"Code":"AFR","Title":"Africa"},{"Code":"AMR","Title":"Americas"},{"Code":"EMR","Title":"Eastern Mediterranean"},{"Code":"EUR","Title":"Europe"},{"Code":"SEAR","Title":"South-East Asia"},{"Code":"WPR","Title":"Western Pacific"}]}

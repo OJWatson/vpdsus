@@ -1,0 +1,7 @@
+{
+  "url": "https://ghoapi.azureedge.net/api/DIMENSION/COUNTRY/DimensionValues?$select=Code,Title,ParentCode,ParentDimension,Dimension&$filter=Code%20eq%20'AFG'%20or%20Code%20eq%20'NGA'%20or%20Code%20eq%20'PHL'",
+  "retrieved_at_utc": "2026-02-14T11:38:31Z",
+  "endpoint": "DIMENSION/COUNTRY/DimensionValues",
+  "select": "Code,Title,ParentCode,ParentDimension,Dimension",
+  "filter": "Code eq 'AFG' or Code eq 'NGA' or Code eq 'PHL'"
+}

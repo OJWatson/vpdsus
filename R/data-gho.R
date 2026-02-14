@@ -116,17 +116,57 @@ gho_get_indicator <- function(indicator_code) {
 vpd_indicators <- function() {
   tibble::tibble(
     key = c(
+      # Verified defaults (safe for implicit use)
       "mcv1_coverage",
       "mcv2_coverage",
-      "measles_cases"
+      "measles_cases",
+
+      # Common additional indicators (NOT yet verified in this package).
+      # These are provided as a convenience reference only; they are not used
+      # implicitly by get_coverage()/get_cases() unless verified = TRUE.
+      "dtp3_coverage",
+      "pol3_coverage",
+      "bcg_coverage",
+      "hib3_coverage",
+      "hepb3_coverage",
+      "rubella_coverage",
+      "yellow_fever_coverage",
+      "pertussis_cases",
+      "diphtheria_cases",
+      "tetanus_neonatal_cases"
     ),
-    type = c("coverage", "coverage", "cases"),
-    antigen_or_disease = c("MCV1", "MCV2", "measles"),
+    type = c(
+      "coverage", "coverage", "cases",
+      "coverage", "coverage", "coverage", "coverage", "coverage", "coverage", "coverage",
+      "cases", "cases", "cases"
+    ),
+    antigen_or_disease = c(
+      "MCV1", "MCV2", "measles",
+      "DTP3", "POL3", "BCG", "Hib3", "HepB3", "RCV1", "YF",
+      "pertussis", "diphtheria", "tetanus_neonatal"
+    ),
     indicator_code = c(
       # Verified via gho_find_indicator() and pinned fixtures/tests.
       "WHS8_110", # MCV1 coverage
       "MCV2",     # MCV2 coverage
-      "WHS3_62"   # measles cases
+      "WHS3_62",  # measles cases
+
+      # Unverified: codes/naming can differ between GHO catalogue and EPI
+      # conventions. Treat as placeholders until pinned fixtures/tests confirm.
+      NA_character_,
+      NA_character_,
+      NA_character_,
+      NA_character_,
+      NA_character_,
+      NA_character_,
+      NA_character_,
+      NA_character_,
+      NA_character_,
+      NA_character_
+    ),
+    verified = c(
+      TRUE, TRUE, TRUE,
+      rep(FALSE, 10)
     )
   )
 }
@@ -144,9 +184,15 @@ get_coverage <- function(antigen, indicator_code = NULL, years = NULL, countries
 
   if (is.null(indicator_code)) {
     map <- vpd_indicators()
-    row <- dplyr::filter(map, .data$type == "coverage", .data$antigen_or_disease == antigen)
+    row <- dplyr::filter(
+      map,
+      .data$type == "coverage",
+      .data$antigen_or_disease == antigen,
+      isTRUE(.data$verified),
+      !is.na(.data$indicator_code)
+    )
     if (nrow(row) == 0) {
-      cli::cli_abort("No default indicator mapping for antigen {antigen}. Provide indicator_code explicitly.")
+      cli::cli_abort("No verified default indicator mapping for antigen {antigen}. Provide indicator_code explicitly.")
     }
     indicator_code <- row$indicator_code[[1]]
   }
@@ -174,9 +220,15 @@ get_cases <- function(disease, indicator_code = NULL, years = NULL, countries = 
 
   if (is.null(indicator_code)) {
     map <- vpd_indicators()
-    row <- dplyr::filter(map, .data$type == "cases", .data$antigen_or_disease == disease)
+    row <- dplyr::filter(
+      map,
+      .data$type == "cases",
+      .data$antigen_or_disease == disease,
+      isTRUE(.data$verified),
+      !is.na(.data$indicator_code)
+    )
     if (nrow(row) == 0) {
-      cli::cli_abort("No default indicator mapping for disease {disease}. Provide indicator_code explicitly.")
+      cli::cli_abort("No verified default indicator mapping for disease {disease}. Provide indicator_code explicitly.")
     }
     indicator_code <- row$indicator_code[[1]]
   }
