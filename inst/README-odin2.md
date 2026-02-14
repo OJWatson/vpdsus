@@ -6,20 +6,27 @@ This package contains optional mechanistic model scaffolding using `{odin2}`.
 
 The mechanistic stack depends on `{odin2}` and `{dust2}` which are **not on CRAN**.
 
-To keep CI (and users) able to install dependencies reproducibly, we declare the
-mrc-ide r-universe repository in `DESCRIPTION`:
+**Policy:** these packages are treated as *optional, external dependencies* and are
+not listed in `DESCRIPTION` (to keep the base install CRAN-friendly).
 
-- `Additional_repositories: https://mrc-ide.r-universe.dev`
+To use the mechanistic helpers locally, install from the mrc-ide r-universe
+repository (recommended):
 
-This makes `{odin2}` and `{dust2}` discoverable to dependency solvers such as
-`pak` (used by `r-lib/actions/setup-r-dependencies@v2`). Note that `pak` does
-*not* automatically install GitHub `Remotes:`; it needs either CRAN or an
-additional repository such as r-universe.
+```r
+install.packages(
+  c("odin2", "dust2"),
+  repos = c("https://mrc-ide.r-universe.dev", "https://cloud.r-project.org")
+)
+```
 
-If you get errors like "Can't find package called dust2", check that:
+If you prefer strict pinning, you can install from GitHub at a specific ref, e.g.
+with `{remotes}`:
 
-1. `DESCRIPTION` still contains the `Additional_repositories` line above.
-2. The r-universe repo is reachable from the runner/network.
+```r
+# install.packages("remotes")
+remotes::install_github("mrc-ide/odin2")
+remotes::install_github("mrc-ide/dust2")
+```
 
 ## Optional pinning
 

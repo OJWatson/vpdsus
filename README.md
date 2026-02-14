@@ -87,7 +87,7 @@ To test that vignettes can build in an offline-friendly mode (best-effort):
 
 A binding redevelopment specification is included in:
 
-- `vpdsus_redevelopment_spec_md.md`
+- `docs/internal/vpdsus_redevelopment_spec_md.md`
 
 This roadmap defines the target end-state (including an explicit SIRV mechanistic model and fully tutorial-style vignettes) and the milestone sequence for getting there.
 

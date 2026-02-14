@@ -8,11 +8,15 @@
 !/docs/ROADMAP.md
 !/docs/STATUS.md
 !/docs/CRAN_CHECKLIST.md
+!/docs/internal/
+!/docs/internal/**
 !/docs/agent/
 !/docs/agent/**
 
 # R CMD check artefacts
 ..Rcheck/
+*.Rcheck/
+vpdsus_*.tar.gz
 
 # pkgdown output (GitHub Pages deploy uses gh-pages branch)
 /site/
