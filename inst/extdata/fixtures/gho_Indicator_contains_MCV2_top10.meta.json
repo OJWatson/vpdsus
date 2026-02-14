@@ -1,0 +1,7 @@
+{
+  "endpoint": "Indicator",
+  "url": "https://ghoapi.azureedge.net/api/Indicator?$filter=contains(IndicatorName,'MCV2')&$top=10",
+  "filter": "contains(IndicatorName,'MCV2')",
+  "top": 10,
+  "retrievedAtUtc": "2026-02-14 19:08:00 UTC"
+}

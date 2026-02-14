@@ -19,4 +19,12 @@ test_that("gho_find_indicator(offline=TRUE) returns pinned fixtures for addition
   rubella <- gho_find_indicator("Rubella", top_n = 10, offline = TRUE)
   expect_true(nrow(rubella) >= 1)
   expect_true(any(rubella$indicator_code == "WHS3_57"))
+
+  mcv1 <- gho_find_indicator("MCV1", top_n = 10, offline = TRUE)
+  expect_true(nrow(mcv1) >= 1)
+  expect_true(any(mcv1$indicator_code == "WHS8_110"))
+
+  mcv2 <- gho_find_indicator("MCV2", top_n = 10, offline = TRUE)
+  expect_true(nrow(mcv2) >= 1)
+  expect_true(any(mcv2$indicator_code == "MCV2"))
 })

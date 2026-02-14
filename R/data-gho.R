@@ -72,6 +72,8 @@ gho_find_indicator <- function(keyword, top_n = 50, offline = FALSE) {
         "dtp3" = "gho_Indicator_contains_DTP3_top10.json",
         "polio" = "gho_Indicator_contains_Polio_top10.json",
         "rubella" = "gho_Indicator_contains_Rubella_top10.json",
+        "mcv1" = "gho_Indicator_contains_MCV1_top10.json",
+        "mcv2" = "gho_Indicator_contains_MCV2_top10.json",
         NULL
       )
     }
