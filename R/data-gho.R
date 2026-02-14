@@ -60,13 +60,24 @@ gho_find_indicator <- function(keyword, top_n = 50, offline = FALSE) {
   assert_is_scalar_chr(keyword)
 
   if (isTRUE(offline)) {
-    # Currently we only ship a small fixture for a representative keyword used in
-    # vignettes; fall back to live mode for other queries.
-    if (identical(tolower(keyword), "measles") && top_n <= 10) {
-      path <- system.file(
-        "extdata", "fixtures", "gho_Indicator_contains_Measles_top10.json",
-        package = "vpdsus"
+    # Pinned fixtures for a small set of representative indicator keywords.
+    # Keep this list conservative; offline mode is for deterministic tests/vignettes.
+    keyword_lower <- tolower(keyword)
+
+    fixture <- NULL
+    if (top_n <= 10) {
+      fixture <- switch(
+        keyword_lower,
+        "measles" = "gho_Indicator_contains_Measles_top10.json",
+        "dtp3" = "gho_Indicator_contains_DTP3_top10.json",
+        "polio" = "gho_Indicator_contains_Polio_top10.json",
+        "rubella" = "gho_Indicator_contains_Rubella_top10.json",
+        NULL
       )
+    }
+
+    if (!is.null(fixture)) {
+      path <- system.file("extdata", "fixtures", fixture, package = "vpdsus")
       if (!identical(path, "")) {
         txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
         out <- gho_parse_json(txt)
