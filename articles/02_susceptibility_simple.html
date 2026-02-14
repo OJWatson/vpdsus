@@ -33,10 +33,10 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/data_access.html">Data access and caching</a></li>
-    <li><a class="dropdown-item" href="../articles/susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
-    <li><a class="dropdown-item" href="../articles/outbreak_models.html">Outbreak modelling</a></li>
-    <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (scaffold)</a></li>
+<li><a class="dropdown-item" href="../articles/01_data_access.html">Data access and caching</a></li>
+    <li><a class="dropdown-item" href="../articles/02_susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
+    <li><a class="dropdown-item" href="../articles/03_outbreak_models.html">Outbreak modelling</a></li>
+    <li><a class="dropdown-item" href="../articles/04_mechanistic_odin2.html">Mechanistic modelling in odin2 (scaffold)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -62,8 +62,8 @@
       <h1>Susceptibility estimates and WHO-style ranking plots</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/OJWatson/vpdsus/blob/main/vignettes/susceptibility_simple.Rmd" class="external-link"><code>vignettes/susceptibility_simple.Rmd</code></a></small>
-      <div class="d-none name"><code>susceptibility_simple.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/OJWatson/vpdsus/blob/main/vignettes/02_susceptibility_simple.Rmd" class="external-link"><code>vignettes/02_susceptibility_simple.Rmd</code></a></small>
+      <div class="d-none name"><code>02_susceptibility_simple.Rmd</code></div>
     </div>
 
     
@@ -105,10 +105,10 @@ ranking</li>
 <span><span class="va">rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/risk_rank.html">risk_rank</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">sA</span>, window_years <span class="op">=</span> <span class="fl">3</span>, year_end <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot_coverage_rank.html">plot_coverage_rank</a></span><span class="op">(</span><span class="va">rank</span>, top_n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="susceptibility_simple_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="02_susceptibility_simple_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">rank</span>, top_n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="susceptibility_simple_files/figure-html/unnamed-chunk-1-2.png" class="r-plt" alt="" width="700"></p>
+<p><img src="02_susceptibility_simple_files/figure-html/unnamed-chunk-1-2.png" class="r-plt" alt="" width="700"></p>
 <p>Method B cohort reconstruction:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_cohort.html">estimate_susceptible_cohort</a></span><span class="op">(</span><span class="va">panel</span>, coverage_col <span class="op">=</span> <span class="st">"coverage"</span>, births_col <span class="op">=</span> <span class="st">"births"</span>, pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span><span class="op">)</span></span>
