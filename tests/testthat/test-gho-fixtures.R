@@ -66,6 +66,48 @@ test_that("fixture parsing + standardisation works for coverage (MCV2)", {
   expect_true(all(std$coverage >= 0 & std$coverage <= 1))
 })
 
+test_that("fixture parsing + standardisation works for coverage (HepB3)", {
+  path <- system.file("extdata", "fixtures", "gho_WHS4_117_USA_2020.json", package = "vpdsus")
+  txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  raw <- gho_parse_json(txt)
+  std <- gho_standardise_coverage(raw)
+
+  expect_true(is.data.frame(std))
+  expect_true(all(c("iso3", "year", "coverage") %in% names(std)))
+  expect_true(nrow(std) >= 1)
+  expect_true(all(std$iso3 == "USA"))
+  expect_true(all(std$year == 2020L))
+  expect_true(all(std$coverage >= 0 & std$coverage <= 1))
+})
+
+test_that("fixture parsing + standardisation works for coverage (Hib3)", {
+  path <- system.file("extdata", "fixtures", "gho_WHS4_129_USA_2020.json", package = "vpdsus")
+  txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  raw <- gho_parse_json(txt)
+  std <- gho_standardise_coverage(raw)
+
+  expect_true(is.data.frame(std))
+  expect_true(all(c("iso3", "year", "coverage") %in% names(std)))
+  expect_true(nrow(std) >= 1)
+  expect_true(all(std$iso3 == "USA"))
+  expect_true(all(std$year == 2020L))
+  expect_true(all(std$coverage >= 0 & std$coverage <= 1))
+})
+
+test_that("fixture parsing + standardisation works for coverage (PCV3)", {
+  path <- system.file("extdata", "fixtures", "gho_PCV3_USA_2020.json", package = "vpdsus")
+  txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  raw <- gho_parse_json(txt)
+  std <- gho_standardise_coverage(raw)
+
+  expect_true(is.data.frame(std))
+  expect_true(all(c("iso3", "year", "coverage") %in% names(std)))
+  expect_true(nrow(std) >= 1)
+  expect_true(all(std$iso3 == "USA"))
+  expect_true(all(std$year == 2020L))
+  expect_true(all(std$coverage >= 0 & std$coverage <= 1))
+})
+
 test_that("fixture parsing + standardisation works for cases", {
   path <- system.file("extdata", "fixtures", "gho_WHS3_62_USA_2020.json", package = "vpdsus")
   txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
@@ -81,6 +123,19 @@ test_that("fixture parsing + standardisation works for cases", {
 
 test_that("fixture parsing + standardisation works for cases (rubella)", {
   path <- system.file("extdata", "fixtures", "gho_WHS3_57_USA_2020.json", package = "vpdsus")
+  txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  raw <- gho_parse_json(txt)
+  std <- gho_standardise_cases(raw)
+
+  expect_true(is.data.frame(std))
+  expect_true(all(c("iso3", "year", "cases") %in% names(std)))
+  expect_true(nrow(std) >= 1)
+  expect_true(all(std$iso3 == "USA"))
+  expect_true(all(std$year == 2020L))
+})
+
+test_that("fixture parsing + standardisation works for cases (pertussis)", {
+  path <- system.file("extdata", "fixtures", "gho_WHS3_43_USA_2020.json", package = "vpdsus")
   txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
   raw <- gho_parse_json(txt)
   std <- gho_standardise_cases(raw)
