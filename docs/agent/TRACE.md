@@ -20,6 +20,7 @@ Fields:
   branch: main
   commit_parent: a105ad0520ea20826e307b7087068fda8fa0bb61
   timestamp: 2026-02-14T06:50:34Z
+  head_after: 4fdd5b182e08563879969e67972e6b83ed7d7f59
 
 - task_id: M0.1
   branch: main
