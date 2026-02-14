@@ -1,4 +1,4 @@
-Now: M1.1 — Implement get_country_metadata() and expand vpd_indicators() per spec
+Now: M1.2 — Add tests + pinned fixtures for additional indicators (coverage + cases)
 
 Next:
-- M1.2 — Add tests + pinned fixtures for additional indicators (coverage + cases)
+- M1.3 — Ensure pkgdown reference index includes get_country_metadata (or mark internal)
