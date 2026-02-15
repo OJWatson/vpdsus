@@ -9,3 +9,10 @@ test_that("get_demography(source='fixture_wpp') returns expected columns", {
   expect_true(all(d$births > 0))
   expect_true(all(d$pop_0_4 <= d$pop_total))
 })
+
+test_that("get_demography() standardises ISO3 inputs", {
+  d <- get_demography(source = "fixture_wpp", years = 2020, countries = c("usa", " Usa "))
+
+  expect_equal(unique(d$iso3), "USA")
+  expect_equal(unique(d$year), 2020L)
+})
