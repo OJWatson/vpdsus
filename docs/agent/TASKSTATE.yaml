@@ -156,7 +156,7 @@ tasks:
     updated_at_utc: '2026-02-15T22:05:18Z'
   CI.FIX.M2:
     last:
-      commit: dd0b307f696236f02c6aeca245461c7b0438f8c3
+      commit: 3b7deccfb969e86507646f8e91045d83358a2eb3
       log_path: /home/kana/.openclaw/workspace/portfolio/reports/runs/20260215T233006Z/logs/vpdsus.log
       outcome: success
       pushed: true
