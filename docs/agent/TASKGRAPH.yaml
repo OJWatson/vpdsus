@@ -20,4 +20,36 @@ tasks:
   - M1.3
   id: M2.0
   title: Add minimal demography accessor scaffold + offline fixture + tests
+- depends_on:
+  - M2.0
+  id: M2.1
+  title: 'Panel builder v1: join coverage/cases/demography into modelling-ready panel'
+- depends_on:
+  - M2.1
+  id: M2.2
+  title: 'Panel builder tests: shape checks + missingness diagnostics'
+- depends_on:
+  - M2.2
+  id: M2.3
+  title: 'Demography accessor: add source selection + caching key stability'
+- depends_on:
+  - M2.3
+  id: M3.0
+  title: 'Susceptibility estimates v1: implement minimal method on example panel'
+- depends_on:
+  - M3.0
+  id: M3.1
+  title: 'WHO-style outputs: ranking table + plot helper + golden test'
+- depends_on:
+  - M3.1
+  id: M4.0
+  title: 'Outbreak model scaffold: baseline regression over panel'
+- depends_on:
+  - M4.0
+  id: M4.1
+  title: 'Evaluation helper: metrics + deterministic summary test'
+- depends_on:
+  - M4.1
+  id: M5.0
+  title: Optional mechanistic scaffold in odin2 (simulation only)
 version: 1
