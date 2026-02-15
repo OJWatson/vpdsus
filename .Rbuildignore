@@ -14,3 +14,8 @@
 ^doc$
 ^Meta$
 ^cran-comments\.md$
+^\.git$
+^\.gitignore$
+^\.Rcheck$
+^\.\.Rcheck$
+^vpdsus\.Rcheck$
