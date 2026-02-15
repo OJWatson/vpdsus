@@ -45,7 +45,7 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::knitr, any::rmarkdown
+          extra-packages: any::rcmdcheck, any::knitr, any::rmarkdown, any::testthat, any::withr
           dependencies: "hard"
 
       - uses: r-lib/actions/check-r-package@v2
