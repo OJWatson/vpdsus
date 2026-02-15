@@ -1,0 +1,23 @@
+defaults:
+  acceptance:
+  - R CMD check --no-manual .
+  - R -q -e "pkgdown::build_site()"
+  - ./scripts/build_vignettes_offline.sh
+project_id: vpdsus
+tasks:
+- depends_on: []
+  id: M1.1
+  title: Add get_country_metadata and expand indicator defaults
+- depends_on:
+  - M1.1
+  id: M1.2
+  title: Add tests + pinned fixtures for additional indicators (coverage + cases)
+- depends_on:
+  - M1.2
+  id: M1.3
+  title: Ensure pkgdown reference index includes get_country_metadata (or mark internal)
+- depends_on:
+  - M1.3
+  id: M2.0
+  title: Add minimal demography accessor scaffold + offline fixture + tests
+version: 1
