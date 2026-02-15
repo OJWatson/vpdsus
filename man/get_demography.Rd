@@ -7,7 +7,8 @@
 get_demography(
   years = NULL,
   countries = NULL,
-  source = c("example", "fixture_wpp")
+  source = getOption("vpdsus.demography_source", "example"),
+  cache = TRUE
 )
 }
 \arguments{
@@ -15,7 +16,10 @@ get_demography(
 
 \item{countries}{Optional ISO3 vector.}
 
-\item{source}{One of "example" (default) or "fixture_wpp".}
+\item{source}{One of "example" (default) or "fixture_wpp".
+You can set a global default via \code{options(vpdsus.demography_source = "fixture_wpp")}.}
+
+\item{cache}{Logical; if \code{TRUE} (default) cache the computed demography tibble.}
 }
 \value{
 tibble with iso3, year, pop_total, pop_0_4, pop_5_14, births.

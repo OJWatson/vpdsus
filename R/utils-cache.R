@@ -39,3 +39,9 @@ cache_paths <- function(key, ext = "json") {
   if (!dir.exists(dir)) dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   file.path(dir, paste0(key, ".", ext))
 }
+
+cache_paths_demography <- function(key, ext = "rds") {
+  dir <- file.path(vpdsus_cache_dir(), "demography")
+  if (!dir.exists(dir)) dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+  file.path(dir, paste0(key, ".", ext))
+}
