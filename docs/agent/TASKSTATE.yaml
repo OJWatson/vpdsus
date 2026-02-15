@@ -139,7 +139,7 @@ tasks:
       commit: 452275d7089baf6b17b91dd8bba35fdcf9cdd80b
       log_path: /home/kana/.openclaw/workspace/portfolio/reports/runs/20260215T213003Z/logs/vpdsus.log
       outcome: success
-      pushed: false
+      pushed: true
       reason: completed
       tick_ts: 20260215T213003Z
     status: done
