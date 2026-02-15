@@ -20,6 +20,7 @@
 <url><loc>https://ojwatson.github.io/vpdsus/reference/estimate_susceptible_cohort_ve.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/estimate_susceptible_static.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/evaluate_models.html</loc></url>
+<url><loc>https://ojwatson.github.io/vpdsus/reference/evaluate_outbreak_time_split.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/fit_outbreak_models.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/get_cases.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/get_country_metadata.html</loc></url>
@@ -37,6 +38,8 @@
 <url><loc>https://ojwatson.github.io/vpdsus/reference/odin2_simulate.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/panel_diagnostics.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/plot_coverage_rank.html</loc></url>
+<url><loc>https://ojwatson.github.io/vpdsus/reference/plot_outbreak_calibration.html</loc></url>
+<url><loc>https://ojwatson.github.io/vpdsus/reference/plot_outbreak_predictions_time.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/plot_panel_diagnostics.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/plot_susceptible_rank.html</loc></url>
 <url><loc>https://ojwatson.github.io/vpdsus/reference/risk_rank.html</loc></url>
