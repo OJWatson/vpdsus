@@ -1,5 +1,5 @@
 project_id: vpdsus
-repo_status: RUNNING
+repo_status: AWAITING_CI
 tasks:
   M1.1:
     last:
