@@ -7,7 +7,8 @@ Run from the repository root.
 1) Package checks (without manual):
 
 ```sh
-R CMD check --no-manual
+R CMD build .
+R CMD check --no-manual vpdsus_*.tar.gz
 ```
 
 2) Build pkgdown site:

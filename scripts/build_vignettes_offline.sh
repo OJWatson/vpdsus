@@ -5,7 +5,12 @@ set -euo pipefail
 # If user namespaces/network namespaces are available, run vignette build with networking disabled.
 
 run_build() {
-  Rscript -e 'devtools::build_vignettes()'
+  # Use base R tooling (no devtools dependency) and avoid writing into the
+  # working tree (e.g. inst/doc). We trigger vignette building via R CMD build,
+  # then discard the tarball.
+  rm -f vpdsus_*.tar.gz
+  R CMD build . --no-manual
+  rm -f vpdsus_*.tar.gz
 }
 
 if command -v unshare >/dev/null 2>&1; then

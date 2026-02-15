@@ -3,7 +3,7 @@ project_id: vpdsus
 
 defaults:
   acceptance:
-    - R CMD check --no-manual .
+    - R CMD build . && R CMD check --no-manual vpdsus_*.tar.gz
     - R -q -e "pkgdown::build_site()"
     - ./scripts/build_vignettes_offline.sh
 
