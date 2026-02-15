@@ -101,6 +101,24 @@ cases <- tibble::as_tibble(raw_cases) |>
 cases
 ```
 
+### Build a modelling-ready panel
+
+Once you have standardised coverage, cases, and demography series you can join
+these into a country-year panel for downstream modelling:
+
+```{r}
+demog <- get_demography(source = "fixture_wpp", years = 2020, countries = "USA")
+
+panel_usa_2020 <- build_panel(
+  coverage = cov,
+  cases = cases,
+  demography = demog
+)
+
+panel_usa_2020
+panel_diagnostics(panel_usa_2020)
+```
+
 ### Where to go next (end-to-end workflow)
 
 The functions above focus on data retrieval and standardisation. A typical end-to-end
