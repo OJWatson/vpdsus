@@ -20,9 +20,16 @@ assert_unique_key <- function(x, key_cols, name = deparse(substitute(x))) {
     dplyr::filter(.data$n > 1)
 
   if (nrow(dupes) > 0) {
-    cli::cli_abort(
-      "{.var {name}} contains duplicated key rows for {key_cols}. Example duplicates: {utils::head(utils::capture.output(print(dupes, n = 10)), 10)}"
+    examples <- utils::head(
+      utils::capture.output(print(dupes, n = 10)),
+      10
     )
+
+    cli::cli_abort(c(
+      "{.var {name}} contains duplicated key rows for {key_cols}.",
+      "Example duplicates:",
+      "{examples}"
+    ))
   }
 
   invisible(TRUE)
