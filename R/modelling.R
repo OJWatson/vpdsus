@@ -62,6 +62,7 @@ make_modelling_panel <- function(panel, suscept, outcome = c("outbreak_pc", "out
     susceptible_n = .data$susceptible_n %||% NA_real_,
     cases = .data$cases,
     cases_next,
+    cases_per_100k = .data$cases_per_100k,
     pop_total = .data$pop_total,
     who_region = .data$who_region %||% NA_character_
   )
@@ -78,7 +79,7 @@ fit_outbreak_models <- function(data) {
 
   data <- tibble::as_tibble(data) |>
     dplyr::mutate(
-      who_region = as.factor(.data$who_region),
+      who_region = as.factor(dplyr::coalesce(as.character(.data$who_region), "UNK")),
       year = as.numeric(.data$year)
     )
 
@@ -133,7 +134,8 @@ evaluate_models <- function(data, train_end = NULL) {
   test2 <- tibble::as_tibble(test) |>
     dplyr::mutate(
       year = as.numeric(.data$year),
-      who_region = if (is.null(who_levels)) as.factor(.data$who_region) else factor(.data$who_region, levels = who_levels)
+      who_region_chr = dplyr::coalesce(as.character(.data$who_region), "UNK"),
+      who_region = if (is.null(who_levels)) as.factor(.data$who_region_chr) else factor(.data$who_region_chr, levels = who_levels)
     )
 
   p <- suppressWarnings(stats::predict(fit, newdata = test2, type = "response"))
