@@ -83,6 +83,51 @@ out4 <- odin2_simulate(
 
 out4
 
+# Compare to Method D (susceptible balance updated using cases)
+#
+# The `balance_discrete` template is intended to match the Method D recurrence,
+# expressed as an explicit difference equation. Here we compute Method D and
+# compare trajectories.
+
+sus_d <- estimate_susceptible_case_balance(
+  panel,
+  rho = 1,
+  s0 = 0,
+  coverage_col = "coverage",
+  births_col = "births",
+  cases_col = "cases",
+  pop_col = "pop_total",
+  age_group = "total"
+)
+
+cmp <- dplyr::left_join(
+  dplyr::mutate(out4, year = time),
+  dplyr::select(sus_d, year, susceptible_n),
+  by = "year"
+)
+
+cmp
+
+# Simple comparison plot
+p <- ggplot2::ggplot(
+  cmp,
+  ggplot2::aes(x = year)
+) +
+  ggplot2::geom_line(ggplot2::aes(y = S, colour = "odin2"), linewidth = 1) +
+  ggplot2::geom_point(ggplot2::aes(y = S, colour = "odin2"), size = 2) +
+  ggplot2::geom_line(ggplot2::aes(y = susceptible_n, colour = "method_d"), linewidth = 1, linetype = 2) +
+  ggplot2::geom_point(ggplot2::aes(y = susceptible_n, colour = "method_d"), size = 2, shape = 1) +
+  ggplot2::scale_colour_manual(values = c(odin2 = "#1b9e77", method_d = "#d95f02")) +
+  ggplot2::labs(
+    x = "Year",
+    y = "Susceptible (count)",
+    colour = NULL,
+    title = paste0("Susceptible balance: odin2 vs Method D (", iso3, ")")
+  ) +
+  ggplot2::theme_minimal(base_size = 11)
+
+p
+
 # Optional: calibrate rho (reporting fraction) to a target susceptibility
 #
 # This is a minimal "inference hook" example. Here we create a target

@@ -1,10 +1,12 @@
 Now:
-- M4.1 — Outbreak model evaluation: time split metrics + basic plots
+- M5.END — Milestone end: M5 complete (gate on CI)
 
 Next:
-- M5.0 — Optional mechanistic scaffold in odin2 (simulation only)
+- CI.FIX.M5 — CI fix: make GitHub Actions green for M5 boundary
 
 Done:
+- 2026-02-15: M5.0 — Optional mechanistic scaffold in odin2 (simulation only)
+- 2026-02-15: M4.1 — Outbreak model evaluation: time split metrics + basic plots
 - 2026-02-15: M4.0 — Outbreak model scaffold: baseline regression over panel
 - 2026-02-15: M3.1 — WHO-style outputs: ranking table + plot helper + golden test
 - 2026-02-15: M3.0 — Susceptibility estimates v1: implement minimal method on example panel
