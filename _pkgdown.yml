@@ -35,6 +35,9 @@ reference:
   - make_modelling_panel
   - fit_outbreak_models
   - evaluate_models
+  - evaluate_outbreak_time_split
+  - plot_outbreak_predictions_time
+  - plot_outbreak_calibration
 - title: Mechanistic (optional)
   contents:
   - starts_with("odin2_")

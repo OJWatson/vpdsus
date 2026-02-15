@@ -12,8 +12,10 @@ evaluate_models(data, train_end = NULL)
 \item{train_end}{Last year included in training.}
 }
 \value{
-tibble with accuracy and Brier score.
+Single-row tibble with evaluation metrics.
 }
 \description{
-Time-aware model evaluation (simple split)
+\code{evaluate_models()} is a convenience wrapper around
+\code{\link[=evaluate_outbreak_time_split]{evaluate_outbreak_time_split()}} that returns a single-row tibble of summary
+metrics.
 }

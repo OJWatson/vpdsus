@@ -93,13 +93,51 @@ fit_outbreak_models <- function(data) {
 
 #' Time-aware model evaluation (simple split)
 #'
+#' `evaluate_models()` is a convenience wrapper around
+#' [evaluate_outbreak_time_split()] that returns a single-row tibble of summary
+#' metrics.
+#'
 #' @param data Modelling panel.
 #' @param train_end Last year included in training.
 #'
-#' @return tibble with accuracy and Brier score.
+#' @return Single-row tibble with evaluation metrics.
 #' @export
 evaluate_models <- function(data, train_end = NULL) {
-  assert_has_cols(data, c("year", "outcome", "susceptible_prop", "who_region"))
+  evaluate_outbreak_time_split(data, train_end = train_end)$metrics
+}
+
+roc_auc_binary <- function(y, p) {
+  # AUC via Mann–Whitney (rank) statistic; deterministic and dependency-light.
+  y <- as.integer(y)
+  if (!all(y %in% c(0L, 1L))) {
+    cli::cli_abort("y must be binary (0/1)")
+  }
+  n_pos <- sum(y == 1L)
+  n_neg <- sum(y == 0L)
+  if (n_pos == 0L || n_neg == 0L) {
+    return(NA_real_)
+  }
+  r <- rank(p, ties.method = "average")
+  u <- sum(r[y == 1L]) - (n_pos * (n_pos + 1) / 2)
+  as.numeric(u / (n_pos * n_neg))
+}
+
+#' Time-aware outbreak model evaluation with plots
+#'
+#' Fits the baseline outbreak model on an early-year training set and evaluates
+#' it on later years.
+#'
+#' @param data Modelling panel from [make_modelling_panel()].
+#' @param train_end Last year included in training. If `NULL`, chooses a cutoff
+#'   that holds out at least one distinct year.
+#' @param threshold Classification threshold for `pred_outbreak`.
+#' @param n_bins Number of bins for the calibration plot.
+#'
+#' @return List with components `metrics` (single-row tibble), `predictions`
+#'   (test-set tibble with probabilities), and `plots` (ggplot objects).
+#' @export
+evaluate_outbreak_time_split <- function(data, train_end = NULL, threshold = 0.5, n_bins = 10) {
+  assert_has_cols(data, c("year", "year_next", "outcome", "susceptible_prop", "who_region"))
 
   years <- sort(unique(stats::na.omit(as.numeric(data$year))))
   if (length(years) < 2) {
@@ -107,7 +145,6 @@ evaluate_models <- function(data, train_end = NULL) {
   }
 
   if (is.null(train_end)) {
-    # Choose a cutoff that guarantees at least one year in the test set.
     idx <- max(1, floor(0.7 * length(years)))
     idx <- min(idx, length(years) - 1)
     train_end <- years[[idx]]
@@ -117,39 +154,129 @@ evaluate_models <- function(data, train_end = NULL) {
   test <- dplyr::filter(data, .data$year > train_end)
 
   if (nrow(test) == 0) {
-    return(tibble::tibble(
+    metrics0 <- tibble::tibble(
       train_end = train_end,
       n_train = nrow(train),
       n_test = 0L,
+      prevalence = NA_real_,
       accuracy = NA_real_,
-      brier = NA_real_
-    ))
+      brier = NA_real_,
+      log_loss = NA_real_,
+      auc = NA_real_
+    )
+    return(list(metrics = metrics0, predictions = tibble::tibble(), plots = list(time = NULL, calibration = NULL)))
   }
 
   fit <- fit_outbreak_models(train)$model
 
-  # Ensure test data matches training encodings (notably factor levels) so predict()
-  # does not silently drop rows.
   who_levels <- fit$xlevels$who_region %||% NULL
   test2 <- tibble::as_tibble(test) |>
     dplyr::mutate(
       year = as.numeric(.data$year),
       who_region_chr = dplyr::coalesce(as.character(.data$who_region), "UNK"),
-      who_region = if (is.null(who_levels)) as.factor(.data$who_region_chr) else factor(.data$who_region_chr, levels = who_levels)
+      who_region_chr = if (is.null(who_levels)) {
+        .data$who_region_chr
+      } else {
+        dplyr::if_else(.data$who_region_chr %in% who_levels, .data$who_region_chr, "UNK")
+      },
+      who_region = if (is.null(who_levels)) {
+        as.factor(.data$who_region_chr)
+      } else {
+        factor(.data$who_region_chr, levels = union(who_levels, "UNK"))
+      }
     )
 
   p <- suppressWarnings(stats::predict(fit, newdata = test2, type = "response"))
-  y <- test2$outcome
+  y <- as.integer(test2$outcome)
 
-  pred <- as.integer(p >= 0.5)
+  pred <- as.integer(p >= threshold)
   acc <- mean(pred == y)
   brier <- mean((p - y)^2)
+  eps <- 1e-15
+  p2 <- pmin(pmax(p, eps), 1 - eps)
+  log_loss <- -mean(y * log(p2) + (1 - y) * log(1 - p2))
+  auc <- roc_auc_binary(y, p)
 
-  tibble::tibble(
+  metrics <- tibble::tibble(
     train_end = train_end,
     n_train = nrow(train),
-    n_test = nrow(test),
+    n_test = nrow(test2),
+    prevalence = mean(y),
     accuracy = acc,
-    brier = brier
+    brier = brier,
+    log_loss = log_loss,
+    auc = auc
   )
+
+  preds <- dplyr::mutate(
+    test2,
+    prob_outbreak = as.numeric(p),
+    pred_outbreak = pred
+  )
+
+  plot_time <- plot_outbreak_predictions_time(preds)
+  plot_cal <- plot_outbreak_calibration(preds, n_bins = n_bins)
+
+  list(metrics = metrics, predictions = preds, plots = list(time = plot_time, calibration = plot_cal))
+}
+
+#' Plot observed vs predicted outbreak probability over time
+#'
+#' @param predictions A data frame as returned by `evaluate_outbreak_time_split()$predictions`.
+#'
+#' @return A ggplot.
+#' @export
+plot_outbreak_predictions_time <- function(predictions) {
+  assert_has_cols(predictions, c("year_next", "outcome", "prob_outbreak"))
+
+  df <- tibble::as_tibble(predictions) |>
+    dplyr::mutate(year_next = as.integer(.data$year_next)) |>
+    dplyr::group_by(.data$year_next) |>
+    dplyr::summarise(
+      n = dplyr::n(),
+      observed = mean(.data$outcome),
+      predicted = mean(.data$prob_outbreak),
+      .groups = "drop"
+    )
+
+  ggplot2::ggplot(df, ggplot2::aes(x = .data$year_next)) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$observed, colour = "Observed")) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$observed, colour = "Observed")) +
+    ggplot2::geom_line(ggplot2::aes(y = .data$predicted, colour = "Predicted")) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$predicted, colour = "Predicted")) +
+    ggplot2::scale_colour_manual(values = c(Observed = "black", Predicted = "#3366CC")) +
+    ggplot2::scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
+    ggplot2::labs(x = "Outcome year", y = "Outbreak probability", colour = NULL)
+}
+
+#' Calibration plot (binned)
+#'
+#' @param predictions A data frame as returned by `evaluate_outbreak_time_split()$predictions`.
+#' @param n_bins Number of probability bins.
+#'
+#' @return A ggplot.
+#' @export
+plot_outbreak_calibration <- function(predictions, n_bins = 10) {
+  assert_has_cols(predictions, c("outcome", "prob_outbreak"))
+
+  df <- tibble::as_tibble(predictions) |>
+    dplyr::mutate(
+      bin = dplyr::ntile(.data$prob_outbreak, n_bins)
+    ) |>
+    dplyr::group_by(.data$bin) |>
+    dplyr::summarise(
+      n = dplyr::n(),
+      p_hat = mean(.data$prob_outbreak),
+      observed = mean(.data$outcome),
+      .groups = "drop"
+    )
+
+  ggplot2::ggplot(df, ggplot2::aes(x = .data$p_hat, y = .data$observed)) +
+    ggplot2::geom_abline(intercept = 0, slope = 1, linetype = 2, colour = "grey50") +
+    ggplot2::geom_point(ggplot2::aes(size = .data$n)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_size_continuous(range = c(1.5, 5)) +
+    ggplot2::scale_x_continuous(limits = c(0, 1), labels = scales::label_percent(accuracy = 1)) +
+    ggplot2::scale_y_continuous(limits = c(0, 1), labels = scales::label_percent(accuracy = 1)) +
+    ggplot2::labs(x = "Mean predicted probability", y = "Observed outbreak rate", size = "N")
 }
