@@ -96,14 +96,14 @@ tasks:
     updated_at_utc: ''
   M4.0:
     last:
-      commit: ''
-      log_path: ''
-      outcome: ''
-      pushed: null
-      reason: ''
-      tick_ts: ''
-    status: todo
-    updated_at_utc: ''
+      commit: 9528728be27590bedc2ccd2cd823332161abcdd7
+      log_path: /home/kana/.openclaw/workspace/portfolio/reports/runs/20260215T150003Z/logs/vpdsus.log
+      outcome: success
+      pushed: true
+      reason: completed
+      tick_ts: 20260215T150003Z
+    status: done
+    updated_at_utc: '2026-02-15T15:05:30Z'
   M4.1:
     last:
       commit: ''
