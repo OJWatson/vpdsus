@@ -195,6 +195,31 @@ output columns.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> USA    <span style="text-decoration: underline;">2</span>020  <span style="text-decoration: underline;">1</span>275</span></span></code></pre></div>
 </div>
 <div class="section level3">
+<h3 id="build-a-modelling-ready-panel">Build a modelling-ready panel<a class="anchor" aria-label="anchor" href="#build-a-modelling-ready-panel"></a>
+</h3>
+<p>Once you have standardised coverage, cases, and demography series you
+can join these into a country-year panel for downstream modelling:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">demog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_demography.html">get_demography</a></span><span class="op">(</span>source <span class="op">=</span> <span class="st">"fixture_wpp"</span>, years <span class="op">=</span> <span class="fl">2020</span>, countries <span class="op">=</span> <span class="st">"USA"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">panel_usa_2020</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_panel.html">build_panel</a></span><span class="op">(</span></span>
+<span>  coverage <span class="op">=</span> <span class="va">cov</span>,</span>
+<span>  cases <span class="op">=</span> <span class="va">cases</span>,</span>
+<span>  demography <span class="op">=</span> <span class="va">demog</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">panel_usa_2020</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
+<span><span class="co">#&gt;   iso3   year pop_total  pop_0_4 pop_5_14  births coverage cases</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> USA    <span style="text-decoration: underline;">2</span>020  62<span style="text-decoration: underline;">250</span>000 19<span style="text-decoration: underline;">500</span>000 42<span style="text-decoration: underline;">750</span>000 3<span style="text-decoration: underline;">700</span>000     0.91  <span style="text-decoration: underline;">1</span>275</span></span>
+<span><span class="fu"><a href="../reference/panel_diagnostics.html">panel_diagnostics</a></span><span class="op">(</span><span class="va">panel_usa_2020</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
+<span><span class="co">#&gt;       n missing_coverage missing_cases missing_pop</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1                0             0           0</span></span></code></pre></div>
+</div>
+<div class="section level3">
 <h3 id="where-to-go-next-end-to-end-workflow">Where to go next (end-to-end workflow)<a class="anchor" aria-label="anchor" href="#where-to-go-next-end-to-end-workflow"></a>
 </h3>
 <p>The functions above focus on data retrieval and standardisation. A
@@ -208,7 +233,7 @@ models).</li>
 <p>This repository ships <code><a href="../reference/vpdsus_example_panel.html">vpdsus_example_panel()</a></code> so the
 workflow can be demonstrated deterministically without live
 downloads:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vpdsus_example_panel.html">vpdsus_example_panel</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 1) Susceptibility estimation (simple static method)</span></span>
@@ -227,10 +252,10 @@ downloads:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AFG           0.67  EMR        Afghanis…       2<span style="text-decoration: underline;">145</span>000             0.33 static</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: risk_category &lt;fct&gt;, rank_global &lt;int&gt;</span></span></span>
 <span><span class="fu"><a href="../reference/plot_coverage_rank.html">plot_coverage_rank</a></span><span class="op">(</span><span class="va">r</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
-<p><img src="01_data_access_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="700"></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p><img src="01_data_access_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">r</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
-<p><img src="01_data_access_files/figure-html/unnamed-chunk-6-2.png" class="r-plt" alt="" width="700"></p>
+<p><img src="01_data_access_files/figure-html/unnamed-chunk-7-2.png" class="r-plt" alt="" width="700"></p>
 <p>See the other vignettes for method choices and modelling:</p>
 <ul>
 <li><em>Susceptibility estimates and WHO-style ranking plots</em></li>

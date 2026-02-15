@@ -46,7 +46,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_panel</span><span class="op">(</span><span class="va">coverage</span>, <span class="va">cases</span>, <span class="va">demography</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_panel</span><span class="op">(</span><span class="va">coverage</span>, <span class="va">cases</span>, <span class="va">demography</span>, country_metadata <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -63,6 +63,11 @@
 
 <dt id="arg-demography">demography<a class="anchor" aria-label="anchor" href="#arg-demography"></a></dt>
 <dd><p>tibble from <code><a href="get_demography.html">get_demography()</a></code>.</p></dd>
+
+
+<dt id="arg-country-metadata">country_metadata<a class="anchor" aria-label="anchor" href="#arg-country-metadata"></a></dt>
+<dd><p>Optional tibble from <code><a href="get_country_metadata.html">get_country_metadata()</a></code> with at
+least iso3, country, who_region. If provided, will be joined onto the panel.</p></dd>
 
 </dl></div>
     <div class="section level2">
