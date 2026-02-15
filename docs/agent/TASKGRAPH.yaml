@@ -1,55 +1,127 @@
+version: 1
+project_id: vpdsus
+
 defaults:
   acceptance:
-  - R CMD check --no-manual .
-  - R -q -e "pkgdown::build_site()"
-  - ./scripts/build_vignettes_offline.sh
-project_id: vpdsus
+    - R CMD check --no-manual .
+    - R -q -e "pkgdown::build_site()"
+    - ./scripts/build_vignettes_offline.sh
+
 tasks:
-- depends_on: []
-  id: M1.1
-  title: Add get_country_metadata and expand indicator defaults
-- depends_on:
-  - M1.1
-  id: M1.2
-  title: Add tests + pinned fixtures for additional indicators (coverage + cases)
-- depends_on:
-  - M1.2
-  id: M1.3
-  title: Ensure pkgdown reference index includes get_country_metadata (or mark internal)
-- depends_on:
-  - M1.3
-  id: M2.0
-  title: Add minimal demography accessor scaffold + offline fixture + tests
-- depends_on:
-  - M2.0
-  id: M2.1
-  title: 'Panel builder v1: join coverage/cases/demography into modelling-ready panel'
-- depends_on:
-  - M2.1
-  id: M2.2
-  title: 'Panel builder tests: shape checks + missingness diagnostics'
-- depends_on:
-  - M2.2
-  id: M2.3
-  title: 'Demography accessor: add source selection + caching key stability'
-- depends_on:
-  - M2.3
-  id: M3.0
-  title: 'Susceptibility estimates v1: implement minimal method on example panel'
-- depends_on:
-  - M3.0
-  id: M3.1
-  title: 'WHO-style outputs: ranking table + plot helper + golden test'
-- depends_on:
-  - M3.1
-  id: M4.0
-  title: 'Outbreak model scaffold: baseline regression over panel'
-- depends_on:
-  - M4.0
-  id: M4.1
-  title: 'Evaluation helper: metrics + deterministic summary test'
-- depends_on:
-  - M4.1
-  id: M5.0
-  title: Optional mechanistic scaffold in odin2 (simulation only)
-version: 1
+  # M1 — data access: WHO coverage and cases
+  - id: M1.1
+    title: Add get_country_metadata and expand indicator defaults
+    depends_on: []
+  - id: M1.2
+    title: Add tests + pinned fixtures for additional indicators (coverage + cases)
+    depends_on: [M1.1]
+  - id: M1.3
+    title: Ensure pkgdown reference index includes get_country_metadata (or mark internal)
+    depends_on: [M1.2]
+  - id: M1.END
+    title: "Milestone end: M1 complete (gate on CI)"
+    depends_on: [M1.3]
+  - id: CI.FIX.M1
+    title: "CI fix: make GitHub Actions green for M1 boundary"
+    depends_on: [M1.END]
+
+  # M2 — demography retrieval and panel building
+  - id: M2.0
+    title: Add minimal demography accessor scaffold + offline fixture + tests
+    depends_on: [M1.END]
+  - id: M2.1
+    title: "Panel builder v1: join coverage/cases/demography into modelling-ready panel"
+    depends_on: [M2.0]
+  - id: M2.2
+    title: "Panel builder tests: shape checks + missingness diagnostics"
+    depends_on: [M2.1]
+  - id: M2.3
+    title: "Demography accessor: add source selection + caching key stability"
+    depends_on: [M2.2]
+  - id: M2.END
+    title: "Milestone end: M2 complete (gate on CI)"
+    depends_on: [M2.3]
+  - id: CI.FIX.M2
+    title: "CI fix: make GitHub Actions green for M2 boundary"
+    depends_on: [M2.END]
+
+  # M3 — susceptibility estimates v1 + outputs
+  - id: M3.0
+    title: "Susceptibility estimates v1: implement minimal method on example panel"
+    depends_on: [M2.END]
+  - id: M3.1
+    title: "WHO-style outputs: ranking table + plot helper + golden test"
+    depends_on: [M3.0]
+  - id: M3.END
+    title: "Milestone end: M3 complete (gate on CI)"
+    depends_on: [M3.1]
+  - id: CI.FIX.M3
+    title: "CI fix: make GitHub Actions green for M3 boundary"
+    depends_on: [M3.END]
+
+  # M4 — statistical outbreak models over panel
+  - id: M4.0
+    title: "Outbreak model scaffold: baseline regression over panel"
+    depends_on: [M3.END]
+  - id: M4.1
+    title: "Evaluation helper: metrics + deterministic summary test"
+    depends_on: [M4.0]
+  - id: M4.END
+    title: "Milestone end: M4 complete (gate on CI)"
+    depends_on: [M4.1]
+  - id: CI.FIX.M4
+    title: "CI fix: make GitHub Actions green for M4 boundary"
+    depends_on: [M4.END]
+
+  # M5 — mechanistic scaffolding (simulation only)
+  - id: M5.0
+    title: Optional mechanistic scaffold in odin2 (simulation only)
+    depends_on: [M4.END]
+  - id: M5.END
+    title: "Milestone end: M5 complete (gate on CI)"
+    depends_on: [M5.0]
+  - id: CI.FIX.M5
+    title: "CI fix: make GitHub Actions green for M5 boundary"
+    depends_on: [M5.END]
+
+  # M6 — optional inference hooks
+  - id: M6.0
+    title: "Inference hook: reporting-fraction (rho) calibration interface for mechanistic sim"
+    depends_on: [M5.END]
+  - id: M6.1
+    title: "Example: opt-in end-to-end run calibrates rho then simulates + deterministic test"
+    depends_on: [M6.0]
+  - id: M6.END
+    title: "Milestone end: M6 complete (gate on CI)"
+    depends_on: [M6.1]
+  - id: CI.FIX.M6
+    title: "CI fix: make GitHub Actions green for M6 boundary"
+    depends_on: [M6.END]
+
+  # M7 — public-ready release
+  - id: M7.0
+    title: "Release checklist: docs/repro path + package metadata tidy + CI green on release head"
+    depends_on: [M6.END]
+  - id: M7.1
+    title: "Docs: polish pkgdown site (articles, reference grouping) + offline vignette build stability"
+    depends_on: [M7.0]
+  - id: M7.END
+    title: "Milestone end: M7 complete (gate on CI)"
+    depends_on: [M7.1]
+  - id: CI.FIX.M7
+    title: "CI fix: make GitHub Actions green for M7 boundary"
+    depends_on: [M7.END]
+
+  # M8 — CRAN submission (optional)
+  - id: M8.0
+    title: "CRAN: run R CMD check --as-cran clean across OS matrix and address NOTEs"
+    depends_on: [M7.END]
+  - id: M8.1
+    title: "CRAN: prepare cran-comments.md and submission tag"
+    depends_on: [M8.0]
+  - id: M8.END
+    title: "Milestone end: M8 complete (gate on CI)"
+    depends_on: [M8.1]
+  - id: CI.FIX.M8
+    title: "CI fix: make GitHub Actions green for M8 boundary"
+    depends_on: [M8.END]
