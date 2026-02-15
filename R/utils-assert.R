@@ -13,6 +13,21 @@ assert_is_scalar_chr <- function(x, name = deparse(substitute(x))) {
   invisible(TRUE)
 }
 
+assert_unique_key <- function(x, key_cols, name = deparse(substitute(x))) {
+  assert_has_cols(x, key_cols, name = name)
+  dupes <- x |>
+    dplyr::count(dplyr::across(dplyr::all_of(key_cols)), name = "n") |>
+    dplyr::filter(.data$n > 1)
+
+  if (nrow(dupes) > 0) {
+    cli::cli_abort(
+      "{.var {name}} contains duplicated key rows for {key_cols}. Example duplicates: {utils::head(utils::capture.output(print(dupes, n = 10)), 10)}"
+    )
+  }
+
+  invisible(TRUE)
+}
+
 standardise_iso3 <- function(x) {
   toupper(trimws(as.character(x)))
 }

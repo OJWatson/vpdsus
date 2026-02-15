@@ -4,7 +4,7 @@
 \alias{build_panel}
 \title{Build a country-year panel}
 \usage{
-build_panel(coverage, cases, demography)
+build_panel(coverage, cases, demography, country_metadata = NULL)
 }
 \arguments{
 \item{coverage}{tibble from \code{\link[=get_coverage]{get_coverage()}} (iso3, year, coverage).}
@@ -12,6 +12,9 @@ build_panel(coverage, cases, demography)
 \item{cases}{tibble from \code{\link[=get_cases]{get_cases()}} (iso3, year, cases).}
 
 \item{demography}{tibble from \code{\link[=get_demography]{get_demography()}}.}
+
+\item{country_metadata}{Optional tibble from \code{\link[=get_country_metadata]{get_country_metadata()}} with at
+least iso3, country, who_region. If provided, will be joined onto the panel.}
 }
 \value{
 A tibble with class 'vpd_panel'.
