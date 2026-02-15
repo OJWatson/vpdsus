@@ -63,13 +63,13 @@ tasks:
     updated_at_utc: ''
   M2.3:
     last:
-      commit: ''
-      log_path: ''
-      outcome: ''
-      pushed: null
-      reason: ''
-      tick_ts: ''
-    status: todo
+      commit: 6179a4c61c9adebe1df19e0d325d123fe7cc0d85
+      log_path: /home/kana/.openclaw/workspace/portfolio/reports/runs/20260215T130009Z/logs/vpdsus.log
+      outcome: success
+      pushed: true
+      reason: completed
+      tick_ts: 20260215T130009Z
+    status: done
     updated_at_utc: ''
   M3.0:
     last:
