@@ -1,10 +1,11 @@
 Now:
-- M4.0 — Outbreak model scaffold: baseline regression over panel
-
-Next:
 - M4.1 — Outbreak model evaluation: time split metrics + basic plots
 
+Next:
+- M5.0 — Optional mechanistic scaffold in odin2 (simulation only)
+
 Done:
+- 2026-02-15: M4.0 — Outbreak model scaffold: baseline regression over panel
 - 2026-02-15: M3.1 — WHO-style outputs: ranking table + plot helper + golden test
 - 2026-02-15: M3.0 — Susceptibility estimates v1: implement minimal method on example panel
 - 2026-02-15: M2.3 — Demography accessor: add source selection + caching key stability
