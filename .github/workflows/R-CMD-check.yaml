@@ -32,6 +32,8 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
 
+      - uses: r-lib/actions/setup-pandoc@v2
+
       - name: Configure repositories (CRAN + mrc-ide r-universe)
         run: |
           rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
