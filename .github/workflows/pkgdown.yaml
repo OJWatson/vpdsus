@@ -24,7 +24,7 @@ jobs:
         run: |
           rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
           cat(
-            "options(repos = c(MRCIDE = 'https://mrc-ide.r-universe.dev', CRAN = 'https://cran.rstudio.com'))\n",
+            "options(repos = c(MRCIDE = 'https://mrc-ide.r-universe.dev', CRAN = 'https://cloud.r-project.org'))\n",
             file = rprofile,
             append = TRUE
           )
