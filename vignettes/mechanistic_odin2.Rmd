@@ -24,6 +24,8 @@ This vignette is optional.
 - If `{odin2}` is not installed, chunks are shown but not executed.
 - If `VPDSUS_BUILD_ODIN2_VIGNETTE != "1"` (the default), chunks are shown but not executed.
 
+When enabled, this vignette requires the suggested packages `{odin2}` (and its dependency stack, e.g. `{dust2}`).
+
 ```{r}
 library(vpdsus)
 
