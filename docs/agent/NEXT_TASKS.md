@@ -1,10 +1,11 @@
 Now:
-- M5.END — Milestone end: M5 complete (gate on CI)
-
-Next:
 - CI.FIX.M5 — CI fix: make GitHub Actions green for M5 boundary
 
+Next:
+- M6.0 — Inference hook: reporting-fraction (rho) calibration interface for mechanistic sim
+
 Done:
+- 2026-02-16: M5.END — Milestone end: M5 complete (gate on CI)
 - 2026-02-16: CI.FIX.M4 — CI fix: make GitHub Actions green for M4 boundary
 - 2026-02-16: M4.END — Milestone end: M4 complete (gate on CI)
 - 2026-02-15: M2.END — Milestone end: M2 complete (gate on CI)
