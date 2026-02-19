@@ -41,6 +41,16 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Configure repositories (CRAN + mrc-ide r-universe)
+        run: |
+          rprofile <- file.path(Sys.getenv("HOME"), ".Rprofile")
+          cat(
+            "options(repos = c(MRCIDE = 'https://mrc-ide.r-universe.dev', CRAN = 'https://cloud.r-project.org'))\n",
+            file = rprofile,
+            append = TRUE
+          )
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
