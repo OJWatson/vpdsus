@@ -7,6 +7,10 @@ Guidelines:
 - Record check/CI failures (link + 1–2 lines) and the next concrete step.
 - Keep this file small.
 
+- 2026-02-18: Completed spec-alignment pass for modelling/mechanistic workflows: added annual SIRV odin model wiring to package API, added spec-compat API functions (`build_panel_from_sources`, mechanistic wrappers, WHO-style plotting helpers), added logistic+NB outbreak fitting with rolling-origin validation, expanded vignettes with function-purpose and interpretation text, added `docs/SPEC_REVIEW.md`, and re-ran local quality gates (`devtools::test()`, `R CMD build`, `R CMD check --no-manual`) with Status OK.
+
+- 2026-02-17: Re-aligned repo to spec/milestone execution state: added `panel_validate()` schema checks + tests, added reproducible `targets` artefact output (`analysis/outputs/example/`) and `scripts/reproduce_analysis.R`/`Makefile` entrypoints, and re-ran local quality gates (`devtools::test()`, `R CMD check`, `R CMD check --as-cran`, pkgdown, offline vignette build). Result: all pass locally; `--as-cran` has 1 expected NOTE for non-CRAN Suggests (`odin2`, `dust2`).
+
 - 2026-02-12: Marked M7 as running (CI green) and expanded `vignettes/outbreak_models.Rmd` to explain the default time split + interpretation of accuracy/Brier.
 - 2026-02-12: Fixed `evaluate_models()` prediction robustness by aligning test-set factor encodings with the trained model, and extended `vignettes/outbreak_models.Rmd` to show how to inspect predicted probabilities.
 - 2026-02-12: Clarified optional `{odin2}`/`{dust2}` dependencies and the opt-in `VPDSUS_BUILD_ODIN2_VIGNETTE=1` gating for mechanistic vignette/tests in README.

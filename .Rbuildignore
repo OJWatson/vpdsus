@@ -20,3 +20,6 @@
 ^\.\.Rcheck$
 ^vpdsus\.Rcheck$
 ^scripts$
+^_targets$
+^_targets\.yaml$
+^Makefile$

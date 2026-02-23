@@ -12,5 +12,6 @@
 #' - [estimate_susceptible_static()], [estimate_susceptible_cohort()]
 #' - [risk_rank()], [plot_coverage_rank()], [plot_susceptible_rank()]
 #'
+#' @useDynLib vpdsus, .registration = TRUE
 #' @name vpdsus
 "_PACKAGE"

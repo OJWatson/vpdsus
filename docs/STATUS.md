@@ -1,15 +1,18 @@
 ```pm-status
 milestone: M8
 state: running
-headSha: c01093ead1364c71a5a89f52245e436cef50954f
-ciRunUrl: https://github.com/OJWatson/vpdsus/actions/runs/21946714629
-updatedAtUtc: 2026-02-13T06:32:50Z
+headSha: local-working-tree
+ciRunUrl: local
+updatedAtUtc: 2026-02-18T00:00:00Z
 ```
 
-Note: earlier green gate for a prior head was R-CMD-check https://github.com/OJWatson/vpdsus/actions/runs/21916538155.
-
-Note: current git HEAD may include docs-only commits; `headSha` above tracks the last non-doc change.
+Note: local checks on 2026-02-18 (UTC):
+- `devtools::test()` PASS (354 pass, 0 fail, 7 opt-in skips)
+- `R CMD check --no-manual` PASS (Status: OK)
+- `R CMD build` + `R CMD check --no-manual` with vignettes built PASS (Status: OK)
 
 ## Next steps (M8)
 
-- Review CRAN policy friction highlighted in docs/CRAN_CHECKLIST.md (especially non-CRAN `Suggests` / `Additional_repositories`) and decide on a CRAN-compatible dependency story.
+- Produce one end-to-end first-project report in `analysis/reports/` with live-data provenance.
+- Add a single long-form "first project" tutorial that links data -> susceptibility -> modelling -> interpretation.
+- Re-run `R CMD check --as-cran` and refresh CRAN-readiness notes after any remaining tutorial/report additions.

@@ -18,10 +18,13 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     cli,
+    dust2,
     dplyr,
     ggplot2,
     httr2,
     jsonlite,
+    MASS,
+    odin2,
     purrr,
     scales,
     tibble,
@@ -29,17 +32,25 @@ Imports:
 Suggests:
     broom,
     covr,
-    dust2,
     httptest2,
     knitr,
     lintr,
-    odin2,
     pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
     targets,
     tarchetypes,
     withr
+LinkingTo:
+    cpp11,
+    dust2,
+    monty
+Additional_repositories:
+    https://mrc-ide.r-universe.dev
+Remotes:
+    mrc-ide/dust2,
+    mrc-ide/monty,
+    mrc-ide/odin2
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 URL: https://ojwatson.github.io/vpdsus/, https://github.com/OJWatson/vpdsus

@@ -1,13 +1,11 @@
 # Mechanistic models (odin2)
 
-This package contains optional mechanistic model scaffolding using `{odin2}`.
+This package contains mechanistic models using `{odin2}` + `{dust2}`.
 
 ## CI / dependency resolution
 
-The mechanistic stack depends on `{odin2}` and `{dust2}` which are **not on CRAN**.
-
-**Policy:** these packages are treated as *optional, external dependencies* and are
-not listed in `DESCRIPTION` (to keep the base install CRAN-friendly).
+The mechanistic stack depends on `{odin2}` and `{dust2}` from mrc-ide
+r-universe / GitHub.
 
 To use the mechanistic helpers locally, install from the mrc-ide r-universe
 repository (recommended):
@@ -28,12 +26,24 @@ remotes::install_github("mrc-ide/odin2")
 remotes::install_github("mrc-ide/dust2")
 ```
 
-## Optional pinning
+## Pinning
 
-If you need strict reproducibility for mechanistic work, you can pin GitHub
-remotes in `DESCRIPTION` by appending `@<sha>` (or a tag) in the `Remotes:`
-field, e.g. `mrc-ide/dust2@<sha>`. This is optional; by default we rely on the
-r-universe binaries/source at install time.
+If you need strict reproducibility for mechanistic work, pin GitHub remotes in
+`DESCRIPTION` by appending `@<sha>` (or tag) in `Remotes:`.
+
+## Package compilation workflow
+
+This package uses the official odin package workflow:
+
+```r
+odin2::odin_package(".")
+```
+
+This reads `inst/odin/*.R` and generates package bindings under:
+
+- `inst/dust/`
+- `src/`
+- `R/dust.R`
 
 ## Convenience adapters
 
@@ -48,12 +58,9 @@ These are useful for building and validating inputs before running any mechanist
 
 - `calibrate_rho_case_balance()`: solve for `rho` in the case-balance recurrence to match a target susceptible count at a chosen year.
 
-## Opt-in execution
+## Opt-in execution in CI
 
-The mechanistic vignette and mechanistic tests are **opt-in** and will only run
-when:
-
-- `{odin2}` is installed, and
-- `VPDSUS_BUILD_ODIN2_VIGNETTE=1`
+The mechanistic vignette and mechanistic tests run when
+`VPDSUS_BUILD_ODIN2_VIGNETTE=1`.
 
 This keeps standard R CMD check runs CI-safe.

@@ -4,20 +4,20 @@ This is a working checklist for an optional CRAN submission (ROADMAP M8).
 
 ## 1. `R CMD check --as-cran`
 
-- [ ] Prefer running checks on a tarball built by `R CMD build` (or `devtools::build()`), e.g.
+- [x] Prefer running checks on a tarball built by `R CMD build` (or `devtools::build()`), e.g.
   - `R CMD build .`
   - `R CMD check --as-cran vpdsus_*.tar.gz`
 
 - [ ] Run `R CMD check --as-cran` on:
-  - [ ] Linux
+  - [x] Linux
   - [ ] macOS
   - [ ] Windows
 - [ ] Target: **0 ERROR / 0 WARNING** and **minimise NOTE**.
 
 ## 2. DESCRIPTION / dependencies
 
-- [ ] No hard dependency on non-CRAN packages.
-- [ ] Re-check `Imports`/`Depends`/`LinkingTo` are all CRAN.
+- [x] No hard dependency on non-CRAN packages.
+- [x] Re-check `Imports`/`Depends`/`LinkingTo` are all CRAN.
 - [ ] **Potential friction:** non-CRAN packages in `Suggests`.
   - If `odin2` / `dust2` remain in `Suggests`, CRAN checks may emit a NOTE like:
     - "Namespace dependency not required" / "Suggested package not available".
@@ -30,9 +30,9 @@ This is a working checklist for an optional CRAN submission (ROADMAP M8).
 
 ## 3. Documentation / examples
 
-- [ ] All examples run within time/memory limits.
-- [ ] Vignettes do not require internet by default.
-- [ ] Optional features that need non-CRAN packages are clearly gated (env var / `requireNamespace()`), and do not run during CRAN checks.
+- [x] All examples run within time/memory limits.
+- [x] Vignettes do not require internet by default.
+- [x] Optional features that need non-CRAN packages are clearly gated (env var / `requireNamespace()`), and do not run during CRAN checks.
 
 ## 4. Licensing / URLs / notes
 

@@ -26,3 +26,9 @@ vpdsus_*.tar.gz
 # Vignette build artefacts
 /vignettes/*.html
 /vignettes/*.R
+
+# targets + analysis artefacts
+/_targets.yaml
+/analysis/targets/_targets_store/
+/analysis/outputs/example/
+/analysis/outputs/first_project/
