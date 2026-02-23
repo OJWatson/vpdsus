@@ -36,7 +36,7 @@
 <li><a class="dropdown-item" href="../articles/data_access.html">Data access and caching</a></li>
     <li><a class="dropdown-item" href="../articles/susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
     <li><a class="dropdown-item" href="../articles/outbreak_models.html">Outbreak modelling</a></li>
-    <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (scaffold)</a></li>
+    <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (annual SIRV)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -68,151 +68,382 @@
 
     
     
-<p>This vignette demonstrates the minimal outbreak-modelling workflow on
-the shipped example dataset.</p>
-<p>The key steps are:</p>
+<p>This vignette addresses a concrete research question:</p>
+<p>Do countries with higher estimated susceptibility have higher
+outbreak risk in the following year?</p>
+<p>All examples use bundled data and run offline.</p>
+<p>Workflow:</p>
 <ol style="list-style-type: decimal">
-<li>Create a modelling-ready dataset using
-[make_modelling_panel()].</li>
-<li>Fit a simple baseline model with [fit_outbreak_models()].</li>
-<li>Evaluate predictive performance with [evaluate_models()].</li>
+<li>Create an outbreak outcome and lagged modelling panel.</li>
+<li>Fit baseline logistic and negative-binomial models.</li>
+<li>Evaluate out-of-time performance.</li>
+<li>Explore sensitivity to lag and outcome definition.</li>
 </ol>
-<p>All examples here run without network access.</p>
+<p>Function map:</p>
+<ul>
+<li>
+<code><a href="../reference/make_outcome_outbreak.html">make_outcome_outbreak()</a></code>: turns case counts into binary
+outbreak labels.</li>
+<li>
+<code><a href="../reference/make_modelling_panel.html">make_modelling_panel()</a></code>: aligns predictors at year
+<code>t</code> with outbreak at <code>t + lag</code>.</li>
+<li>
+<code><a href="../reference/fit_outbreak_models.html">fit_outbreak_models()</a></code>: fits logistic and
+negative-binomial baselines.</li>
+<li>
+<code><a href="../reference/evaluate_outbreak_time_split.html">evaluate_outbreak_time_split()</a></code>: one train/test split by
+year.</li>
+<li>
+<code><a href="../reference/evaluate_models_rolling_origin.html">evaluate_models_rolling_origin()</a></code>: repeated
+rolling-origin validation.</li>
+</ul>
 <div class="section level2">
-<h2 id="build-the-modelling-panel">Build the modelling panel<a class="anchor" aria-label="anchor" href="#build-the-modelling-panel"></a>
+<h2 id="build-the-modelling-panel">1) Build the modelling panel<a class="anchor" aria-label="anchor" href="#build-the-modelling-panel"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/vpdsus/">vpdsus</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vpdsus_example_panel.html">vpdsus_example_panel</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Susceptibility method A (static): uses a population column and a coverage column</span></span>
 <span><span class="va">suscept</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_static.html">estimate_susceptible_static</a></span><span class="op">(</span><span class="va">panel</span>, coverage_col <span class="op">=</span> <span class="st">"coverage"</span>, pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Create a modelling dataset with a 1-year lag between predictors and outcome.</span></span>
-<span><span class="co"># outcome='outbreak_pc' uses a simple per-100k threshold defined in</span></span>
-<span><span class="co"># make_outcome_outbreak().</span></span>
-<span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_modelling_panel.html">make_modelling_panel</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">suscept</span>, outcome <span class="op">=</span> <span class="st">"outbreak_pc"</span>, lag_years <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">mod</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 11</span></span></span>
-<span><span class="co">#&gt;   iso3   year year_next outcome susceptible_prop susceptible_n cases cases_next</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AFG    <span style="text-decoration: underline;">2</span>018      <span style="text-decoration: underline;">2</span>019       0             0.34       2<span style="text-decoration: underline;">142</span>000  <span style="text-decoration: underline;">2</span>400       <span style="text-decoration: underline;">3</span>100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AFG    <span style="text-decoration: underline;">2</span>019      <span style="text-decoration: underline;">2</span>020       1             0.32       2<span style="text-decoration: underline;">048</span>000  <span style="text-decoration: underline;">3</span>100       <span style="text-decoration: underline;">4</span>200</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> NGA    <span style="text-decoration: underline;">2</span>018      <span style="text-decoration: underline;">2</span>019       0             0.46      15<span style="text-decoration: underline;">180</span>000  <span style="text-decoration: underline;">9</span>800      <span style="text-decoration: underline;">12</span>000</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> NGA    <span style="text-decoration: underline;">2</span>019      <span style="text-decoration: underline;">2</span>020       0             0.44      14<span style="text-decoration: underline;">960</span>000 <span style="text-decoration: underline;">12</span>000       <span style="text-decoration: underline;">8</span>800</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> PHL    <span style="text-decoration: underline;">2</span>018      <span style="text-decoration: underline;">2</span>019       1             0.27       2<span style="text-decoration: underline;">781</span>000 <span style="text-decoration: underline;">19</span>000      <span style="text-decoration: underline;">28</span>000</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> PHL    <span style="text-decoration: underline;">2</span>019      <span style="text-decoration: underline;">2</span>020       0             0.25       2<span style="text-decoration: underline;">600</span>000 <span style="text-decoration: underline;">28</span>000       <span style="text-decoration: underline;">6</span>000</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: cases_per_100k &lt;dbl&gt;, pop_total &lt;int&gt;, who_region &lt;chr&gt;</span></span></span></code></pre></div>
-<p>Columns in <code>mod</code>:</p>
+<span><span class="va">mod_pc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_modelling_panel.html">make_modelling_panel</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">suscept</span>, outcome <span class="op">=</span> <span class="st">"outbreak_pc"</span>, lag_years <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mod_pc</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 12</span></span></span>
+<span><span class="co">#&gt;   iso3   year year_next outcome coverage susceptible_prop susceptible_n cases</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AFG    <span style="text-decoration: underline;">2</span>000      <span style="text-decoration: underline;">2</span>001       1     0.27             0.73      2<span style="text-decoration: underline;">450</span>411.  <span style="text-decoration: underline;">6</span>532</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AFG    <span style="text-decoration: underline;">2</span>001      <span style="text-decoration: underline;">2</span>002       1     0.37             0.63      2<span style="text-decoration: underline;">137</span>038.  <span style="text-decoration: underline;">8</span>762</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AFG    <span style="text-decoration: underline;">2</span>002      <span style="text-decoration: underline;">2</span>003       0     0.35             0.65      2<span style="text-decoration: underline;">326</span>982.  <span style="text-decoration: underline;">2</span>486</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AFG    <span style="text-decoration: underline;">2</span>003      <span style="text-decoration: underline;">2</span>004       0     0.39             0.61      2<span style="text-decoration: underline;">322</span>300.   798</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AFG    <span style="text-decoration: underline;">2</span>004      <span style="text-decoration: underline;">2</span>005       0     0.48             0.52      2<span style="text-decoration: underline;">049</span>148.   466</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> AFG    <span style="text-decoration: underline;">2</span>005      <span style="text-decoration: underline;">2</span>006       0     0.5              0.5       2<span style="text-decoration: underline;">035</span>730   <span style="text-decoration: underline;">1</span>296</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: cases_next &lt;dbl&gt;, cases_per_100k &lt;dbl&gt;, pop_total &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   who_region &lt;chr&gt;</span></span></span></code></pre></div>
+<p>Because this example panel is global and historical, we can inspect
+the modelling sample before fitting:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>  <span class="va">mod_pc</span>,</span>
+<span>  n_rows <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  n_countries <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html" class="external-link">n_distinct</a></span><span class="op">(</span><span class="va">iso3</span><span class="op">)</span>,</span>
+<span>  year_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">year</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  year_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">year</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  outbreak_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">outcome</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
+<span><span class="co">#&gt;   n_rows n_countries year_min year_max outbreak_rate</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   <span style="text-decoration: underline;">4</span>289         192     <span style="text-decoration: underline;">2</span>000     <span style="text-decoration: underline;">2</span>023         0.108</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mod_pc</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">who_region</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    n <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    outbreak_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">outcome</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    mean_susceptibility <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">susceptible_prop</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 4</span></span></span>
+<span><span class="co">#&gt;   who_region     n outbreak_rate mean_susceptibility</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ECS         <span style="text-decoration: underline;">1</span>136       0.074<span style="text-decoration: underline;">8</span>               0.074<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> SSF         <span style="text-decoration: underline;">1</span>115       0.223                0.265 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> LCN          755       0.002<span style="text-decoration: underline;">65</span>              0.096<span style="text-decoration: underline;">1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> EAS          609       0.090<span style="text-decoration: underline;">3</span>               0.143 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> MEA          488       0.115                0.133 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> SAS          141       0.106                0.099<span style="text-decoration: underline;">3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> NAC           45       0                    0.083<span style="text-decoration: underline;">8</span></span></span></code></pre></div>
+<p>Key columns:</p>
 <ul>
 <li>
-<code>susceptible_prop</code>: predictor (fraction susceptible)</li>
+<code>outcome</code>: binary indicator in the next year
+(<code>year_next</code>)</li>
 <li>
-<code>outcome</code>: binary outbreak indicator in
-<code>year_next</code>
-</li>
+<code>susceptible_prop</code>: main predictor</li>
 <li>
-<code>cases_per_100k</code> is available from
-[make_outcome_outbreak()] on the original panel</li>
+<code>year</code>, <code>who_region</code>: adjustment terms in the
+baseline model</li>
 </ul>
+<p>Inspect how outbreak labels are constructed from cases:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">outcomes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_outcome_outbreak.html">make_outcome_outbreak</a></span><span class="op">(</span>cases <span class="op">=</span> <span class="va">panel</span><span class="op">$</span><span class="va">cases</span>, pop <span class="op">=</span> <span class="va">panel</span><span class="op">$</span><span class="va">pop_total</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">outcomes</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
+<span><span class="co">#&gt;   outbreak_abs outbreak_pc cases_per_100k</span></span>
+<span><span class="co">#&gt;          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>           <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>             <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>           <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>             <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>           <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>             <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>           <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>             <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>           <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>             <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>           <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>             <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="fit-a-baseline-outbreak-model">Fit a baseline outbreak model<a class="anchor" aria-label="anchor" href="#fit-a-baseline-outbreak-model"></a>
+<h2 id="fit-baseline-outbreak-model">2) Fit baseline outbreak model<a class="anchor" aria-label="anchor" href="#fit-baseline-outbreak-model"></a>
 </h2>
-<p><code><a href="../reference/fit_outbreak_models.html">fit_outbreak_models()</a></code> currently fits a simple logistic
-regression:</p>
+<p><code><a href="../reference/fit_outbreak_models.html">fit_outbreak_models()</a></code> fits:</p>
 <ul>
-<li>outcome ~ susceptible_prop + year + who_region</li>
+<li>logistic regression for binary outbreak risk,</li>
+<li>negative-binomial regression for outbreak counts
+(<code>cases_next</code>),</li>
+<li>with a common covariate set: susceptibility, year, and WHO
+region.</li>
 </ul>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_outbreak_models.html">fit_outbreak_models</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_outbreak_models.html">fit_outbreak_models</a></span><span class="op">(</span><span class="va">mod_pc</span><span class="op">)</span></span>
 <span><span class="va">fit</span><span class="op">$</span><span class="va">model</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:  stats::glm(formula = outcome ~ susceptible_prop + year + who_region, </span></span>
 <span><span class="co">#&gt;     family = stats::binomial(), data = data)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
-<span><span class="co">#&gt;      (Intercept)  susceptible_prop              year     who_regionEMR  </span></span>
-<span><span class="co">#&gt;         4184.049          -102.979            -2.060             7.209  </span></span>
-<span><span class="co">#&gt;    who_regionWPR  </span></span>
-<span><span class="co">#&gt;               NA  </span></span>
+<span><span class="co">#&gt;      (Intercept)  susceptible_prop              year     who_regionECS  </span></span>
+<span><span class="co">#&gt;         74.24964           3.67960          -0.03842           0.17139  </span></span>
+<span><span class="co">#&gt;    who_regionLCN     who_regionMEA     who_regionNAC     who_regionSAS  </span></span>
+<span><span class="co">#&gt;         -3.34782           0.33065         -13.88876           0.39475  </span></span>
+<span><span class="co">#&gt;    who_regionSSF  </span></span>
+<span><span class="co">#&gt;          0.66467  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Degrees of Freedom: 5 Total (i.e. Null);  2 Residual</span></span>
-<span><span class="co">#&gt; Null Deviance:       7.638 </span></span>
-<span><span class="co">#&gt; Residual Deviance: 5.545     AIC: 13.55</span></span></code></pre></div>
+<span><span class="co">#&gt; Degrees of Freedom: 4288 Total (i.e. Null);  4280 Residual</span></span>
+<span><span class="co">#&gt; Null Deviance:       2931 </span></span>
+<span><span class="co">#&gt; Residual Deviance: 2454  AIC: 2472</span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">coefficients</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 9 × 5</span></span></span>
+<span><span class="co">#&gt;   term             estimate std_error statistic  p_value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> (Intercept)       74.2     15.4        4.81   1.51<span style="color: #949494;">e</span><span style="color: #BB0000;">- 6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> susceptible_prop   3.68     0.320     11.5    1.28<span style="color: #949494;">e</span><span style="color: #BB0000;">-30</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> year              -<span style="color: #BB0000;">0.038</span><span style="color: #BB0000; text-decoration: underline;">4</span>   0.007<span style="text-decoration: underline;">68</span>   -<span style="color: #BB0000;">5.00</span>   5.64<span style="color: #949494;">e</span><span style="color: #BB0000;">- 7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> who_regionECS      0.171    0.188      0.910  3.63<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> who_regionLCN     -<span style="color: #BB0000;">3.35</span>     0.724     -<span style="color: #BB0000;">4.63</span>   3.72<span style="color: #949494;">e</span><span style="color: #BB0000;">- 6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> who_regionMEA      0.331    0.206      1.60   1.09<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> who_regionNAC    -<span style="color: #BB0000;">13.9</span>    356.        -<span style="color: #BB0000;">0.039</span><span style="color: #BB0000; text-decoration: underline;">0</span> 9.69<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> who_regionSAS      0.395    0.316      1.25   2.11<span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> who_regionSSF      0.665    0.168      3.97   7.33<span style="color: #949494;">e</span><span style="color: #BB0000;">- 5</span></span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">model_nb</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:  MASS::glm.nb(formula = cases_next ~ susceptible_prop + year + </span></span>
+<span><span class="co">#&gt;     who_region, data = data, init.theta = 0.1263055413, link = log)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;      (Intercept)  susceptible_prop              year     who_regionECS  </span></span>
+<span><span class="co">#&gt;        -31.97646           4.51212           0.01973          -1.45464  </span></span>
+<span><span class="co">#&gt;    who_regionLCN     who_regionMEA     who_regionNAC     who_regionSAS  </span></span>
+<span><span class="co">#&gt;         -3.94163          -1.35798          -3.21802           0.13350  </span></span>
+<span><span class="co">#&gt;    who_regionSSF  </span></span>
+<span><span class="co">#&gt;         -0.91424  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Degrees of Freedom: 4288 Total (i.e. Null);  4280 Residual</span></span>
+<span><span class="co">#&gt; Null Deviance:       5832 </span></span>
+<span><span class="co">#&gt; Residual Deviance: 4925  AIC: 47230</span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">coefficients_nb</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 9 × 5</span></span></span>
+<span><span class="co">#&gt;   term             estimate std_error statistic   p_value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> (Intercept)      -<span style="color: #BB0000;">32.0</span>     12.6        -<span style="color: #BB0000;">2.54</span>  1.11<span style="color: #949494;">e</span><span style="color: #BB0000;">-  2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> susceptible_prop   4.51     0.327      13.8   2.09<span style="color: #949494;">e</span><span style="color: #BB0000;">- 43</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> year               0.019<span style="text-decoration: underline;">7</span>   0.006<span style="text-decoration: underline;">26</span>     3.15  1.62<span style="color: #949494;">e</span><span style="color: #BB0000;">-  3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> who_regionECS     -<span style="color: #BB0000;">1.45</span>     0.143     -<span style="color: #BB0000;">10.2</span>   2.87<span style="color: #949494;">e</span><span style="color: #BB0000;">- 24</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> who_regionLCN     -<span style="color: #BB0000;">3.94</span>     0.154     -<span style="color: #BB0000;">25.6</span>   2.73<span style="color: #949494;">e</span><span style="color: #BB0000;">-144</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> who_regionMEA     -<span style="color: #BB0000;">1.36</span>     0.171      -<span style="color: #BB0000;">7.94</span>  2.01<span style="color: #949494;">e</span><span style="color: #BB0000;">- 15</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> who_regionNAC     -<span style="color: #BB0000;">3.22</span>     0.435      -<span style="color: #BB0000;">7.39</span>  1.44<span style="color: #949494;">e</span><span style="color: #BB0000;">- 13</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> who_regionSAS      0.134    0.263       0.507 6.12<span style="color: #949494;">e</span><span style="color: #BB0000;">-  1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> who_regionSSF     -<span style="color: #BB0000;">0.914</span>    0.147      -<span style="color: #BB0000;">6.20</span>  5.53<span style="color: #949494;">e</span><span style="color: #BB0000;">- 10</span></span></span></code></pre></div>
 <div class="section level3">
-<h3 id="coefficients">Coefficients<a class="anchor" aria-label="anchor" href="#coefficients"></a>
+<h3 id="baseline-comparison-coverage-only-vs-susceptibility-enabled">Baseline comparison: coverage-only vs susceptibility-enabled<a class="anchor" aria-label="anchor" href="#baseline-comparison-coverage-only-vs-susceptibility-enabled"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span><span class="op">$</span><span class="va">coefficients</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 5</span></span></span>
-<span><span class="co">#&gt;   term             estimate std_error statistic p_value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> (Intercept)       <span style="text-decoration: underline;">4</span>184.    1<span style="text-decoration: underline;">626</span>111.   0.002<span style="text-decoration: underline;">57</span>   0.998</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> susceptible_prop  -<span style="color: #BB0000;">103.</span>      <span style="text-decoration: underline;">40</span>022.  -<span style="color: #BB0000;">0.002</span><span style="color: #BB0000; text-decoration: underline;">57</span>   0.998</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> year                -<span style="color: #BB0000;">2.06</span>      800.  -<span style="color: #BB0000;">0.002</span><span style="color: #BB0000; text-decoration: underline;">57</span>   0.998</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> who_regionEMR        7.21     <span style="text-decoration: underline;">2</span>802.   0.002<span style="text-decoration: underline;">57</span>   0.998</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cmp_df</span> <span class="op">&lt;-</span> <span class="va">mod_pc</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">outcome</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">coverage</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">susceptible_prop</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_cov</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">outcome</span> <span class="op">~</span> <span class="va">coverage</span> <span class="op">+</span> <span class="va">year</span> <span class="op">+</span> <span class="va">who_region</span>, data <span class="op">=</span> <span class="va">cmp_df</span>, family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">fit_sus</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">outcome</span> <span class="op">~</span> <span class="va">susceptible_prop</span> <span class="op">+</span> <span class="va">year</span> <span class="op">+</span> <span class="va">who_region</span>, data <span class="op">=</span> <span class="va">cmp_df</span>, family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">fit_both</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">outcome</span> <span class="op">~</span> <span class="va">coverage</span> <span class="op">+</span> <span class="va">susceptible_prop</span> <span class="op">+</span> <span class="va">year</span> <span class="op">+</span> <span class="va">who_region</span>, data <span class="op">=</span> <span class="va">cmp_df</span>, family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coverage_only"</span>, <span class="st">"susceptibility_only"</span>, <span class="st">"coverage_plus_susceptibility"</span><span class="op">)</span>,</span>
+<span>  aic <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">AIC</a></span><span class="op">(</span><span class="va">fit_cov</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">AIC</a></span><span class="op">(</span><span class="va">fit_sus</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">AIC</a></span><span class="op">(</span><span class="va">fit_both</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;                          model      aic</span></span>
+<span><span class="co">#&gt; 1                coverage_only 2471.869</span></span>
+<span><span class="co">#&gt; 2          susceptibility_only 2471.869</span></span>
+<span><span class="co">#&gt; 3 coverage_plus_susceptibility 2471.869</span></span></code></pre></div>
+<p>Interpretation guide:</p>
+<ul>
+<li>
+<code>estimate &gt; 0</code> for <code>susceptible_prop</code> means
+higher susceptibility is associated with higher outbreak odds.</li>
+<li>region/year terms absorb broad structural differences and temporal
+trend.</li>
+</ul>
 </div>
 </div>
 <div class="section level2">
-<h2 id="simple-time-aware-evaluation">Simple time-aware evaluation<a class="anchor" aria-label="anchor" href="#simple-time-aware-evaluation"></a>
+<h2 id="time-aware-evaluation">3) Time-aware evaluation<a class="anchor" aria-label="anchor" href="#time-aware-evaluation"></a>
 </h2>
-<p><code><a href="../reference/evaluate_models.html">evaluate_models()</a></code> performs a time split by year (train
-on earlier years, test on later years) and reports a basic accuracy and
-Brier score.</p>
-<p>By default, the split chooses a <code>train_end</code> year that
-guarantees at least one distinct year is held out for testing.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/evaluate_models.html">evaluate_models</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
-<span><span class="va">ev</span></span>
+<p>Use [evaluate_outbreak_time_split()] for:</p>
+<ul>
+<li>a train/test split by time,</li>
+<li>summary metrics,</li>
+<li>prediction and calibration plots.</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/evaluate_outbreak_time_split.html">evaluate_outbreak_time_split</a></span><span class="op">(</span><span class="va">mod_pc</span><span class="op">)</span></span>
+<span><span class="va">ev</span><span class="op">$</span><span class="va">metrics</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
-<span><span class="co">#&gt;   train_end n_train n_test prevalence accuracy brier log_loss   auc</span></span>
-<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      <span style="text-decoration: underline;">2</span>018       3      3      0.333    0.333 0.667     15.7   0.5</span></span></code></pre></div>
-<p>Interpretation:</p>
+<span><span class="co">#&gt;   train_end n_train n_test prevalence accuracy  brier log_loss   auc</span></span>
+<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      <span style="text-decoration: underline;">2</span>015    <span style="text-decoration: underline;">2</span>875   <span style="text-decoration: underline;">1</span>414      0.103    0.897 0.095<span style="text-decoration: underline;">8</span>    0.406 0.724</span></span></code></pre></div>
+<p>Metrics meaning:</p>
 <ul>
 <li>
-<code>train_end</code>: last year included in training</li>
+<code>accuracy</code>: classification performance at threshold
+0.5</li>
 <li>
-<code>n_train</code> / <code>n_test</code>: number of rows used for
-training/testing</li>
+<code>brier</code>: probability calibration/discrimination loss
+(lower is better)</li>
 <li>
-<code>accuracy</code>: fraction of correctly classified outcomes at
-a 0.5 probability threshold</li>
+<code>log_loss</code>: penalises overconfident errors</li>
 <li>
-<code>brier</code>: mean squared error of predicted probabilities
-(lower is better; 0 is perfect)</li>
+<code>auc</code>: threshold-free discrimination</li>
 </ul>
-<div class="section level3">
-<h3 id="inspect-predicted-probabilities">Inspect predicted probabilities<a class="anchor" aria-label="anchor" href="#inspect-predicted-probabilities"></a>
-</h3>
-<p>If you want to see the actual predicted probabilities used in the
-evaluation, repeat the same split and call <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> on the
-fitted model:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Use the same train_end chosen by evaluate_models()</span></span>
-<span><span class="va">train_end</span> <span class="op">&lt;-</span> <span class="va">ev</span><span class="op">$</span><span class="va">train_end</span></span>
-<span></span>
-<span><span class="va">train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">mod</span>, <span class="va">year</span> <span class="op">&lt;=</span> <span class="va">train_end</span><span class="op">)</span></span>
-<span><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">mod</span>, <span class="va">year</span> <span class="op">&gt;</span> <span class="va">train_end</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_outbreak_models.html">fit_outbreak_models</a></span><span class="op">(</span><span class="va">train</span><span class="op">)</span><span class="op">$</span><span class="va">model</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit2</span>, newdata <span class="op">=</span> <span class="va">test</span>, type <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
-<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
-<span></span>
-<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/transform.html" class="external-link">transform</a></span><span class="op">(</span><span class="va">test</span>,</span>
-<span>  prob_outbreak <span class="op">=</span> <span class="va">p</span>,</span>
-<span>  pred_outbreak <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">p</span> <span class="op">&gt;=</span> <span class="fl">0.5</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">out</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iso3"</span>, <span class="st">"year"</span>, <span class="st">"year_next"</span>, <span class="st">"outcome"</span>, <span class="st">"prob_outbreak"</span>, <span class="st">"pred_outbreak"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;   iso3 year year_next outcome prob_outbreak pred_outbreak</span></span>
-<span><span class="co">#&gt; 1  AFG 2019      2020       1  8.318442e-09             0</span></span>
-<span><span class="co">#&gt; 2  NGA 2019      2020       0  8.318442e-09             0</span></span>
-<span><span class="co">#&gt; 3  PHL 2019      2020       0  1.000000e+00             1</span></span></code></pre></div>
+<p>Inspect test-set predictions:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">predictions</span>, <span class="va">iso3</span>, <span class="va">year</span>, <span class="va">year_next</span>, <span class="va">outcome</span>, <span class="va">prob_outbreak</span>, <span class="va">pred_outbreak</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">#&gt;   iso3   year year_next outcome prob_outbreak pred_outbreak</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AFG    <span style="text-decoration: underline;">2</span>016      <span style="text-decoration: underline;">2</span>017       0        0.058<span style="text-decoration: underline;">9</span>             0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AFG    <span style="text-decoration: underline;">2</span>017      <span style="text-decoration: underline;">2</span>018       0        0.051<span style="text-decoration: underline;">8</span>             0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AFG    <span style="text-decoration: underline;">2</span>018      <span style="text-decoration: underline;">2</span>019       0        0.042<span style="text-decoration: underline;">7</span>             0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AFG    <span style="text-decoration: underline;">2</span>019      <span style="text-decoration: underline;">2</span>020       0        0.049<span style="text-decoration: underline;">5</span>             0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AFG    <span style="text-decoration: underline;">2</span>020      <span style="text-decoration: underline;">2</span>021       0        0.043<span style="text-decoration: underline;">5</span>             0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> AFG    <span style="text-decoration: underline;">2</span>021      <span style="text-decoration: underline;">2</span>022       1        0.045<span style="text-decoration: underline;">9</span>             0</span></span></code></pre></div>
+<p>Diagnostic plots:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ev</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">time</span></span></code></pre></div>
+<p><img src="outbreak_models_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="700"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ev</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">calibration</span></span></code></pre></div>
+<p><img src="outbreak_models_files/figure-html/unnamed-chunk-9-2.png" class="r-plt" alt="" width="700"></p>
 </div>
+<div class="section level2">
+<h2 id="sensitivity-checks">4) Sensitivity checks<a class="anchor" aria-label="anchor" href="#sensitivity-checks"></a>
+</h2>
+<div class="section level3">
+<h3 id="a-outcome-definition-per-capita-vs-absolute-thresholds">A) Outcome definition: per-capita vs absolute thresholds<a class="anchor" aria-label="anchor" href="#a-outcome-definition-per-capita-vs-absolute-thresholds"></a>
+</h3>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mod_abs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_modelling_panel.html">make_modelling_panel</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">suscept</span>, outcome <span class="op">=</span> <span class="st">"outbreak_abs"</span>, lag_years <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">ev_abs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/evaluate_outbreak_time_split.html">evaluate_outbreak_time_split</a></span><span class="op">(</span><span class="va">mod_abs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">metrics</span>, outcome_def <span class="op">=</span> <span class="st">"outbreak_pc"</span><span class="op">)</span>,</span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">ev_abs</span><span class="op">$</span><span class="va">metrics</span>, outcome_def <span class="op">=</span> <span class="st">"outbreak_abs"</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">outcome_def</span>, <span class="va">train_end</span>, <span class="va">n_train</span>, <span class="va">n_test</span>, <span class="va">accuracy</span>, <span class="va">brier</span>, <span class="va">log_loss</span>, <span class="va">auc</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 8</span></span></span>
+<span><span class="co">#&gt;   outcome_def  train_end n_train n_test accuracy  brier log_loss   auc</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> outbreak_pc       <span style="text-decoration: underline;">2</span>015    <span style="text-decoration: underline;">2</span>875   <span style="text-decoration: underline;">1</span>414    0.897 0.095<span style="text-decoration: underline;">8</span>    0.406 0.724</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> outbreak_abs      <span style="text-decoration: underline;">2</span>015    <span style="text-decoration: underline;">2</span>979   <span style="text-decoration: underline;">1</span>458    0.820 0.140     0.459 0.756</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="b-lag-sensitivity">B) Lag sensitivity<a class="anchor" aria-label="anchor" href="#b-lag-sensitivity"></a>
+</h3>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lags</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">lag_metrics</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html" class="external-link">map_dfr</a></span><span class="op">(</span><span class="va">lags</span>, <span class="kw">function</span><span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">mod_l</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_modelling_panel.html">make_modelling_panel</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">suscept</span>, outcome <span class="op">=</span> <span class="st">"outbreak_pc"</span>, lag_years <span class="op">=</span> <span class="va">l</span><span class="op">)</span></span>
+<span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="../reference/evaluate_outbreak_time_split.html">evaluate_outbreak_time_split</a></span><span class="op">(</span><span class="va">mod_l</span><span class="op">)</span><span class="op">$</span><span class="va">metrics</span>,</span>
+<span>    error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>        train_end <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
+<span>        n_train <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mod_l</span><span class="op">)</span>,</span>
+<span>        n_test <span class="op">=</span> <span class="cn">NA_integer_</span>,</span>
+<span>        prevalence <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
+<span>        accuracy <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
+<span>        brier <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
+<span>        log_loss <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
+<span>        auc <span class="op">=</span> <span class="cn">NA_real_</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">)</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">m</span>, lag_years <span class="op">=</span> <span class="va">l</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">lag_metrics</span>, <span class="va">lag_years</span>, <span class="va">accuracy</span>, <span class="va">brier</span>, <span class="va">log_loss</span>, <span class="va">auc</span>, <span class="va">n_test</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
+<span><span class="co">#&gt;   lag_years accuracy  brier log_loss   auc n_test</span></span>
+<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         1    0.897 0.095<span style="text-decoration: underline;">8</span>    0.406 0.724   <span style="text-decoration: underline;">1</span>414</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         2    0.891 0.098<span style="text-decoration: underline;">9</span>    0.397 0.744   <span style="text-decoration: underline;">1</span>229</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="c-rolling-origin-evaluation-recommended-default-for-research-claims">C) Rolling-origin evaluation (recommended default for research
+claims)<a class="anchor" aria-label="anchor" href="#c-rolling-origin-evaluation-recommended-default-for-research-claims"></a>
+</h3>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ev_roll</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/evaluate_models_rolling_origin.html">evaluate_models_rolling_origin</a></span><span class="op">(</span><span class="va">mod_pc</span>, min_train_years <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: algorithm did not converge</span></span>
+<span><span class="va">ev_roll</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 23 × 9</span></span></span>
+<span><span class="co">#&gt;    train_end n_train n_test prevalence accuracy  brier log_loss   auc split_type</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">2</span>000     173   <span style="text-decoration: underline;">4</span>116     0.100     0.783 0.134     0.410 0.746 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">2</span>001     347   <span style="text-decoration: underline;">3</span>942     0.092<span style="text-decoration: underline;">6</span>    0.847 0.108     0.352 0.741 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">2</span>002     526   <span style="text-decoration: underline;">3</span>763     0.085<span style="text-decoration: underline;">6</span>    0.900 0.081<span style="text-decoration: underline;">6</span>    0.294 0.713 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">2</span>003     713   <span style="text-decoration: underline;">3</span>576     0.082<span style="text-decoration: underline;">2</span>    0.917 0.079<span style="text-decoration: underline;">3</span>    0.397 0.639 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">2</span>004     892   <span style="text-decoration: underline;">3</span>397     0.081<span style="text-decoration: underline;">0</span>    0.919 0.078<span style="text-decoration: underline;">9</span>    0.453 0.616 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      <span style="text-decoration: underline;">2</span>005    <span style="text-decoration: underline;">1</span>072   <span style="text-decoration: underline;">3</span>217     0.081<span style="text-decoration: underline;">4</span>    0.919 0.079<span style="text-decoration: underline;">8</span>    0.498 0.609 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">2</span>006    <span style="text-decoration: underline;">1</span>255   <span style="text-decoration: underline;">3</span>034     0.083<span style="text-decoration: underline;">4</span>    0.917 0.082<span style="text-decoration: underline;">0</span>    0.531 0.614 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">2</span>007    <span style="text-decoration: underline;">1</span>435   <span style="text-decoration: underline;">2</span>854     0.085<span style="text-decoration: underline;">5</span>    0.915 0.084<span style="text-decoration: underline;">0</span>    0.535 0.623 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">2</span>008    <span style="text-decoration: underline;">1</span>620   <span style="text-decoration: underline;">2</span>669     0.087<span style="text-decoration: underline;">3</span>    0.913 0.085<span style="text-decoration: underline;">5</span>    0.510 0.636 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">2</span>009    <span style="text-decoration: underline;">1</span>807   <span style="text-decoration: underline;">2</span>482     0.087<span style="text-decoration: underline;">0</span>    0.913 0.084<span style="text-decoration: underline;">2</span>    0.445 0.648 rolling_o…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 13 more rows</span></span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="d-regional-heterogeneity-snapshot">D) Regional heterogeneity snapshot<a class="anchor" aria-label="anchor" href="#d-regional-heterogeneity-snapshot"></a>
+</h3>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">region_perf</span> <span class="op">&lt;-</span> <span class="va">ev</span><span class="op">$</span><span class="va">predictions</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">who_region</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    n <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    accuracy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pred_outbreak</span> <span class="op">==</span> <span class="va">outcome</span><span class="op">)</span>,</span>
+<span>    prevalence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">outcome</span><span class="op">)</span>,</span>
+<span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">region_perf</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 4</span></span></span>
+<span><span class="co">#&gt;   who_region     n accuracy prevalence</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ECS          394    0.898    0.102  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> SSF          370    0.797    0.203  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> LCN          247    0.992    0.008<span style="text-decoration: underline;">10</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> EAS          184    0.946    0.054<span style="text-decoration: underline;">3</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> MEA          161    0.882    0.118  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> SAS           45    1        0      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> NAC           13    1        0</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="take-home-interpretation">Take-home interpretation<a class="anchor" aria-label="anchor" href="#take-home-interpretation"></a>
+</h2>
+<ul>
+<li>This module already tests an interesting and useful public-health
+hypothesis: whether susceptibility helps predict next-year outbreak
+risk.</li>
+<li>The current baseline model is intentionally simple and
+transparent.</li>
+<li>Next upgrades for a research project are richer model classes,
+rolling-origin validation, and explicit baseline comparators.</li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

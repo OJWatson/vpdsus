@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Mechanistic modelling in odin2 (scaffold) • vpdsus</title>
+<title>Mechanistic modelling in odin2 (annual SIRV) • vpdsus</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Mechanistic modelling in odin2 (scaffold)">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Mechanistic modelling in odin2 (annual SIRV)">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -36,7 +36,7 @@
 <li><a class="dropdown-item" href="../articles/data_access.html">Data access and caching</a></li>
     <li><a class="dropdown-item" href="../articles/susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
     <li><a class="dropdown-item" href="../articles/outbreak_models.html">Outbreak modelling</a></li>
-    <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (scaffold)</a></li>
+    <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (annual SIRV)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -59,7 +59,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Mechanistic modelling in odin2 (scaffold)</h1>
+      <h1>Mechanistic modelling in odin2 (annual SIRV)</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/OJWatson/vpdsus/blob/main/vignettes/mechanistic_odin2.Rmd" class="external-link"><code>vignettes/mechanistic_odin2.Rmd</code></a></small>
@@ -68,21 +68,48 @@
 
     
     
-<p>This vignette is optional.</p>
+<p>It answers three practical questions:</p>
+<ol style="list-style-type: decimal">
+<li>What does each mechanistic helper do?</li>
+<li>How does the discrete susceptible-balance model relate to Method
+D?</li>
+<li>How can we run and interpret an annual SIRV model?</li>
+</ol>
+<div class="section level2">
+<h2 id="mechanistic-function-map">1) Mechanistic function map<a class="anchor" aria-label="anchor" href="#mechanistic-function-map"></a>
+</h2>
 <ul>
-<li>If <a href="https://mrc-ide.github.io/odin2" class="external-link">odin2</a> is not installed, chunks are shown but not
-executed.</li>
-<li>If <code>VPDSUS_BUILD_ODIN2_VIGNETTE != "1"</code> (the default),
-chunks are shown but not executed.</li>
+<li>
+</li>
+<li>
+</li>
+<li>
+</li>
+<li>
+</li>
 </ul>
-<p>When enabled, this vignette requires the suggested packages
-<a href="https://mrc-ide.github.io/odin2" class="external-link">odin2</a> (and its dependency stack,
-e.g. <a href="https://github.com/mrc-ide/dust2" class="external-link">dust2</a>).</p>
+<p>Model choices in this package:</p>
+<ul>
+<li>
+<code>balance_discrete</code>: one-state susceptible recurrence
+(teaching bridge to Method D).</li>
+<li>
+<code>sirv_annual</code>: annual <code>S</code>, <code>I</code>,
+<code>R</code>, <code>V</code> model with births, vaccination,
+infection, recovery, mortality, and reported cases output.</li>
+</ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/vpdsus/">vpdsus</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Minimal discrete-time example (difference equation)</span></span>
-<span><span class="va">mdl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"minimal_discrete"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/vpdsus/">vpdsus</a></span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="minimal-discrete-model">2) Minimal discrete model<a class="anchor" aria-label="anchor" href="#minimal-discrete-model"></a>
+</h2>
+<p>Start with a one-state difference equation model:</p>
+<ul>
+<li><code>S[t+1] = S[t] + inc</code></li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mdl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"minimal_discrete"</span><span class="op">)</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
 <span>  <span class="va">mdl</span>,</span>
 <span>  times <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span>,</span>
@@ -91,22 +118,58 @@ e.g. <a href="https://github.com/mrc-ide/dust2" class="external-link">dust2</a>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">out</span></span>
-<span></span>
-<span><span class="co"># Next step: a simple discrete-time susceptible balance model</span></span>
-<span><span class="va">mdl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"balance_discrete"</span><span class="op">)</span></span>
-<span><span class="va">out2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
-<span>  <span class="va">mdl2</span>,</span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 11 × 2</span></span></span>
+<span><span class="co">#&gt;     time     S</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>     0     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>     1     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>     2     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>     3     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>     4     4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>     5     5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>     6     6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>     7     7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     8     8</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>     9     9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span>    10    10</span></span></code></pre></div>
+<p>Interpretation: with <code>inc = 1</code>, the state increases
+linearly each step.</p>
+</div>
+<div class="section level2">
+<h2 id="susceptible-balance-recurrence-model">3) Susceptible-balance recurrence model<a class="anchor" aria-label="anchor" href="#susceptible-balance-recurrence-model"></a>
+</h2>
+<p>The <code>balance_discrete</code> model uses:</p>
+<ul>
+<li><code>S[t+1] = max(0, S[t] + births[t] - vaccinated[t] - cases[t] / rho)</code></li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mdl_bal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"balance_discrete"</span><span class="op">)</span></span>
+<span><span class="va">out_bal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl_bal</span>,</span>
 <span>  times <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span>,</span>
 <span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">1</span>, births <span class="op">=</span> <span class="fl">0</span>, vaccinated <span class="op">=</span> <span class="fl">0</span>, cases <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out2</span></span>
-<span></span>
-<span><span class="co"># Time-varying inputs (aligned to `times`)</span></span>
-<span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">4</span></span>
-<span><span class="va">out3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
-<span>  <span class="va">mdl2</span>,</span>
+<span><span class="va">out_bal</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;    time     S</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     0     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     2     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     3     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     4     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>     5     0</span></span></code></pre></div>
+<p>With these parameters, susceptibles decrease by 1 each step and floor
+at 0.</p>
+<div class="section level3">
+<h3 id="time-varying-inputs">Time-varying inputs<a class="anchor" aria-label="anchor" href="#time-varying-inputs"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">4</span></span>
+<span><span class="va">out_tv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl_bal</span>,</span>
 <span>  times <span class="op">=</span> <span class="va">times</span>,</span>
 <span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
@@ -117,34 +180,78 @@ e.g. <a href="https://github.com/mrc-ide/dust2" class="external-link">dust2</a>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out3</span></span>
-<span></span>
-<span><span class="co"># End-to-end example using the bundled example panel</span></span>
-<span><span class="va">panel_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_panel_small.csv"</span>, package <span class="op">=</span> <span class="st">"vpdsus"</span><span class="op">)</span></span>
+<span><span class="va">out_tv</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
+<span><span class="co">#&gt;    time     S</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     0     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1     4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     2     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     3     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     4     1</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="end-to-end-panel-to-mechanistic-inputs">4) End-to-end panel to mechanistic inputs<a class="anchor" aria-label="anchor" href="#end-to-end-panel-to-mechanistic-inputs"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">panel_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_panel_measles_global.csv"</span>, package <span class="op">=</span> <span class="st">"vpdsus"</span><span class="op">)</span></span>
 <span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">panel_path</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">iso3</span> <span class="op">&lt;-</span> <span class="va">panel</span><span class="op">$</span><span class="va">iso3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">panel</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_balance_inputs_from_panel.html">odin2_balance_inputs_from_panel</a></span><span class="op">(</span><span class="va">panel</span>, times <span class="op">=</span> <span class="va">times</span>, iso3 <span class="op">=</span> <span class="va">iso3</span><span class="op">)</span></span>
+<span><span class="va">panel_ok</span> <span class="op">&lt;-</span> <span class="va">panel</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">iso3</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">births</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">coverage</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">cases</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
-<span>  <span class="va">mdl2</span>,</span>
+<span><span class="va">iso3</span> <span class="op">&lt;-</span> <span class="va">panel_ok</span><span class="op">$</span><span class="va">iso3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">panel_ok</span><span class="op">$</span><span class="va">year</span><span class="op">[</span><span class="va">panel_ok</span><span class="op">$</span><span class="va">iso3</span> <span class="op">==</span> <span class="va">iso3</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_balance_inputs_from_panel.html">odin2_balance_inputs_from_panel</a></span><span class="op">(</span><span class="va">panel_ok</span>, times <span class="op">=</span> <span class="va">times</span>, iso3 <span class="op">=</span> <span class="va">iso3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">inputs</span></span>
+<span><span class="co">#&gt; $births</span></span>
+<span><span class="co">#&gt;  [1] 1036531 1006568 1015204 1069726 1095382 1097034 1120872 1135655 1126518</span></span>
+<span><span class="co">#&gt; [10] 1158026 1181115 1202464 1243855 1274015 1300092 1331754 1344024 1362282</span></span>
+<span><span class="co">#&gt; [19] 1382420 1405901 1429964 1453695 1462664 1469032</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $vaccinated</span></span>
+<span><span class="co">#&gt;  [1] 279863.3 372430.2 355321.4 417193.3 525783.3 548517.0 594062.2 624610.1</span></span>
+<span><span class="co">#&gt;  [9] 664645.5 694815.5 732291.5 769576.7 733874.2 726188.8 780055.4 825687.2</span></span>
+<span><span class="co">#&gt; [17] 860175.4 871860.7 912397.3 801363.4 815079.3 741384.4 819092.0 807967.8</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $cases</span></span>
+<span><span class="co">#&gt;  [1] 6532 8762 2486  798  466 1296 1990 1141 1599 2861 1989 3013 2787  430  492</span></span>
+<span><span class="co">#&gt; [16] 1154  638 1511 2012  353  640 2900 5166 2792</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out_panel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl_bal</span>,</span>
 <span>  times <span class="op">=</span> <span class="va">times</span>,</span>
 <span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  inputs <span class="op">=</span> <span class="va">inputs</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out4</span></span>
-<span></span>
-<span><span class="co"># Compare to Method D (susceptible balance updated using cases)</span></span>
-<span><span class="co">#</span></span>
-<span><span class="co"># The `balance_discrete` template is intended to match the Method D recurrence,</span></span>
-<span><span class="co"># expressed as an explicit difference equation. Here we compute Method D and</span></span>
-<span><span class="co"># compare trajectories.</span></span>
-<span></span>
-<span><span class="va">sus_d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_case_balance.html">estimate_susceptible_case_balance</a></span><span class="op">(</span></span>
-<span>  <span class="va">panel</span>,</span>
+<span><span class="va">out_panel</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 2</span></span></span>
+<span><span class="co">#&gt;     time        S</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>  <span style="text-decoration: underline;">2</span>000       0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>  <span style="text-decoration: underline;">2</span>001  <span style="text-decoration: underline;">625</span>376.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>  <span style="text-decoration: underline;">2</span>002 1<span style="text-decoration: underline;">282</span>773.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>  <span style="text-decoration: underline;">2</span>003 1<span style="text-decoration: underline;">934</span>508.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>  <span style="text-decoration: underline;">2</span>004 2<span style="text-decoration: underline;">503</span>640.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>  <span style="text-decoration: underline;">2</span>005 3<span style="text-decoration: underline;">050</span>861.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>  <span style="text-decoration: underline;">2</span>006 3<span style="text-decoration: underline;">575</span>681.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>  <span style="text-decoration: underline;">2</span>007 4<span style="text-decoration: underline;">085</span>585.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>  <span style="text-decoration: underline;">2</span>008 4<span style="text-decoration: underline;">545</span>858.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>  <span style="text-decoration: underline;">2</span>009 5<span style="text-decoration: underline;">006</span>207.</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="compare-with-method-d">5) Compare with Method D<a class="anchor" aria-label="anchor" href="#compare-with-method-d"></a>
+</h2>
+<p><code>balance_discrete</code> is intended to match Method D under
+matched assumptions.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sus_d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_case_balance.html">estimate_susceptible_case_balance</a></span><span class="op">(</span></span>
+<span>  <span class="va">panel_ok</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">iso3</span> <span class="op">==</span> <span class="va">.env</span><span class="op">$</span><span class="va">iso3</span><span class="op">)</span>,</span>
 <span>  rho <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  s0 <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  coverage_col <span class="op">=</span> <span class="st">"coverage"</span>,</span>
@@ -155,18 +262,28 @@ e.g. <a href="https://github.com/mrc-ide/dust2" class="external-link">dust2</a>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cmp</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">out4</span>, year <span class="op">=</span> <span class="va">time</span><span class="op">)</span>,</span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">out_panel</span>, year <span class="op">=</span> <span class="va">time</span><span class="op">)</span>,</span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">sus_d</span>, <span class="va">year</span>, <span class="va">susceptible_n</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="st">"year"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cmp</span></span>
-<span></span>
-<span><span class="co"># Simple comparison plot</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
-<span>  <span class="va">cmp</span>,</span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 4</span></span></span>
+<span><span class="co">#&gt;     time        S  year susceptible_n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>  <span style="text-decoration: underline;">2</span>000       0   <span style="text-decoration: underline;">2</span>000            0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>  <span style="text-decoration: underline;">2</span>001  <span style="text-decoration: underline;">625</span>376.  <span style="text-decoration: underline;">2</span>001       <span style="text-decoration: underline;">750</span>135.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>  <span style="text-decoration: underline;">2</span>002 1<span style="text-decoration: underline;">282</span>773.  <span style="text-decoration: underline;">2</span>002      1<span style="text-decoration: underline;">375</span>511.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>  <span style="text-decoration: underline;">2</span>003 1<span style="text-decoration: underline;">934</span>508.  <span style="text-decoration: underline;">2</span>003      2<span style="text-decoration: underline;">032</span>908.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>  <span style="text-decoration: underline;">2</span>004 2<span style="text-decoration: underline;">503</span>640.  <span style="text-decoration: underline;">2</span>004      2<span style="text-decoration: underline;">684</span>643.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>  <span style="text-decoration: underline;">2</span>005 3<span style="text-decoration: underline;">050</span>861.  <span style="text-decoration: underline;">2</span>005      3<span style="text-decoration: underline;">253</span>776.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>  <span style="text-decoration: underline;">2</span>006 3<span style="text-decoration: underline;">575</span>681.  <span style="text-decoration: underline;">2</span>006      3<span style="text-decoration: underline;">800</span>997.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>  <span style="text-decoration: underline;">2</span>007 4<span style="text-decoration: underline;">085</span>585.  <span style="text-decoration: underline;">2</span>007      4<span style="text-decoration: underline;">325</span>817.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>  <span style="text-decoration: underline;">2</span>008 4<span style="text-decoration: underline;">545</span>858.  <span style="text-decoration: underline;">2</span>008      4<span style="text-decoration: underline;">835</span>720.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>  <span style="text-decoration: underline;">2</span>009 5<span style="text-decoration: underline;">006</span>207.  <span style="text-decoration: underline;">2</span>009      5<span style="text-decoration: underline;">295</span>993.</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">cmp</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">S</span>, colour <span class="op">=</span> <span class="st">"odin2"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">S</span>, colour <span class="op">=</span> <span class="st">"odin2"</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">susceptible_n</span>, colour <span class="op">=</span> <span class="st">"method_d"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
@@ -178,44 +295,144 @@ e.g. <a href="https://github.com/mrc-ide/dust2" class="external-link">dust2</a>
 <span>    colour <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Susceptible balance: odin2 vs Method D ("</span>, <span class="va">iso3</span>, <span class="st">")"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span></code></pre></div>
+<p><img src="mechanistic_odin2_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="calibrate-reporting-fraction-rho">6) Calibrate reporting fraction rho<a class="anchor" aria-label="anchor" href="#calibrate-reporting-fraction-rho"></a>
+</h2>
+<p>Calibration question:</p>
+<p>What <code>rho</code> value would make the model match a chosen
+susceptible count at a target year?</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">target_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">times</span><span class="op">)</span></span>
+<span><span class="va">target_susceptible_n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">out_panel</span><span class="op">$</span><span class="va">S</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">out_panel</span><span class="op">$</span><span class="va">S</span><span class="op">)</span><span class="op">]</span><span class="op">]</span> <span class="op">*</span> <span class="fl">0.9</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">p</span></span>
-<span></span>
-<span><span class="co"># Optional: calibrate rho (reporting fraction) to a target susceptibility</span></span>
-<span><span class="co">#</span></span>
-<span><span class="co"># This is a minimal "inference hook" example. Here we create a target</span></span>
-<span><span class="co"># susceptible count and solve for rho such that the case-balance recurrence</span></span>
-<span><span class="co"># matches that target in a chosen year.</span></span>
-<span></span>
-<span><span class="va">target_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">times</span><span class="op">)</span></span>
-<span><span class="co"># For demonstration only: choose an arbitrary target susceptible count.</span></span>
-<span><span class="co"># In practice this could come from a cohort method estimate.</span></span>
-<span><span class="va">target_susceptible_n</span> <span class="op">&lt;-</span> <span class="fl">1e6</span></span>
-<span></span>
-<span><span class="va">rho_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate_rho_case_balance.html">calibrate_rho_case_balance</a></span><span class="op">(</span></span>
-<span>  <span class="va">panel</span>,</span>
-<span>  iso3 <span class="op">=</span> <span class="va">iso3</span>,</span>
-<span>  years <span class="op">=</span> <span class="va">times</span>,</span>
-<span>  target_year <span class="op">=</span> <span class="va">target_year</span>,</span>
-<span>  target_susceptible_n <span class="op">=</span> <span class="va">target_susceptible_n</span>,</span>
-<span>  rho_interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">rho_hat</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/calibrate_rho_case_balance.html">calibrate_rho_case_balance</a></span><span class="op">(</span></span>
+<span>    <span class="va">panel_ok</span>,</span>
+<span>    iso3 <span class="op">=</span> <span class="va">iso3</span>,</span>
+<span>    years <span class="op">=</span> <span class="va">times</span>,</span>
+<span>    target_year <span class="op">=</span> <span class="va">target_year</span>,</span>
+<span>    target_susceptible_n <span class="op">=</span> <span class="va">target_susceptible_n</span>,</span>
+<span>    rho_interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Calibration failed for this panel slice; using rho = 1 for demonstration."</span><span class="op">)</span></span>
+<span>    <span class="fl">1</span></span>
+<span>  <span class="op">}</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Calibration failed for this panel slice; using rho = 1 for demonstration.</span></span>
 <span></span>
 <span><span class="va">rho_hat</span></span>
-<span></span>
-<span><span class="va">out5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
-<span>  <span class="va">mdl2</span>,</span>
+<span><span class="co">#&gt; [1] 1</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out_cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl_bal</span>,</span>
 <span>  times <span class="op">=</span> <span class="va">times</span>,</span>
 <span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="va">rho_hat</span><span class="op">)</span>,</span>
 <span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  inputs <span class="op">=</span> <span class="va">inputs</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">out5</span></span></code></pre></div>
-<p>In a full implementation, you would map your panel data into model
-inputs.</p>
-  </main>
+<span><span class="va">out_cal</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 24 × 2</span></span></span>
+<span><span class="co">#&gt;     time        S</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>  <span style="text-decoration: underline;">2</span>000       0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>  <span style="text-decoration: underline;">2</span>001  <span style="text-decoration: underline;">625</span>376.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>  <span style="text-decoration: underline;">2</span>002 1<span style="text-decoration: underline;">282</span>773.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>  <span style="text-decoration: underline;">2</span>003 1<span style="text-decoration: underline;">934</span>508.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>  <span style="text-decoration: underline;">2</span>004 2<span style="text-decoration: underline;">503</span>640.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>  <span style="text-decoration: underline;">2</span>005 3<span style="text-decoration: underline;">050</span>861.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>  <span style="text-decoration: underline;">2</span>006 3<span style="text-decoration: underline;">575</span>681.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>  <span style="text-decoration: underline;">2</span>007 4<span style="text-decoration: underline;">085</span>585.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>  <span style="text-decoration: underline;">2</span>008 4<span style="text-decoration: underline;">545</span>858.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>  <span style="text-decoration: underline;">2</span>009 5<span style="text-decoration: underline;">006</span>207.</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 14 more rows</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="annual-sirv-model-spec-required-mechanistic-baseline">7) Annual SIRV model (spec-required mechanistic baseline)<a class="anchor" aria-label="anchor" href="#annual-sirv-model-spec-required-mechanistic-baseline"></a>
+</h2>
+<p>The annual SIRV model includes:</p>
+<ul>
+<li>compartments <code>S</code>, <code>I</code>, <code>R</code>,
+<code>V</code>,</li>
+<li>births into <code>S</code>,</li>
+<li>vaccination flow <code>S -&gt; V</code>,</li>
+<li>infection <code>S -&gt; I</code>,</li>
+<li>recovery <code>I -&gt; R</code>,</li>
+<li>mortality from all compartments,</li>
+<li>reporting fraction <code>rho</code> applied to infections.</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mdl_sirv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_build_model.html">odin2_build_model</a></span><span class="op">(</span><span class="st">"sirv_annual"</span><span class="op">)</span></span>
+<span><span class="va">times</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">15</span></span>
+<span></span>
+<span><span class="va">out_sirv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/odin2_simulate.html">odin2_simulate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mdl_sirv</span>,</span>
+<span>  times <span class="op">=</span> <span class="va">times</span>,</span>
+<span>  pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    beta <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>    gamma <span class="op">=</span> <span class="fl">0.4</span>,</span>
+<span>    mu <span class="op">=</span> <span class="fl">0.01</span>,</span>
+<span>    rho <span class="op">=</span> <span class="fl">0.25</span>,</span>
+<span>    births <span class="op">=</span> <span class="fl">50000</span>,</span>
+<span>    vaccinated <span class="op">=</span> <span class="fl">40000</span>,</span>
+<span>    n_pop <span class="op">=</span> <span class="fl">1e7</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    S <span class="op">=</span> <span class="fl">2e6</span>,</span>
+<span>    I <span class="op">=</span> <span class="fl">1e3</span>,</span>
+<span>    R <span class="op">=</span> <span class="fl">7.95e6</span>,</span>
+<span>    V <span class="op">=</span> <span class="fl">5e4</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">out_sirv</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 8</span></span></span>
+<span><span class="co">#&gt;    time      S     I      R      V reported_cases susceptible_n susceptible_prop</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     0 2   <span style="color: #949494;">e</span>6 <span style="text-decoration: underline;">1</span>000  7.95<span style="color: #949494;">e</span>6 5   <span style="color: #949494;">e</span>4            0              0             0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1 1.99<span style="color: #949494;">e</span>6  750  7.87<span style="color: #949494;">e</span>6 8.95<span style="color: #949494;">e</span>4           40        2<span style="text-decoration: underline;">000</span>000             0.2  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     2 1.98<span style="color: #949494;">e</span>6  562. 7.79<span style="color: #949494;">e</span>6 1.29<span style="color: #949494;">e</span>5           29.8      1<span style="text-decoration: underline;">989</span>840             0.199</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     3 1.97<span style="color: #949494;">e</span>6  421. 7.71<span style="color: #949494;">e</span>6 1.67<span style="color: #949494;">e</span>5           22.2      1<span style="text-decoration: underline;">979</span>822.            0.198</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     4 1.96<span style="color: #949494;">e</span>6  314. 7.64<span style="color: #949494;">e</span>6 2.06<span style="color: #949494;">e</span>5           16.6      1<span style="text-decoration: underline;">969</span>935.            0.197</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>     5 1.95<span style="color: #949494;">e</span>6  235. 7.56<span style="color: #949494;">e</span>6 2.44<span style="color: #949494;">e</span>5           12.3      1<span style="text-decoration: underline;">960</span>169.            0.196</span></span></code></pre></div>
+<p>Key outputs to inspect for susceptibility inference:</p>
+<ul>
+<li>
+<code>reported_cases</code>: model-implied observed burden,</li>
+<li>
+<code>susceptible_n</code>: susceptible count,</li>
+<li>
+<code>susceptible_prop</code>: susceptible proportion.</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">out_sirv</span>, <span class="va">time</span>, <span class="va">reported_cases</span>, <span class="va">susceptible_n</span>, <span class="va">susceptible_prop</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
+<span><span class="co">#&gt;    time reported_cases susceptible_n susceptible_prop</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     0            0              0             0    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1           40        2<span style="text-decoration: underline;">000</span>000             0.2  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     2           29.8      1<span style="text-decoration: underline;">989</span>840             0.199</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     3           22.2      1<span style="text-decoration: underline;">979</span>822.            0.198</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     4           16.6      1<span style="text-decoration: underline;">969</span>935.            0.197</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>     5           12.3      1<span style="text-decoration: underline;">960</span>169.            0.196</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="scope-and-next-step">Scope and next step<a class="anchor" aria-label="anchor" href="#scope-and-next-step"></a>
+</h2>
+<p>This pathway now includes both a transparent balance model and a
+spec-aligned annual SIRV model.</p>
+<p>The next student-facing extension is to feed country-year panel
+inputs directly into <code>sirv_annual</code> and compare inferred
+susceptibility trajectories against Method B/Method D under matched
+assumptions.</p>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

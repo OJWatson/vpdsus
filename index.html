@@ -38,7 +38,7 @@
 <li><a class="dropdown-item" href="articles/data_access.html">Data access and caching</a></li>
     <li><a class="dropdown-item" href="articles/susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
     <li><a class="dropdown-item" href="articles/outbreak_models.html">Outbreak modelling</a></li>
-    <li><a class="dropdown-item" href="articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (scaffold)</a></li>
+    <li><a class="dropdown-item" href="articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (annual SIRV)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -58,15 +58,16 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="vpdsus">vpdsus<a class="anchor" aria-label="anchor" href="#vpdsus"></a>
 </h1></div>
-<p><code>vpdsus</code> is an R package for building reproducible country–year panels for vaccine-preventable disease (VPD) surveillance, susceptibility estimation, and downstream risk scanning / modelling.</p>
+<p><code>vpdsus</code> is an R package for building reproducible country-year panels for vaccine-preventable disease (VPD) surveillance, susceptibility estimation, and outbreak risk modelling.</p>
 <p>It is organised around a stepped workflow:</p>
 <ol style="list-style-type: decimal">
 <li>Discover indicators (WHO GHO)</li>
 <li>Retrieve vaccination coverage and reported cases</li>
 <li>Combine with demography to build a harmonised panel</li>
 <li>Estimate susceptible proportions (multiple methods)</li>
+<li>Validate panel schema and key data constraints</li>
 <li>Rank and visualise risk in WHO-style outputs</li>
-<li>(Planned) Mechanistic susceptibility inference using an explicit SIRV model</li>
+<li>Mechanistic susceptibility inference hooks (odin2/dust2)</li>
 </ol>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -77,9 +78,9 @@
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"OJWatson/vpdsus"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="quick-start-example-panel">Quick start (example panel)<a class="anchor" aria-label="anchor" href="#quick-start-example-panel"></a>
+<h2 id="quick-start-global-example-panel">Quick start (global example panel)<a class="anchor" aria-label="anchor" href="#quick-start-global-example-panel"></a>
 </h2>
-<p>The package ships an example panel for learning the end-to-end workflow without downloading any data:</p>
+<p>The package ships a global measles-focused country-year panel (all available years, worldwide coverage/cases + demography fields) for end-to-end learning without live downloads:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/vpdsus/">vpdsus</a></span><span class="op">)</span></span>
 <span></span>
@@ -96,6 +97,33 @@
 <span><span class="fu"><a href="reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">rank</span>, top_n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="first-project-workflow-recommended">First project workflow (recommended)<a class="anchor" aria-label="anchor" href="#first-project-workflow-recommended"></a>
+</h2>
+<p>For a first project, use this path:</p>
+<ol style="list-style-type: decimal">
+<li>Run an end-to-end demo on bundled data:</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">make</span> first-project</span></code></pre></div>
+<ol start="2" style="list-style-type: decimal">
+<li>Read outputs in <code>analysis/outputs/first_project/</code>:</li>
+</ol>
+<ul>
+<li><code>rank_table.csv</code></li>
+<li><code>model_coefficients.csv</code></li>
+<li><code>coverage_rank_top10.png</code></li>
+<li><code>susceptible_rank_top10.png</code></li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Then work through vignettes in order:</li>
+</ol>
+<ul>
+<li><code>data_access</code></li>
+<li><code>susceptibility_simple</code></li>
+<li><code>outbreak_models</code></li>
+<li><code>mechanistic_odin2</code></li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="tutorials-vignettes">Tutorials (vignettes)<a class="anchor" aria-label="anchor" href="#tutorials-vignettes"></a>
 </h2>
 <p>Vignettes are intended to be <strong>offline-friendly</strong>: they should run without live downloads.</p>
@@ -107,7 +135,7 @@
 <li>
 <code><a href="articles/outbreak_models.html">vignette("outbreak_models", package = "vpdsus")</a></code>: modelling panel + baseline models + evaluation</li>
 <li>
-<code><a href="articles/mechanistic_odin2.html">vignette("mechanistic_odin2", package = "vpdsus")</a></code>: mechanistic workflow (under redevelopment)</li>
+<code><a href="articles/mechanistic_odin2.html">vignette("mechanistic_odin2", package = "vpdsus")</a></code>: mechanistic workflow</li>
 </ul>
 <p>Live data acquisition and full report pipelines belong under <code>analysis/</code>.</p>
 </div>
@@ -138,24 +166,35 @@
 <code>iso3</code>: country ISO3 code</li>
 <li>population columns are named <code>pop_*</code> (e.g. <code>pop_0_4</code>, <code>pop_total</code>)</li>
 </ul>
+<p>Use <code><a href="reference/panel_validate.html">panel_validate()</a></code> to check schema and value ranges before downstream susceptibility/modelling steps.</p>
+</div>
+<div class="section level2">
+<h2 id="mechanistic-setup-odin2--dust2">Mechanistic setup (odin2 + dust2)<a class="anchor" aria-label="anchor" href="#mechanistic-setup-odin2--dust2"></a>
+</h2>
+<p>Mechanistic models are first-class in this package and are compiled into the package binary using <code><a href="https://mrc-ide.github.io/odin2/reference/odin_package.html" class="external-link">odin2::odin_package()</a></code>.</p>
+<ul>
+<li>odin source files live in <code>inst/odin/</code>
+</li>
+<li>generated C++/R bindings live in <code>inst/dust/</code>, <code>src/</code>, and <code>R/dust.R</code>
+</li>
+</ul>
+<p>After editing any file under <code>inst/odin/</code>, regenerate bindings:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">Rscript</span> scripts/update_odin_models.R</span></code></pre></div>
+<p>To rebuild the shipped global example panel from live WHO/World Bank sources:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">Rscript</span> scripts/rebuild_example_panel_full.R</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="reproducibility-and-checks">Reproducibility and checks<a class="anchor" aria-label="anchor" href="#reproducibility-and-checks"></a>
 </h2>
 <p>From the repository root:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">R</span> CMD check <span class="at">--no-manual</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'pkgdown::build_site()'</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">make</span> test</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">make</span> check</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">make</span> site</span></code></pre></div>
 <p>To test that vignettes can build in an offline-friendly mode (best-effort):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">./scripts/build_vignettes_offline.sh</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="redevelopment-roadmap">Redevelopment roadmap<a class="anchor" aria-label="anchor" href="#redevelopment-roadmap"></a>
-</h2>
-<p>A binding redevelopment specification is included in:</p>
-<ul>
-<li><code>docs/internal/vpdsus_redevelopment_spec_md.md</code></li>
-</ul>
-<p>This roadmap defines the target end-state (including an explicit SIRV mechanistic model and fully tutorial-style vignettes) and the milestone sequence for getting there.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">./scripts/build_vignettes_offline.sh</span></span></code></pre></div>
+<p>To reproduce the example analysis artefacts (table + plots):</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">make</span> reproduce</span></code></pre></div>
+<p>Outputs are written to <code>analysis/outputs/example/</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -179,13 +218,6 @@
 </ul>
 </div>
 
-<div class="community">
-<h2 data-toc-skip>Community</h2>
-<ul class="list-unstyled">
-<li><a href="CONTRIBUTING.html">Contributing guide</a></li>
-<li><a href="CODE_OF_CONDUCT.html">Code of conduct</a></li>
-</ul>
-</div>
 
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>

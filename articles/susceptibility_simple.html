@@ -36,7 +36,7 @@
 <li><a class="dropdown-item" href="../articles/data_access.html">Data access and caching</a></li>
     <li><a class="dropdown-item" href="../articles/susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
     <li><a class="dropdown-item" href="../articles/outbreak_models.html">Outbreak modelling</a></li>
-    <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (scaffold)</a></li>
+    <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (annual SIRV)</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -68,59 +68,375 @@
 
     
     
-<p>This vignette shows how to:</p>
-<ul>
-<li>estimate susceptibility from a panel (methods A and B), and</li>
-<li>produce WHO-style ranking plots with [risk_rank()],
-[plot_coverage_rank()], and [plot_susceptible_rank()].</li>
-</ul>
-<p>Key columns in the example panel:</p>
-<ul>
-<li>
-<code>coverage</code>: vaccination coverage as a proportion in [0,
-1]</li>
-<li>
-<code>pop_0_4</code>: population aged 0–4 (used as a simple
-denominator in the static method)</li>
-<li>
-<code>births</code>: births (used by the cohort reconstruction)</li>
-</ul>
-<p>Key ranking parameters:</p>
+<p>This vignette answers a practical first-project question:</p>
+<p>Can we identify countries that might be at higher measles outbreak
+risk by combining recent vaccination coverage with simple susceptibility
+estimates?</p>
+<p>The workflow is:</p>
+<ol style="list-style-type: decimal">
+<li>Load and inspect a country-year panel.</li>
+<li>Estimate susceptibility (Method A, Method B, and Method D).</li>
+<li>Rank countries using recent coverage and current
+susceptibility.</li>
+<li>Interpret how method choice changes the ranking.</li>
+</ol>
+<p>How the key functions fit together:</p>
 <ul>
 <li>
-<code>window_years</code>: the number of years used to compute a
-mean coverage (<code>coverage_mean</code>)</li>
+<code><a href="../reference/vpdsus_example_panel.html">vpdsus_example_panel()</a></code>: provides a reproducible
+teaching dataset.</li>
 <li>
-<code>year_end</code>: the year at which susceptibility is taken for
-ranking</li>
+<code><a href="../reference/panel_validate.html">panel_validate()</a></code>: checks that required columns/ranges
+are sane.</li>
+<li>
+<code>estimate_susceptible_*()</code>: computes susceptibility under
+different assumptions.</li>
+<li>
+<code><a href="../reference/risk_rank.html">risk_rank()</a></code>: combines recent coverage + susceptibility
+into a prioritisation table.</li>
+<li>
+<code><a href="../reference/plot_coverage_rank.html">plot_coverage_rank()</a></code> /
+<code><a href="../reference/plot_susceptible_rank.html">plot_susceptible_rank()</a></code>: communicate results quickly.</li>
 </ul>
-<p>Risk categories are derived from <code>coverage_mean</code> cutpoints
-(see <code>breaks</code> argument in [risk_rank()]).</p>
+<div class="section level2">
+<h2 id="load-and-inspect-panel-data">1) Load and inspect panel data<a class="anchor" aria-label="anchor" href="#load-and-inspect-panel-data"></a>
+</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ojwatson.github.io/vpdsus/">vpdsus</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">panel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vpdsus_example_panel.html">vpdsus_example_panel</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">sA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_static.html">estimate_susceptible_static</a></span><span class="op">(</span><span class="va">panel</span>, coverage_col <span class="op">=</span> <span class="st">"coverage"</span>, pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span><span class="op">)</span></span>
-<span><span class="va">rank</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/risk_rank.html">risk_rank</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">sA</span>, window_years <span class="op">=</span> <span class="fl">3</span>, year_end <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/plot_coverage_rank.html">plot_coverage_rank</a></span><span class="op">(</span><span class="va">rank</span>, top_n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="susceptibility_simple_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="700"></p>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">panel</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 15</span></span></span>
+<span><span class="co">#&gt;   iso3   year ind_mcv2 ind_whs3_62 ind_whs8_110 coverage  mcv2 cases pop_total</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ABW    <span style="text-decoration: underline;">1</span>960       <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">54</span>922</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ABW    <span style="text-decoration: underline;">1</span>961       <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">55</span>578</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ABW    <span style="text-decoration: underline;">1</span>962       <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">56</span>320</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ABW    <span style="text-decoration: underline;">1</span>963       <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">57</span>002</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ABW    <span style="text-decoration: underline;">1</span>964       <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">57</span>619</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> ABW    <span style="text-decoration: underline;">1</span>965       <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">58</span>190</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: pop_0_4 &lt;dbl&gt;, pop_5_14 &lt;dbl&gt;, births &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   country &lt;chr&gt;, who_region &lt;chr&gt;, who_region_name &lt;chr&gt;</span></span></span></code></pre></div>
+<p>Before modelling, validate basic schema and ranges:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">rank</span>, top_n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="susceptibility_simple_files/figure-html/unnamed-chunk-1-2.png" class="r-plt" alt="" width="700"></p>
-<p>Method B cohort reconstruction:</p>
+<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/panel_validate.html">panel_validate</a></span><span class="op">(</span><span class="va">panel</span><span class="op">)</span></span>
+<span><span class="va">v</span><span class="op">$</span><span class="va">ok</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="va">v</span><span class="op">$</span><span class="va">diagnostics</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
+<span><span class="co">#&gt;   n_rows n_iso3 year_min year_max</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  <span style="text-decoration: underline;">17</span>419    272     <span style="text-decoration: underline;">1</span>960     <span style="text-decoration: underline;">2</span>024</span></span>
+<span><span class="va">v</span><span class="op">$</span><span class="va">issues</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 0 × 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 variable: issue &lt;chr&gt;</span></span></span></code></pre></div>
+<p>Check key variables used below:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_cohort.html">estimate_susceptible_cohort</a></span><span class="op">(</span><span class="va">panel</span>, coverage_col <span class="op">=</span> <span class="st">"coverage"</span>, births_col <span class="op">=</span> <span class="st">"births"</span>, pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/risk_rank.html">risk_rank</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">sB</span>, window_years <span class="op">=</span> <span class="fl">3</span>, year_end <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 9</span></span></span>
-<span><span class="co">#&gt;   iso3  coverage_mean who_region country   susceptible_n susceptible_prop method</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> NGA           0.557 AFR        Nigeria        10<span style="text-decoration: underline;">368</span>000            0.296 cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> PHL           0.73  WPR        Philippi…       1<span style="text-decoration: underline;">823</span>500            0.174 cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AFG           0.67  EMR        Afghanis…       1<span style="text-decoration: underline;">214</span>100            0.187 cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: risk_category &lt;fct&gt;, rank_global &lt;int&gt;</span></span></span></code></pre></div>
-  </main>
+<code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>  <span class="va">panel</span>,</span>
+<span>  n_rows <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  n_countries <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html" class="external-link">n_distinct</a></span><span class="op">(</span><span class="va">iso3</span><span class="op">)</span>,</span>
+<span>  year_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span>,</span>
+<span>  year_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span>,</span>
+<span>  coverage_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">coverage</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  coverage_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">coverage</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  births_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">births</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  births_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">births</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  cases_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">cases</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  cases_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">cases</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 10</span></span></span>
+<span><span class="co">#&gt;   n_rows n_countries year_min year_max coverage_min coverage_max births_min</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  <span style="text-decoration: underline;">17</span>419         272     <span style="text-decoration: underline;">1</span>960     <span style="text-decoration: underline;">2</span>024         0.08         0.99       76.6</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: births_max &lt;dbl&gt;, cases_min &lt;dbl&gt;, cases_max &lt;dbl&gt;</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="susceptibility-methods-and-assumptions">2) Susceptibility methods and assumptions<a class="anchor" aria-label="anchor" href="#susceptibility-methods-and-assumptions"></a>
+</h2>
+<div class="section level3">
+<h3 id="method-a-static-coverage-based-susceptibility">Method A: static coverage-based susceptibility<a class="anchor" aria-label="anchor" href="#method-a-static-coverage-based-susceptibility"></a>
+</h3>
+<p>Function: [estimate_susceptible_static()]</p>
+<p>Core idea:</p>
+<ul>
+<li>susceptible proportion is approximately
+<code>1 - (coverage * VE)</code>.</li>
+<li>susceptible count is this proportion multiplied by a population
+denominator.</li>
+</ul>
+<p>In this vignette we use:</p>
+<ul>
+<li>
+<code>coverage</code> as the immunisation proportion,</li>
+<li>
+<code>pop_0_4</code> as the denominator for a simple child-age
+signal,</li>
+<li>
+<code>VE = 1</code> (default) for a minimal didactic example.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_static.html">estimate_susceptible_static</a></span><span class="op">(</span></span>
+<span>  <span class="va">panel</span>,</span>
+<span>  coverage_col <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">sA</span>, <span class="va">iso3</span>, <span class="va">year</span>, <span class="va">susceptible_prop</span>, <span class="va">susceptible_n</span>, <span class="va">method</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<span><span class="co">#&gt;   iso3   year susceptible_prop susceptible_n method</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ABW    <span style="text-decoration: underline;">1</span>960               <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span> static</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ABW    <span style="text-decoration: underline;">1</span>961               <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span> static</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ABW    <span style="text-decoration: underline;">1</span>962               <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span> static</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ABW    <span style="text-decoration: underline;">1</span>963               <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span> static</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ABW    <span style="text-decoration: underline;">1</span>964               <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span> static</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> ABW    <span style="text-decoration: underline;">1</span>965               <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span> static</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="method-b-cohort-reconstruction-from-births-and-coverage">Method B: cohort reconstruction from births and coverage<a class="anchor" aria-label="anchor" href="#method-b-cohort-reconstruction-from-births-and-coverage"></a>
+</h3>
+<p>Function: [estimate_susceptible_cohort()]</p>
+<p>Core idea:</p>
+<ul>
+<li>reconstruct the recent birth cohorts that make up an age window
+(default 0-4),</li>
+<li>for each cohort, count births not effectively immunised,</li>
+<li>aggregate across the window and divide by the age-group
+population.</li>
+</ul>
+<p>Equation for year <code>y</code> with
+<code>years_back = 4</code>:</p>
+<ul>
+<li><code>S_n(y) = sum_{k=0..4} births(y-k) * (1 - coverage(y-k))</code></li>
+<li><code>S_prop(y) = S_n(y) / pop_0_4(y)</code></li>
+</ul>
+<p>So Method B explicitly answers: “How many children currently aged 0-4
+likely remained susceptible, given their birth cohort sizes and the
+coverage observed when each cohort was vaccinated?”</p>
+</div>
+<div class="section level3">
+<h3 id="method-b-walkthrough-single-country-step-by-step">Method B walkthrough (single country, step by step)<a class="anchor" aria-label="anchor" href="#method-b-walkthrough-single-country-step-by-step"></a>
+</h3>
+<p>To make the logic concrete, we take one country and one year and
+rebuild the cohort sum by hand.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">demo_candidates</span> <span class="op">&lt;-</span> <span class="va">panel</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">coverage</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">births</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">pop_0_4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">iso3</span>, name <span class="op">=</span> <span class="st">"n_years"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">n_years</span> <span class="op">&gt;=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">n_years</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">iso_demo</span> <span class="op">&lt;-</span> <span class="va">demo_candidates</span><span class="op">$</span><span class="va">iso3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">year_demo</span> <span class="op">&lt;-</span> <span class="va">panel</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">iso3</span> <span class="op">==</span> <span class="va">iso_demo</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">coverage</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">births</span><span class="op">)</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">pop_0_4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>year_demo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">year_demo</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cohort_tbl</span> <span class="op">&lt;-</span> <span class="va">panel</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">iso3</span> <span class="op">==</span> <span class="va">iso_demo</span>, <span class="va">year</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="op">(</span><span class="va">year_demo</span> <span class="op">-</span> <span class="fl">4</span><span class="op">)</span><span class="op">:</span><span class="va">year_demo</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
+<span>    <span class="va">iso3</span>,</span>
+<span>    <span class="va">year</span>,</span>
+<span>    <span class="va">births</span>,</span>
+<span>    <span class="va">coverage</span>,</span>
+<span>    susceptible_from_cohort <span class="op">=</span> <span class="va">births</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">coverage</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">cohort_tbl</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
+<span><span class="co">#&gt;   iso3   year   births coverage susceptible_from_cohort</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AFG    <span style="text-decoration: underline;">2</span>019 1<span style="text-decoration: underline;">405</span>901.     0.57                 <span style="text-decoration: underline;">604</span>537.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AFG    <span style="text-decoration: underline;">2</span>020 1<span style="text-decoration: underline;">429</span>964.     0.57                 <span style="text-decoration: underline;">614</span>884.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AFG    <span style="text-decoration: underline;">2</span>021 1<span style="text-decoration: underline;">453</span>695.     0.51                 <span style="text-decoration: underline;">712</span>311.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AFG    <span style="text-decoration: underline;">2</span>022 1<span style="text-decoration: underline;">462</span>664.     0.56                 <span style="text-decoration: underline;">643</span>572.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AFG    <span style="text-decoration: underline;">2</span>023 1<span style="text-decoration: underline;">469</span>032.     0.55                 <span style="text-decoration: underline;">661</span>065.</span></span></code></pre></div>
+<p>Manual Method B numerator for this example year:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">manual_s_n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">cohort_tbl</span><span class="op">$</span><span class="va">susceptible_from_cohort</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">manual_s_n</span></span>
+<span><span class="co">#&gt; [1] 3236369</span></span></code></pre></div>
+<p>Compare manual reconstruction with package output:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_cohort.html">estimate_susceptible_cohort</a></span><span class="op">(</span></span>
+<span>  <span class="va">panel</span>,</span>
+<span>  coverage_col <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  births_col <span class="op">=</span> <span class="st">"births"</span>,</span>
+<span>  pop_col <span class="op">=</span> <span class="st">"pop_0_4"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">sB</span>, <span class="va">iso3</span>, <span class="va">year</span>, <span class="va">susceptible_prop</span>, <span class="va">susceptible_n</span>, <span class="va">method</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<span><span class="co">#&gt;   iso3   year susceptible_prop susceptible_n method</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ABW    <span style="text-decoration: underline;">1</span>960                0             0 cohort</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ABW    <span style="text-decoration: underline;">1</span>961                0             0 cohort</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ABW    <span style="text-decoration: underline;">1</span>962                0             0 cohort</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ABW    <span style="text-decoration: underline;">1</span>963                0             0 cohort</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ABW    <span style="text-decoration: underline;">1</span>964                0             0 cohort</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> ABW    <span style="text-decoration: underline;">1</span>965                0             0 cohort</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sB_demo</span> <span class="op">&lt;-</span> <span class="va">sB</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">iso3</span> <span class="op">==</span> <span class="va">iso_demo</span>, <span class="va">year</span> <span class="op">==</span> <span class="va">year_demo</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">iso3</span>, <span class="va">year</span>, <span class="va">susceptible_n</span>, <span class="va">susceptible_prop</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">manual_check</span> <span class="op">&lt;-</span> <span class="va">panel</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">iso3</span> <span class="op">==</span> <span class="va">iso_demo</span>, <span class="va">year</span> <span class="op">==</span> <span class="va">year_demo</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/transmute.html" class="external-link">transmute</a></span><span class="op">(</span></span>
+<span>    <span class="va">iso3</span>,</span>
+<span>    <span class="va">year</span>,</span>
+<span>    <span class="va">pop_0_4</span>,</span>
+<span>    manual_susceptible_n <span class="op">=</span> <span class="va">manual_s_n</span>,</span>
+<span>    manual_susceptible_prop <span class="op">=</span> <span class="va">manual_s_n</span> <span class="op">/</span> <span class="va">pop_0_4</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">sB_demo</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iso3"</span>, <span class="st">"year"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">manual_check</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
+<span><span class="co">#&gt;   iso3   year  pop_0_4 manual_susceptible_n manual_susceptible_p…¹ susceptible_n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AFG    <span style="text-decoration: underline;">2</span>023 5<span style="text-decoration: underline;">973</span>106.             3<span style="text-decoration: underline;">236</span>369.                  0.542      3<span style="text-decoration: underline;">236</span>369.</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated name: ¹​manual_susceptible_prop</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: susceptible_prop &lt;dbl&gt;</span></span></span></code></pre></div>
+<p>On a large global panel this method is often much more informative
+than Method A, because it uses cohort size and birth-history dynamics
+directly rather than only current coverage.</p>
+</div>
+<div class="section level3">
+<h3 id="method-d-case-balance-recurrence-with-reporting-fraction-rho">Method D: case-balance recurrence with reporting fraction rho<a class="anchor" aria-label="anchor" href="#method-d-case-balance-recurrence-with-reporting-fraction-rho"></a>
+</h3>
+<p>Function: [estimate_susceptible_case_balance()]</p>
+<p>Core recurrence (discrete-time):</p>
+<ul>
+<li><code>S[t+1] = max(0, S[t] + births[t] - vaccinated[t] - cases[t] / rho)</code></li>
+</ul>
+<p>Interpretation:</p>
+<ul>
+<li>lower <code>rho</code> means more under-reporting and therefore
+larger implied depletion from infection for the same observed
+cases.</li>
+</ul>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sD</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_susceptible_case_balance.html">estimate_susceptible_case_balance</a></span><span class="op">(</span></span>
+<span>  <span class="va">panel</span>,</span>
+<span>  rho <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  coverage_col <span class="op">=</span> <span class="st">"coverage"</span>,</span>
+<span>  births_col <span class="op">=</span> <span class="st">"births"</span>,</span>
+<span>  cases_col <span class="op">=</span> <span class="st">"cases"</span>,</span>
+<span>  pop_col <span class="op">=</span> <span class="st">"pop_total"</span>,</span>
+<span>  age_group <span class="op">=</span> <span class="st">"total"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">sD</span>, <span class="va">iso3</span>, <span class="va">year</span>, <span class="va">rho</span>, <span class="va">susceptible_prop</span>, <span class="va">susceptible_n</span>, <span class="va">method</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">#&gt;   iso3   year   rho susceptible_prop susceptible_n method      </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ABW    <span style="text-decoration: underline;">1</span>960   0.2           0.032<span style="text-decoration: underline;">0</span>         <span style="text-decoration: underline;">1</span>760. case_balance</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> ABW    <span style="text-decoration: underline;">1</span>961   0.2          <span style="color: #BB0000;">NA</span>                <span style="color: #BB0000;">NA</span>  case_balance</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ABW    <span style="text-decoration: underline;">1</span>962   0.2          <span style="color: #BB0000;">NA</span>                <span style="color: #BB0000;">NA</span>  case_balance</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> ABW    <span style="text-decoration: underline;">1</span>963   0.2          <span style="color: #BB0000;">NA</span>                <span style="color: #BB0000;">NA</span>  case_balance</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> ABW    <span style="text-decoration: underline;">1</span>964   0.2          <span style="color: #BB0000;">NA</span>                <span style="color: #BB0000;">NA</span>  case_balance</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> ABW    <span style="text-decoration: underline;">1</span>965   0.2          <span style="color: #BB0000;">NA</span>                <span style="color: #BB0000;">NA</span>  case_balance</span></span></code></pre></div>
+<p>Choosing a method for a first project:</p>
+<ul>
+<li>Start with Method A to understand the workflow quickly.</li>
+<li>Move to Method B when births and cohort structure matter.</li>
+<li>Use Method D when reported cases are considered informative about
+depletion.</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="rank-countries-and-produce-who-style-outputs">3) Rank countries and produce WHO-style outputs<a class="anchor" aria-label="anchor" href="#rank-countries-and-produce-who-style-outputs"></a>
+</h2>
+<p>The ranking helper [risk_rank()] combines:</p>
+<ul>
+<li>recent mean coverage over a window (<code>window_years</code>),
+and</li>
+<li>susceptibility at a target end year (<code>year_end</code>).</li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rank_A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/risk_rank.html">risk_rank</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">sA</span>, window_years <span class="op">=</span> <span class="fl">3</span>, year_end <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
+<span><span class="va">rank_B</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/risk_rank.html">risk_rank</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">sB</span>, window_years <span class="op">=</span> <span class="fl">3</span>, year_end <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">rank_A</span>, <span class="va">iso3</span>, <span class="va">coverage_mean</span>, <span class="va">susceptible_prop</span>, <span class="va">risk_category</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
+<span><span class="co">#&gt;   iso3  coverage_mean susceptible_prop risk_category</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> IND           0.923             0.11 low          </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> NGA           0.58              0.4  high         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> ETH           0.557             0.43 high         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> IDN           0.843             0.24 medium       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> COD           0.637             0.38 high         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> PAK           0.81              0.17 medium</span></span></code></pre></div>
+<p>Plots:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_coverage_rank.html">plot_coverage_rank</a></span><span class="op">(</span><span class="va">rank_A</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p><img src="susceptibility_simple_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="700"></p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_susceptible_rank.html">plot_susceptible_rank</a></span><span class="op">(</span><span class="va">rank_A</span>, top_n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p><img src="susceptibility_simple_files/figure-html/unnamed-chunk-11-2.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="how-method-choice-affects-interpretation">4) How method choice affects interpretation<a class="anchor" aria-label="anchor" href="#how-method-choice-affects-interpretation"></a>
+</h2>
+<p>Compare trajectories for one country:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_methods.html">compare_methods</a></span><span class="op">(</span></span>
+<span>  panel <span class="op">=</span> <span class="va">panel</span>,</span>
+<span>  estimates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    static <span class="op">=</span> <span class="va">sA</span>,</span>
+<span>    cohort <span class="op">=</span> <span class="va">sB</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  iso3 <span class="op">=</span> <span class="va">panel</span><span class="op">$</span><span class="va">iso3</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Removed 10682 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_line()`).</span></span></code></pre></div>
+<p><img src="susceptibility_simple_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="700"></p>
+<p>Simple side-by-side ranking comparison:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">rank_A</span>, <span class="va">iso3</span>, risk_A <span class="op">=</span> <span class="va">risk_category</span>, susc_A <span class="op">=</span> <span class="va">susceptible_prop</span><span class="op">)</span>,</span>
+<span>    year_end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">rank_A</span>, <span class="st">"year_end"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">rank_B</span>, <span class="va">iso3</span>, risk_B <span class="op">=</span> <span class="va">risk_category</span>, susc_B <span class="op">=</span> <span class="va">susceptible_prop</span><span class="op">)</span>,</span>
+<span>    year_end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">rank_B</span>, <span class="st">"year_end"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iso3"</span>, <span class="st">"year_end"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 272 × 6</span></span></span>
+<span><span class="co">#&gt;    iso3  risk_A susc_A year_end risk_B susc_B</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> IND   low      0.11     <span style="text-decoration: underline;">2</span>020 low    0.089<span style="text-decoration: underline;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> NGA   high     0.4      <span style="text-decoration: underline;">2</span>020 high   0.536 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> ETH   high     0.43     <span style="text-decoration: underline;">2</span>020 high   0.509 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> IDN   medium   0.24     <span style="text-decoration: underline;">2</span>020 medium 0.136 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> COD   high     0.38     <span style="text-decoration: underline;">2</span>020 high   0.472 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> PAK   medium   0.17     <span style="text-decoration: underline;">2</span>020 medium 0.238 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> BRA   low      0.21     <span style="text-decoration: underline;">2</span>020 low    0.109 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> AFG   high     0.43     <span style="text-decoration: underline;">2</span>020 high   0.463 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> PHL   medium   0.21     <span style="text-decoration: underline;">2</span>020 medium 0.175 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> YEM   high     0.47     <span style="text-decoration: underline;">2</span>020 high   0.549 </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 262 more rows</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="take-home-interpretation">Take-home interpretation<a class="anchor" aria-label="anchor" href="#take-home-interpretation"></a>
+</h2>
+<ul>
+<li>Method A is the easiest baseline and useful for quick
+screening.</li>
+<li>Method B adds births/cohort structure and is usually more
+epidemiologically interpretable for child susceptibility.</li>
+<li>Method D introduces case-driven depletion and a reporting parameter
+(<code>rho</code>), bridging towards mechanistic inference.</li>
+</ul>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
