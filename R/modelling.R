@@ -69,6 +69,162 @@ make_modelling_panel <- function(panel, suscept, outcome = c("outbreak_pc", "out
   )
 }
 
+#' Create lagged modelling panel with conflict predictors
+#'
+#' Builds a country-year modelling table with:
+#' - binary next-year outbreak outcome,
+#' - next-year changes in cases and coverage,
+#' - discrete + continuous conflict exposure indicators.
+#'
+#' @param panel A panel containing outbreak inputs and conflict columns.
+#' @param lag_years Predictor lag in years.
+#' @param outcome Which outbreak outcome to use.
+#' @param require_conflict_available If `TRUE`, keep only years in conflict-data coverage window.
+#'
+#' @return tibble.
+#' @export
+make_conflict_modelling_panel <- function(
+    panel,
+    lag_years = 1,
+    outcome = c("outbreak_pc", "outbreak_abs"),
+    require_conflict_available = TRUE) {
+  outcome <- match.arg(outcome)
+  assert_has_cols(
+    panel,
+    c(
+      "iso3", "year", "cases", "coverage", "pop_total", "who_region",
+      "conflict_any_event", "conflict_fatalities_per_100k", "conflict_data_available"
+    )
+  )
+
+  df <- tibble::as_tibble(panel) |>
+    dplyr::mutate(
+      iso3 = standardise_iso3(.data$iso3),
+      year = as.integer(.data$year),
+      cases = as.numeric(.data$cases),
+      coverage = as.numeric(.data$coverage),
+      pop_total = as.numeric(.data$pop_total),
+      conflict_any_event = as.numeric(.data$conflict_any_event),
+      conflict_fatalities_per_100k = as.numeric(.data$conflict_fatalities_per_100k),
+      conflict_data_available = as.logical(.data$conflict_data_available)
+    ) |>
+    dplyr::arrange(.data$iso3, .data$year)
+
+  outc <- make_outcome_outbreak(df$cases, df$pop_total)
+  df2 <- dplyr::bind_cols(df, outc) |>
+    dplyr::group_by(.data$iso3) |>
+    dplyr::mutate(
+      outcome_next = dplyr::lead(.data[[outcome]], n = lag_years),
+      cases_next = dplyr::lead(.data$cases, n = lag_years),
+      coverage_next = dplyr::lead(.data$coverage, n = lag_years),
+      year_next = .data$year + lag_years,
+      delta_log_cases = log1p(.data$cases_next) - log1p(.data$cases),
+      delta_coverage = .data$coverage_next - .data$coverage
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::filter(!is.na(.data$outcome_next))
+
+  if (isTRUE(require_conflict_available)) {
+    df2 <- dplyr::filter(df2, .data$conflict_data_available)
+  }
+
+  dplyr::transmute(
+    df2,
+    iso3 = .data$iso3,
+    year = .data$year,
+    year_next = .data$year_next,
+    who_region = .data$who_region,
+    outcome = .data$outcome_next,
+    cases = .data$cases,
+    cases_next = .data$cases_next,
+    coverage = .data$coverage,
+    coverage_next = .data$coverage_next,
+    delta_log_cases = .data$delta_log_cases,
+    delta_coverage = .data$delta_coverage,
+    conflict_any_event = .data$conflict_any_event,
+    conflict_fatalities_per_100k = .data$conflict_fatalities_per_100k
+  )
+}
+
+coef_table <- function(mod, model_name) {
+  if (is.null(mod)) {
+    return(tibble::tibble(
+      model = character(),
+      term = character(),
+      estimate = numeric(),
+      std_error = numeric(),
+      statistic = numeric(),
+      p_value = numeric()
+    ))
+  }
+  ctab <- tibble::as_tibble(summary(mod)$coefficients, rownames = "term")
+  z_col <- if ("z value" %in% names(ctab)) "z value" else NA_character_
+  t_col <- if ("t value" %in% names(ctab)) "t value" else NA_character_
+  pz_col <- if ("Pr(>|z|)" %in% names(ctab)) "Pr(>|z|)" else NA_character_
+  pt_col <- if ("Pr(>|t|)" %in% names(ctab)) "Pr(>|t|)" else NA_character_
+
+  ctab |>
+    dplyr::rename(estimate = Estimate, std_error = `Std. Error`) |>
+    dplyr::mutate(
+      statistic = dplyr::coalesce(
+        if (!is.na(z_col)) .data[[z_col]] else NA_real_,
+        if (!is.na(t_col)) .data[[t_col]] else NA_real_
+      ),
+      p_value = dplyr::coalesce(
+        if (!is.na(pz_col)) .data[[pz_col]] else NA_real_,
+        if (!is.na(pt_col)) .data[[pt_col]] else NA_real_
+      ),
+      model = model_name
+    ) |>
+    dplyr::select(.data$model, .data$term, .data$estimate, .data$std_error, .data$statistic, .data$p_value)
+}
+
+#' Fit conflict-effect models for outbreaks and changes
+#'
+#' @param data Output of [make_conflict_modelling_panel()].
+#'
+#' @return List containing fitted models and combined coefficient table.
+#' @export
+fit_conflict_effect_models <- function(data) {
+  assert_has_cols(
+    data,
+    c(
+      "outcome", "delta_coverage", "delta_log_cases", "coverage", "year",
+      "who_region", "conflict_any_event", "conflict_fatalities_per_100k"
+    )
+  )
+
+  d <- tibble::as_tibble(data) |>
+    dplyr::mutate(
+      year = as.numeric(.data$year),
+      who_region = as.factor(dplyr::coalesce(as.character(.data$who_region), "UNK"))
+    )
+
+  m_outbreak <- stats::glm(
+    outcome ~ conflict_any_event + conflict_fatalities_per_100k + coverage + year + who_region,
+    data = d, family = stats::binomial()
+  )
+  m_cov <- stats::lm(
+    delta_coverage ~ conflict_any_event + conflict_fatalities_per_100k + coverage + year + who_region,
+    data = d
+  )
+  m_cases <- stats::lm(
+    delta_log_cases ~ conflict_any_event + conflict_fatalities_per_100k + coverage + year + who_region,
+    data = d
+  )
+
+  list(
+    model_outbreak = m_outbreak,
+    model_delta_coverage = m_cov,
+    model_delta_cases = m_cases,
+    coefficients = dplyr::bind_rows(
+      coef_table(m_outbreak, "outbreak_logit"),
+      coef_table(m_cov, "delta_coverage_lm"),
+      coef_table(m_cases, "delta_log_cases_lm")
+    )
+  )
+}
+
 #' Fit baseline outbreak models
 #'
 #' @param data A modelling panel from [make_modelling_panel()].

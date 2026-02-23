@@ -12,8 +12,10 @@ reference:
   - gho_get_indicator
   - get_coverage
   - get_cases
+  - get_conflict
   - get_country_metadata
   - get_demography
+  - merge_conflict_with_panel
   - vpdsus_cache_info
   - summarise_age_groups
   - vpd_indicators_measles
@@ -42,7 +44,9 @@ reference:
   contents:
   - make_outcome_outbreak
   - make_modelling_panel
+  - make_conflict_modelling_panel
   - fit_outbreak_models
+  - fit_conflict_effect_models
   - evaluate_models
   - evaluate_models_rolling_origin
   - evaluate_outbreak_time_split

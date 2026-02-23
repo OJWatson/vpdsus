@@ -13,6 +13,10 @@
 #' @param cases Optional precomputed cases tibble (`iso3`, `year`, `cases`).
 #' @param demography Optional precomputed demography tibble.
 #' @param country_metadata Optional precomputed country metadata tibble.
+#' @param conflict Optional precomputed conflict tibble.
+#' @param include_conflict Logical; if `TRUE`, merge conflict indicators.
+#' @param conflict_source Conflict source passed to [get_conflict()] when
+#'   `include_conflict = TRUE` and `conflict` is `NULL`.
 #'
 #' @return A [vpd_panel].
 #' @export
@@ -26,8 +30,12 @@ build_panel_from_sources <- function(
     coverage = NULL,
     cases = NULL,
     demography = NULL,
-    country_metadata = NULL) {
+    country_metadata = NULL,
+    conflict = NULL,
+    include_conflict = FALSE,
+    conflict_source = c("ucdp_fixture", "wb_battle_deaths")) {
   indicator_set <- match.arg(indicator_set)
+  conflict_source <- match.arg(conflict_source)
   cov <- if (is.null(coverage)) get_coverage(antigen = antigen, years = years, countries = countries) else coverage
   cas <- if (is.null(cases)) get_cases(disease = disease, years = years, countries = countries) else cases
   dem <- if (is.null(demography)) get_demography(years = years, countries = countries, source = demography_source) else demography
@@ -46,6 +54,14 @@ build_panel_from_sources <- function(
     country_metadata
   }
   out <- build_panel(cov, cas, dem, country_metadata = meta)
+  if (isTRUE(include_conflict)) {
+    conf <- if (is.null(conflict)) {
+      get_conflict(years = years, countries = countries, source = conflict_source)
+    } else {
+      conflict
+    }
+    out <- merge_conflict_with_panel(out, conf)
+  }
   attr(out, "indicator_set") <- indicator_set
   out
 }

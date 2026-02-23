@@ -1,9 +1,0 @@
-rows_total=17419
-countries_total=272
-years_total=1960-2024
-rows_conflict_window=9726
-years_conflict_window=1989-2024
-share_any_conflict_in_window=0.2104
-missing_cases_in_window=0.2838
-missing_coverage_in_window=0.4904
-missing_incidence_in_window=0.3156

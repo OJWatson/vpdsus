@@ -221,10 +221,50 @@ region_perf <- ev$predictions |>
 region_perf
 ```
 
+## 5) Conflict exposure as an additional predictor
+
+To test whether country-year conflict exposure helps explain outbreak risk and
+changes in cases/coverage, we can merge conflict indicators onto the same panel.
+
+```{r}
+conf <- get_conflict(
+  years = sort(unique(panel$year)),
+  countries = unique(panel$iso3),
+  source = "ucdp_fixture"
+)
+
+panel_conf <- merge_conflict_with_panel(panel, conf)
+
+conf_mod <- make_conflict_modelling_panel(
+  panel_conf,
+  lag_years = 1,
+  outcome = "outbreak_pc",
+  require_conflict_available = TRUE
+)
+
+dplyr::summarise(
+  conf_mod,
+  n_rows = dplyr::n(),
+  conflict_share = mean(conflict_any_event, na.rm = TRUE),
+  mean_conflict_fatalities_per_100k = mean(conflict_fatalities_per_100k, na.rm = TRUE)
+)
+```
+
+```{r}
+fit_conf <- fit_conflict_effect_models(conf_mod)
+
+fit_conf$coefficients |>
+  dplyr::filter(grepl("^conflict_", term)) |>
+  dplyr::arrange(model, term)
+```
+
 ## Take-home interpretation
 
 - This module already tests an interesting and useful public-health hypothesis:
   whether susceptibility helps predict next-year outbreak risk.
+- The conflict extension lets you test whether conflict occurrence (discrete)
+  and intensity (continuous) add predictive information for outbreak risk and
+  changes in incidence/coverage.
 - The current baseline model is intentionally simple and transparent.
 - Next upgrades for a research project are richer model classes, rolling-origin
   validation, and explicit baseline comparators.
