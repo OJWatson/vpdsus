@@ -1,7 +1,4 @@
 test_that("odin2 balance_discrete sanity: depletion monotonic when births=vaccinated=0", {
-  if (Sys.getenv("VPDSUS_BUILD_ODIN2_VIGNETTE") != "1") {
-    skip("Set VPDSUS_BUILD_ODIN2_VIGNETTE=1 to run odin2 mechanistic checks")
-  }
   skip_if_not_installed("odin2")
   skip_if_not_installed("dust2")
 

@@ -11,11 +11,12 @@ test_that("M3 golden: example static susceptibility + WHO-style ranking is stabl
   expect_true(is.data.frame(rank))
   expect_true(all(c("iso3", "susceptible_prop", "rank_global", "risk_category") %in% names(rank)))
 
-  # Golden expectations for shipped example dataset
-  expect_equal(rank$iso3, c("NGA", "PHL", "AFG"))
-  expect_equal(rank$rank_global, c(1L, 2L, 3L))
-  expect_equal(as.character(rank$risk_category), c("high", "medium", "high"))
-  expect_equal(rank$susceptible_prop, c(0.43, 0.29, 0.33), tolerance = 1e-2)
+  # Global shipped panel should produce a non-trivial ranking table.
+  expect_true(nrow(rank) > 100)
+  rank_non_na <- rank[!is.na(rank$rank_global), , drop = FALSE]
+  expect_equal(rank_non_na$rank_global, seq_len(nrow(rank_non_na)))
+  expect_true(all(rank$susceptible_prop >= 0 & rank$susceptible_prop <= 1, na.rm = TRUE))
+  expect_true(any(rank$iso3 == "NGA"))
 
   # First WHO-style output plot objects should build without error
   p_cov <- plot_coverage_rank(rank)

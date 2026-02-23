@@ -2,12 +2,7 @@ test_that("discrete balance odin2 supports time-varying inputs (opt-in)", {
   testthat::skip_if_not_installed("odin2")
   testthat::skip_if_not_installed("dust2")
 
-  testthat::skip_if_not(
-    identical(Sys.getenv("VPDSUS_BUILD_ODIN2_VIGNETTE"), "1"),
-    "Set VPDSUS_BUILD_ODIN2_VIGNETTE=1 to run odin2 mechanistic checks"
-  )
-
-  mdl <- vpdsus::odin2_build_model("balance_discrete")
+    mdl <- vpdsus::odin2_build_model("balance_discrete")
 
   times <- 0:4
   births <- c(0, 1, 0, 0, 0)

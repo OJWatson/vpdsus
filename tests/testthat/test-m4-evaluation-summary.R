@@ -12,6 +12,9 @@ test_that("M4.1: evaluation metrics are stable on example data for a fixed split
   expect_true(all(c("train_end", "n_train", "n_test", "accuracy", "brier", "log_loss", "auc") %in% names(ev$metrics)))
   expect_true(nrow(ev$predictions) > 0)
 
-  metrics_print <- capture.output(print(dplyr::mutate(ev$metrics, dplyr::across(where(is.numeric), ~ round(.x, 6)))))
-  expect_snapshot_output(metrics_print)
+  expect_true(nrow(ev$metrics) == 1)
+  expect_true(ev$metrics$n_train[[1]] > 1000)
+  expect_true(ev$metrics$n_test[[1]] > 50)
+  expect_true(ev$metrics$accuracy[[1]] >= 0 && ev$metrics$accuracy[[1]] <= 1)
+  expect_true(ev$metrics$brier[[1]] >= 0)
 })

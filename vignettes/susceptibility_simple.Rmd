@@ -11,41 +11,272 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-This vignette shows how to:
+This vignette answers a practical first-project question:
 
-- estimate susceptibility from a panel (methods A and B), and
-- produce WHO-style ranking plots with [risk_rank()], [plot_coverage_rank()], and
-  [plot_susceptible_rank()].
+Can we identify countries that might be at higher measles outbreak risk by
+combining recent vaccination coverage with simple susceptibility estimates?
 
-Key columns in the example panel:
+The workflow is:
 
-- `coverage`: vaccination coverage as a proportion in [0, 1]
-- `pop_0_4`: population aged 0–4 (used as a simple denominator in the static method)
-- `births`: births (used by the cohort reconstruction)
+1. Load and inspect a country-year panel.
+2. Estimate susceptibility (Method A, Method B, and Method D).
+3. Rank countries using recent coverage and current susceptibility.
+4. Interpret how method choice changes the ranking.
 
-Key ranking parameters:
+How the key functions fit together:
 
-- `window_years`: the number of years used to compute a mean coverage (`coverage_mean`)
-- `year_end`: the year at which susceptibility is taken for ranking
+- `vpdsus_example_panel()`: provides a reproducible teaching dataset.
+- `panel_validate()`: checks that required columns/ranges are sane.
+- `estimate_susceptible_*()`: computes susceptibility under different assumptions.
+- `risk_rank()`: combines recent coverage + susceptibility into a prioritisation table.
+- `plot_coverage_rank()` / `plot_susceptible_rank()`: communicate results quickly.
 
-Risk categories are derived from `coverage_mean` cutpoints (see `breaks` argument
-in [risk_rank()]).
+## 1) Load and inspect panel data
 
 ```{r}
 library(vpdsus)
 
 panel <- vpdsus_example_panel()
-
-sA <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
-rank <- risk_rank(panel, sA, window_years = 3, year_end = 2020)
-
-plot_coverage_rank(rank, top_n = 3)
-plot_susceptible_rank(rank, top_n = 3)
+head(panel)
 ```
 
-Method B cohort reconstruction:
+Before modelling, validate basic schema and ranges:
 
 ```{r}
-sB <- estimate_susceptible_cohort(panel, coverage_col = "coverage", births_col = "births", pop_col = "pop_0_4")
-risk_rank(panel, sB, window_years = 3, year_end = 2020)
+v <- panel_validate(panel)
+v$ok
+v$diagnostics
+v$issues
 ```
+
+Check key variables used below:
+
+```{r}
+dplyr::summarise(
+  panel,
+  n_rows = dplyr::n(),
+  n_countries = dplyr::n_distinct(iso3),
+  year_min = min(year),
+  year_max = max(year),
+  coverage_min = min(coverage, na.rm = TRUE),
+  coverage_max = max(coverage, na.rm = TRUE),
+  births_min = min(births, na.rm = TRUE),
+  births_max = max(births, na.rm = TRUE),
+  cases_min = min(cases, na.rm = TRUE),
+  cases_max = max(cases, na.rm = TRUE)
+)
+```
+
+## 2) Susceptibility methods and assumptions
+
+### Method A: static coverage-based susceptibility
+
+Function: [estimate_susceptible_static()]
+
+Core idea:
+
+- susceptible proportion is approximately `1 - (coverage * VE)`.
+- susceptible count is this proportion multiplied by a population denominator.
+
+In this vignette we use:
+
+- `coverage` as the immunisation proportion,
+- `pop_0_4` as the denominator for a simple child-age signal,
+- `VE = 1` (default) for a minimal didactic example.
+
+```{r}
+sA <- estimate_susceptible_static(
+  panel,
+  coverage_col = "coverage",
+  pop_col = "pop_0_4"
+)
+
+head(dplyr::select(sA, iso3, year, susceptible_prop, susceptible_n, method))
+```
+
+### Method B: cohort reconstruction from births and coverage
+
+Function: [estimate_susceptible_cohort()]
+
+Core idea:
+
+- reconstruct the recent birth cohorts that make up an age window (default 0-4),
+- for each cohort, count births not effectively immunised,
+- aggregate across the window and divide by the age-group population.
+
+Equation for year `y` with `years_back = 4`:
+
+- `S_n(y) = sum_{k=0..4} births(y-k) * (1 - coverage(y-k))`
+- `S_prop(y) = S_n(y) / pop_0_4(y)`
+
+So Method B explicitly answers:
+"How many children currently aged 0-4 likely remained susceptible, given their
+birth cohort sizes and the coverage observed when each cohort was vaccinated?"
+
+### Method B walkthrough (single country, step by step)
+
+To make the logic concrete, we take one country and one year and rebuild the
+cohort sum by hand.
+
+```{r}
+demo_candidates <- panel |>
+  dplyr::filter(!is.na(coverage), !is.na(births), !is.na(pop_0_4)) |>
+  dplyr::count(iso3, name = "n_years") |>
+  dplyr::filter(n_years >= 5) |>
+  dplyr::arrange(dplyr::desc(n_years))
+
+iso_demo <- demo_candidates$iso3[[1]]
+year_demo <- panel |>
+  dplyr::filter(iso3 == iso_demo, !is.na(coverage), !is.na(births), !is.na(pop_0_4)) |>
+  dplyr::summarise(year_demo = max(year)) |>
+  dplyr::pull(year_demo)
+
+cohort_tbl <- panel |>
+  dplyr::filter(iso3 == iso_demo, year %in% (year_demo - 4):year_demo) |>
+  dplyr::arrange(year) |>
+  dplyr::transmute(
+    iso3,
+    year,
+    births,
+    coverage,
+    susceptible_from_cohort = births * (1 - coverage)
+  )
+
+cohort_tbl
+```
+
+Manual Method B numerator for this example year:
+
+```{r}
+manual_s_n <- sum(cohort_tbl$susceptible_from_cohort, na.rm = TRUE)
+manual_s_n
+```
+
+Compare manual reconstruction with package output:
+
+```{r}
+sB <- estimate_susceptible_cohort(
+  panel,
+  coverage_col = "coverage",
+  births_col = "births",
+  pop_col = "pop_0_4"
+)
+
+head(dplyr::select(sB, iso3, year, susceptible_prop, susceptible_n, method))
+```
+
+```{r}
+sB_demo <- sB |>
+  dplyr::filter(iso3 == iso_demo, year == year_demo) |>
+  dplyr::select(iso3, year, susceptible_n, susceptible_prop)
+
+manual_check <- panel |>
+  dplyr::filter(iso3 == iso_demo, year == year_demo) |>
+  dplyr::transmute(
+    iso3,
+    year,
+    pop_0_4,
+    manual_susceptible_n = manual_s_n,
+    manual_susceptible_prop = manual_s_n / pop_0_4
+  ) |>
+  dplyr::left_join(sB_demo, by = c("iso3", "year"))
+
+manual_check
+```
+
+On a large global panel this method is often much more informative than Method A,
+because it uses cohort size and birth-history dynamics directly rather than only
+current coverage.
+
+### Method D: case-balance recurrence with reporting fraction rho
+
+Function: [estimate_susceptible_case_balance()]
+
+Core recurrence (discrete-time):
+
+- `S[t+1] = max(0, S[t] + births[t] - vaccinated[t] - cases[t] / rho)`
+
+Interpretation:
+
+- lower `rho` means more under-reporting and therefore larger implied depletion
+  from infection for the same observed cases.
+
+```{r}
+sD <- estimate_susceptible_case_balance(
+  panel,
+  rho = c(0.2, 0.5, 1),
+  coverage_col = "coverage",
+  births_col = "births",
+  cases_col = "cases",
+  pop_col = "pop_total",
+  age_group = "total"
+)
+
+head(dplyr::select(sD, iso3, year, rho, susceptible_prop, susceptible_n, method))
+```
+
+Choosing a method for a first project:
+
+- Start with Method A to understand the workflow quickly.
+- Move to Method B when births and cohort structure matter.
+- Use Method D when reported cases are considered informative about depletion.
+
+## 3) Rank countries and produce WHO-style outputs
+
+The ranking helper [risk_rank()] combines:
+
+- recent mean coverage over a window (`window_years`), and
+- susceptibility at a target end year (`year_end`).
+
+```{r}
+rank_A <- risk_rank(panel, sA, window_years = 3, year_end = 2020)
+rank_B <- risk_rank(panel, sB, window_years = 3, year_end = 2020)
+
+head(dplyr::select(rank_A, iso3, coverage_mean, susceptible_prop, risk_category))
+```
+
+Plots:
+
+```{r}
+plot_coverage_rank(rank_A, top_n = 5)
+plot_susceptible_rank(rank_A, top_n = 5)
+```
+
+## 4) How method choice affects interpretation
+
+Compare trajectories for one country:
+
+```{r}
+compare_methods(
+  panel = panel,
+  estimates = list(
+    static = sA,
+    cohort = sB
+  ),
+  iso3 = panel$iso3[[1]]
+)
+```
+
+Simple side-by-side ranking comparison:
+
+```{r}
+dplyr::left_join(
+  dplyr::mutate(
+    dplyr::select(rank_A, iso3, risk_A = risk_category, susc_A = susceptible_prop),
+    year_end = attr(rank_A, "year_end")
+  ),
+  dplyr::mutate(
+    dplyr::select(rank_B, iso3, risk_B = risk_category, susc_B = susceptible_prop),
+    year_end = attr(rank_B, "year_end")
+  ),
+  by = c("iso3", "year_end")
+)
+```
+
+## Take-home interpretation
+
+- Method A is the easiest baseline and useful for quick screening.
+- Method B adds births/cohort structure and is usually more epidemiologically
+  interpretable for child susceptibility.
+- Method D introduces case-driven depletion and a reporting parameter (`rho`),
+  bridging towards mechanistic inference.

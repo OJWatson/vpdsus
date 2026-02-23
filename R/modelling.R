@@ -58,6 +58,7 @@ make_modelling_panel <- function(panel, suscept, outcome = c("outbreak_pc", "out
     year,
     year_next,
     outcome = .data$outcome_next,
+    coverage = .data$coverage,
     susceptible_prop,
     susceptible_n = .data$susceptible_n %||% NA_real_,
     cases = .data$cases,
@@ -72,10 +73,10 @@ make_modelling_panel <- function(panel, suscept, outcome = c("outbreak_pc", "out
 #'
 #' @param data A modelling panel from [make_modelling_panel()].
 #'
-#' @return List with model and tidy coefficients.
+#' @return List containing logistic and negative-binomial model fits and tidy coefficients.
 #' @export
 fit_outbreak_models <- function(data) {
-  assert_has_cols(data, c("outcome", "susceptible_prop", "year", "who_region"))
+  assert_has_cols(data, c("outcome", "susceptible_prop", "year", "who_region", "cases_next"))
 
   data <- tibble::as_tibble(data) |>
     dplyr::mutate(
@@ -88,7 +89,24 @@ fit_outbreak_models <- function(data) {
   coefs <- tibble::as_tibble(summary(m1)$coefficients, rownames = "term") |>
     dplyr::rename(estimate = Estimate, std_error = `Std. Error`, statistic = `z value`, p_value = `Pr(>|z|)`)
 
-  list(model = m1, coefficients = coefs)
+  # Negative binomial model for next-year case counts.
+  m_nb <- tryCatch(
+    MASS::glm.nb(cases_next ~ susceptible_prop + year + who_region, data = data),
+    error = function(e) NULL
+  )
+  coefs_nb <- if (is.null(m_nb)) {
+    tibble::tibble(term = character(), estimate = numeric(), std_error = numeric(), statistic = numeric(), p_value = numeric())
+  } else {
+    tibble::as_tibble(summary(m_nb)$coefficients, rownames = "term") |>
+      dplyr::rename(estimate = Estimate, std_error = `Std. Error`, statistic = `z value`, p_value = `Pr(>|z|)`)
+  }
+
+  list(
+    model = m1,
+    coefficients = coefs,
+    model_nb = m_nb,
+    coefficients_nb = coefs_nb
+  )
 }
 
 #' Time-aware model evaluation (simple split)
@@ -104,6 +122,35 @@ fit_outbreak_models <- function(data) {
 #' @export
 evaluate_models <- function(data, train_end = NULL) {
   evaluate_outbreak_time_split(data, train_end = train_end)$metrics
+}
+
+#' Rolling-origin outbreak model evaluation
+#'
+#' Evaluates the baseline model across multiple time cutoffs.
+#'
+#' @param data Modelling panel from [make_modelling_panel()].
+#' @param min_train_years Minimum number of distinct years to include in training.
+#' @param threshold Classification threshold for predicted outbreak.
+#' @param n_bins Number of bins used for calibration plots in each split.
+#'
+#' @return Tibble with one row per rolling split and summary metrics.
+#' @export
+evaluate_models_rolling_origin <- function(data, min_train_years = 2, threshold = 0.5, n_bins = 10) {
+  years <- sort(unique(stats::na.omit(as.numeric(data$year))))
+  if (length(years) < (min_train_years + 1)) {
+    cli::cli_abort("Need at least {min_train_years + 1} distinct years for rolling-origin evaluation")
+  }
+
+  cutoffs <- years[min_train_years:(length(years) - 1)]
+  purrr::map_dfr(cutoffs, function(cutoff) {
+    m <- evaluate_outbreak_time_split(
+      data = data,
+      train_end = cutoff,
+      threshold = threshold,
+      n_bins = n_bins
+    )$metrics
+    dplyr::mutate(m, split_type = "rolling_origin")
+  })
 }
 
 roc_auc_binary <- function(y, p) {

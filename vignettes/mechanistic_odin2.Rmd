@@ -1,35 +1,45 @@
 ---
-title: "Mechanistic modelling in odin2 (scaffold)"
+title: "Mechanistic modelling in odin2 (annual SIRV)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Mechanistic modelling in odin2 (scaffold)}
+  %\VignetteIndexEntry{Mechanistic modelling in odin2 (annual SIRV)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-
-# This vignette is CI-safe by default. To actually *run* the code chunks, opt in:
-#
-#   Sys.setenv(VPDSUS_BUILD_ODIN2_VIGNETTE = "1")
-#
-.has_odin2 <- requireNamespace("odin2", quietly = TRUE)
-.run_odin2 <- identical(Sys.getenv("VPDSUS_BUILD_ODIN2_VIGNETTE"), "1")
-knitr::opts_chunk$set(eval = .has_odin2 && .run_odin2)
 ```
 
-This vignette is optional.
+It answers three practical questions:
 
-- If `{odin2}` is not installed, chunks are shown but not executed.
-- If `VPDSUS_BUILD_ODIN2_VIGNETTE != "1"` (the default), chunks are shown but not executed.
+1. What does each mechanistic helper do?
+2. How does the discrete susceptible-balance model relate to Method D?
+3. How can we run and interpret an annual SIRV model?
 
-When enabled, this vignette requires the suggested packages `{odin2}` (and its dependency stack, e.g. `{dust2}`).
+## 1) Mechanistic function map
+
+- [odin2_build_model()]: load a compiled model generator.
+- [odin2_simulate()]: run a model over time.
+- [odin2_balance_inputs_from_panel()]: convert panel columns to model inputs.
+- [calibrate_rho_case_balance()]: solve for reporting fraction `rho` to match a target susceptible count.
+
+Model choices in this package:
+
+- `balance_discrete`: one-state susceptible recurrence (teaching bridge to Method D).
+- `sirv_annual`: annual `S`, `I`, `R`, `V` model with births, vaccination, infection, recovery, mortality, and reported cases output.
 
 ```{r}
 library(vpdsus)
+```
 
-# Minimal discrete-time example (difference equation)
+## 2) Minimal discrete model
+
+Start with a one-state difference equation model:
+
+- `S[t+1] = S[t] + inc`
+
+```{r}
 mdl <- odin2_build_model("minimal_discrete")
 out <- odin2_simulate(
   mdl,
@@ -39,22 +49,36 @@ out <- odin2_simulate(
 )
 
 out
+```
 
-# Next step: a simple discrete-time susceptible balance model
-mdl2 <- odin2_build_model("balance_discrete")
-out2 <- odin2_simulate(
-  mdl2,
+Interpretation: with `inc = 1`, the state increases linearly each step.
+
+## 3) Susceptible-balance recurrence model
+
+The `balance_discrete` model uses:
+
+- `S[t+1] = max(0, S[t] + births[t] - vaccinated[t] - cases[t] / rho)`
+
+```{r}
+mdl_bal <- odin2_build_model("balance_discrete")
+out_bal <- odin2_simulate(
+  mdl_bal,
   times = 0:5,
   pars = list(rho = 1, births = 0, vaccinated = 0, cases = 1),
   initial = list(S = 3)
 )
 
-out2
+out_bal
+```
 
-# Time-varying inputs (aligned to `times`)
+With these parameters, susceptibles decrease by 1 each step and floor at 0.
+
+### Time-varying inputs
+
+```{r}
 times <- 0:4
-out3 <- odin2_simulate(
-  mdl2,
+out_tv <- odin2_simulate(
+  mdl_bal,
   times = times,
   pars = list(rho = 1),
   initial = list(S = 3),
@@ -65,34 +89,44 @@ out3 <- odin2_simulate(
   )
 )
 
-out3
+out_tv
+```
 
-# End-to-end example using the bundled example panel
-panel_path <- system.file("extdata", "example_panel_small.csv", package = "vpdsus")
+## 4) End-to-end panel to mechanistic inputs
+
+```{r}
+panel_path <- system.file("extdata", "example_panel_measles_global.csv", package = "vpdsus")
 panel <- utils::read.csv(panel_path)
 
-iso3 <- panel$iso3[[1]]
-times <- sort(unique(panel$year))
-inputs <- odin2_balance_inputs_from_panel(panel, times = times, iso3 = iso3)
+panel_ok <- panel |>
+  dplyr::filter(!is.na(iso3), !is.na(year), !is.na(births), !is.na(coverage), !is.na(cases))
 
-out4 <- odin2_simulate(
-  mdl2,
+iso3 <- panel_ok$iso3[[1]]
+times <- sort(unique(panel_ok$year[panel_ok$iso3 == iso3]))
+inputs <- odin2_balance_inputs_from_panel(panel_ok, times = times, iso3 = iso3)
+
+inputs
+```
+
+```{r}
+out_panel <- odin2_simulate(
+  mdl_bal,
   times = times,
   pars = list(rho = 1),
   initial = list(S = 0),
   inputs = inputs
 )
 
-out4
+out_panel
+```
 
-# Compare to Method D (susceptible balance updated using cases)
-#
-# The `balance_discrete` template is intended to match the Method D recurrence,
-# expressed as an explicit difference equation. Here we compute Method D and
-# compare trajectories.
+## 5) Compare with Method D
 
+`balance_discrete` is intended to match Method D under matched assumptions.
+
+```{r}
 sus_d <- estimate_susceptible_case_balance(
-  panel,
+  panel_ok |> dplyr::filter(.data$iso3 == .env$iso3),
   rho = 1,
   s0 = 0,
   coverage_col = "coverage",
@@ -103,18 +137,16 @@ sus_d <- estimate_susceptible_case_balance(
 )
 
 cmp <- dplyr::left_join(
-  dplyr::mutate(out4, year = time),
+  dplyr::mutate(out_panel, year = time),
   dplyr::select(sus_d, year, susceptible_n),
   by = "year"
 )
 
 cmp
+```
 
-# Simple comparison plot
-p <- ggplot2::ggplot(
-  cmp,
-  ggplot2::aes(x = year)
-) +
+```{r}
+ggplot2::ggplot(cmp, ggplot2::aes(x = year)) +
   ggplot2::geom_line(ggplot2::aes(y = S, colour = "odin2"), linewidth = 1) +
   ggplot2::geom_point(ggplot2::aes(y = S, colour = "odin2"), size = 2) +
   ggplot2::geom_line(ggplot2::aes(y = susceptible_n, colour = "method_d"), linewidth = 1, linetype = 2) +
@@ -127,40 +159,104 @@ p <- ggplot2::ggplot(
     title = paste0("Susceptible balance: odin2 vs Method D (", iso3, ")")
   ) +
   ggplot2::theme_minimal(base_size = 11)
+```
 
-p
+## 6) Calibrate reporting fraction rho
 
-# Optional: calibrate rho (reporting fraction) to a target susceptibility
-#
-# This is a minimal "inference hook" example. Here we create a target
-# susceptible count and solve for rho such that the case-balance recurrence
-# matches that target in a chosen year.
+Calibration question:
 
+What `rho` value would make the model match a chosen susceptible count at a
+target year?
+
+```{r}
 target_year <- max(times)
-# For demonstration only: choose an arbitrary target susceptible count.
-# In practice this could come from a cohort method estimate.
-target_susceptible_n <- 1e6
+target_susceptible_n <- max(1, out_panel$S[[length(out_panel$S)]] * 0.9)
 
-rho_hat <- calibrate_rho_case_balance(
-  panel,
-  iso3 = iso3,
-  years = times,
-  target_year = target_year,
-  target_susceptible_n = target_susceptible_n,
-  rho_interval = c(0.01, 1)
+rho_hat <- tryCatch(
+  calibrate_rho_case_balance(
+    panel_ok,
+    iso3 = iso3,
+    years = times,
+    target_year = target_year,
+    target_susceptible_n = target_susceptible_n,
+    rho_interval = c(0.01, 1)
+  ),
+  error = function(e) {
+    message("Calibration failed for this panel slice; using rho = 1 for demonstration.")
+    1
+  }
 )
 
 rho_hat
+```
 
-out5 <- odin2_simulate(
-  mdl2,
+```{r}
+out_cal <- odin2_simulate(
+  mdl_bal,
   times = times,
   pars = list(rho = rho_hat),
   initial = list(S = 0),
   inputs = inputs
 )
 
-out5
+out_cal
 ```
 
-In a full implementation, you would map your panel data into model inputs.
+## 7) Annual SIRV model (spec-required mechanistic baseline)
+
+The annual SIRV model includes:
+
+- compartments `S`, `I`, `R`, `V`,
+- births into `S`,
+- vaccination flow `S -> V`,
+- infection `S -> I`,
+- recovery `I -> R`,
+- mortality from all compartments,
+- reporting fraction `rho` applied to infections.
+
+```{r}
+mdl_sirv <- odin2_build_model("sirv_annual")
+times <- 0:15
+
+out_sirv <- odin2_simulate(
+  mdl_sirv,
+  times = times,
+  pars = list(
+    beta = 0.8,
+    gamma = 0.4,
+    mu = 0.01,
+    rho = 0.25,
+    births = 50000,
+    vaccinated = 40000,
+    n_pop = 1e7
+  ),
+  initial = list(
+    S = 2e6,
+    I = 1e3,
+    R = 7.95e6,
+    V = 5e4
+  )
+)
+
+head(out_sirv)
+```
+
+Key outputs to inspect for susceptibility inference:
+
+- `reported_cases`: model-implied observed burden,
+- `susceptible_n`: susceptible count,
+- `susceptible_prop`: susceptible proportion.
+
+```{r}
+dplyr::select(out_sirv, time, reported_cases, susceptible_n, susceptible_prop) |>
+  head()
+```
+
+## Scope and next step
+
+This pathway now includes both a transparent balance model and a spec-aligned
+annual SIRV model.
+
+The next student-facing extension is to feed country-year panel inputs directly
+into `sirv_annual` and compare inferred susceptibility trajectories against
+Method B/Method D under matched assumptions.

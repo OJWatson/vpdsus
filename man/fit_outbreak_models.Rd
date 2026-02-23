@@ -10,7 +10,7 @@ fit_outbreak_models(data)
 \item{data}{A modelling panel from \code{\link[=make_modelling_panel]{make_modelling_panel()}}.}
 }
 \value{
-List with model and tidy coefficients.
+List containing logistic and negative-binomial model fits and tidy coefficients.
 }
 \description{
 Fit baseline outbreak models

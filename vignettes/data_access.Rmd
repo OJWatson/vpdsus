@@ -13,7 +13,8 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 This vignette demonstrates the data access layer.
 
-For reproducibility and fast vignette builds, we use shipped example data and pinned fixtures.
+For reproducibility and fast vignette builds, we use a shipped global measles
+example panel and pinned fixtures.
 
 The core public helpers are:
 
@@ -27,7 +28,7 @@ The returned `iso3` values are standardised to ISO3 codes and `year` is an integ
 library(vpdsus)
 
 panel <- vpdsus_example_panel()
-head(panel)
+dplyr::glimpse(panel)
 ```
 
 ### Caching
@@ -128,8 +129,8 @@ analysis then:
 2. estimates susceptibility, and
 3. produces a WHO-style risk ranking (and optionally fits outbreak models).
 
-This repository ships `vpdsus_example_panel()` so the workflow can be demonstrated
-deterministically without live downloads:
+This repository ships `vpdsus_example_panel()` as a global measles panel so the
+workflow can be demonstrated at realistic scale without live downloads:
 
 ```{r}
 panel <- vpdsus_example_panel()

@@ -11,96 +11,220 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-This vignette demonstrates the minimal outbreak-modelling workflow on the shipped
-example dataset.
+This vignette addresses a concrete research question:
 
-The key steps are:
+Do countries with higher estimated susceptibility have higher outbreak risk in
+the following year?
 
-1. Create a modelling-ready dataset using [make_modelling_panel()].
-2. Fit a simple baseline model with [fit_outbreak_models()].
-3. Evaluate predictive performance with [evaluate_models()].
+All examples use bundled data and run offline.
 
-All examples here run without network access.
+Workflow:
 
-## Build the modelling panel
+1. Create an outbreak outcome and lagged modelling panel.
+2. Fit baseline logistic and negative-binomial models.
+3. Evaluate out-of-time performance.
+4. Explore sensitivity to lag and outcome definition.
+
+Function map:
+
+- `make_outcome_outbreak()`: turns case counts into binary outbreak labels.
+- `make_modelling_panel()`: aligns predictors at year `t` with outbreak at `t + lag`.
+- `fit_outbreak_models()`: fits logistic and negative-binomial baselines.
+- `evaluate_outbreak_time_split()`: one train/test split by year.
+- `evaluate_models_rolling_origin()`: repeated rolling-origin validation.
+
+## 1) Build the modelling panel
 
 ```{r}
 library(vpdsus)
 
 panel <- vpdsus_example_panel()
-
-# Susceptibility method A (static): uses a population column and a coverage column
 suscept <- estimate_susceptible_static(panel, coverage_col = "coverage", pop_col = "pop_0_4")
 
-# Create a modelling dataset with a 1-year lag between predictors and outcome.
-# outcome='outbreak_pc' uses a simple per-100k threshold defined in
-# make_outcome_outbreak().
-mod <- make_modelling_panel(panel, suscept, outcome = "outbreak_pc", lag_years = 1)
-mod
+mod_pc <- make_modelling_panel(panel, suscept, outcome = "outbreak_pc", lag_years = 1)
+head(mod_pc)
 ```
 
-Columns in `mod`:
-
-- `susceptible_prop`: predictor (fraction susceptible)
-- `outcome`: binary outbreak indicator in `year_next`
-- `cases_per_100k` is available from [make_outcome_outbreak()] on the original panel
-
-## Fit a baseline outbreak model
-
-`fit_outbreak_models()` currently fits a simple logistic regression:
-
-- outcome ~ susceptible_prop + year + who_region
+Because this example panel is global and historical, we can inspect the modelling
+sample before fitting:
 
 ```{r}
-fit <- fit_outbreak_models(mod)
-fit$model
-```
-
-### Coefficients
-
-```{r}
-fit$coefficients
-```
-
-## Simple time-aware evaluation
-
-`evaluate_models()` performs a time split by year (train on earlier years, test on
-later years) and reports a basic accuracy and Brier score.
-
-By default, the split chooses a `train_end` year that guarantees at least one
-distinct year is held out for testing.
-
-```{r}
-ev <- evaluate_models(mod)
-ev
-```
-
-Interpretation:
-
-- `train_end`: last year included in training
-- `n_train` / `n_test`: number of rows used for training/testing
-- `accuracy`: fraction of correctly classified outcomes at a 0.5 probability threshold
-- `brier`: mean squared error of predicted probabilities (lower is better; 0 is perfect)
-
-### Inspect predicted probabilities
-
-If you want to see the actual predicted probabilities used in the evaluation,
-repeat the same split and call `predict()` on the fitted model:
-
-```{r}
-# Use the same train_end chosen by evaluate_models()
-train_end <- ev$train_end
-
-train <- subset(mod, year <= train_end)
-test <- subset(mod, year > train_end)
-
-fit2 <- fit_outbreak_models(train)$model
-p <- predict(fit2, newdata = test, type = "response")
-
-out <- transform(test,
-  prob_outbreak = p,
-  pred_outbreak = as.integer(p >= 0.5)
+dplyr::summarise(
+  mod_pc,
+  n_rows = dplyr::n(),
+  n_countries = dplyr::n_distinct(iso3),
+  year_min = min(year, na.rm = TRUE),
+  year_max = max(year, na.rm = TRUE),
+  outbreak_rate = mean(outcome, na.rm = TRUE)
 )
-
-out[, c("iso3", "year", "year_next", "outcome", "prob_outbreak", "pred_outbreak")]
 ```
+
+```{r}
+mod_pc |>
+  dplyr::group_by(who_region) |>
+  dplyr::summarise(
+    n = dplyr::n(),
+    outbreak_rate = mean(outcome, na.rm = TRUE),
+    mean_susceptibility = mean(susceptible_prop, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  dplyr::arrange(dplyr::desc(n)) |>
+  head(12)
+```
+
+Key columns:
+
+- `outcome`: binary indicator in the next year (`year_next`)
+- `susceptible_prop`: main predictor
+- `year`, `who_region`: adjustment terms in the baseline model
+
+Inspect how outbreak labels are constructed from cases:
+
+```{r}
+outcomes <- make_outcome_outbreak(cases = panel$cases, pop = panel$pop_total)
+head(outcomes)
+```
+
+## 2) Fit baseline outbreak model
+
+`fit_outbreak_models()` fits:
+
+- logistic regression for binary outbreak risk,
+- negative-binomial regression for outbreak counts (`cases_next`),
+- with a common covariate set: susceptibility, year, and WHO region.
+
+```{r}
+fit <- fit_outbreak_models(mod_pc)
+fit$model
+fit$coefficients
+fit$model_nb
+fit$coefficients_nb
+```
+
+### Baseline comparison: coverage-only vs susceptibility-enabled
+
+```{r}
+cmp_df <- mod_pc |>
+  dplyr::filter(!is.na(outcome), !is.na(coverage), !is.na(susceptible_prop))
+
+fit_cov <- stats::glm(outcome ~ coverage + year + who_region, data = cmp_df, family = stats::binomial())
+fit_sus <- stats::glm(outcome ~ susceptible_prop + year + who_region, data = cmp_df, family = stats::binomial())
+fit_both <- stats::glm(outcome ~ coverage + susceptible_prop + year + who_region, data = cmp_df, family = stats::binomial())
+
+data.frame(
+  model = c("coverage_only", "susceptibility_only", "coverage_plus_susceptibility"),
+  aic = c(AIC(fit_cov), AIC(fit_sus), AIC(fit_both))
+)
+```
+
+Interpretation guide:
+
+- `estimate > 0` for `susceptible_prop` means higher susceptibility is associated
+  with higher outbreak odds.
+- region/year terms absorb broad structural differences and temporal trend.
+
+## 3) Time-aware evaluation
+
+Use [evaluate_outbreak_time_split()] for:
+
+- a train/test split by time,
+- summary metrics,
+- prediction and calibration plots.
+
+```{r}
+ev <- evaluate_outbreak_time_split(mod_pc)
+ev$metrics
+```
+
+Metrics meaning:
+
+- `accuracy`: classification performance at threshold 0.5
+- `brier`: probability calibration/discrimination loss (lower is better)
+- `log_loss`: penalises overconfident errors
+- `auc`: threshold-free discrimination
+
+Inspect test-set predictions:
+
+```{r}
+head(dplyr::select(ev$predictions, iso3, year, year_next, outcome, prob_outbreak, pred_outbreak))
+```
+
+Diagnostic plots:
+
+```{r}
+ev$plots$time
+ev$plots$calibration
+```
+
+## 4) Sensitivity checks
+
+### A) Outcome definition: per-capita vs absolute thresholds
+
+```{r}
+mod_abs <- make_modelling_panel(panel, suscept, outcome = "outbreak_abs", lag_years = 1)
+ev_abs <- evaluate_outbreak_time_split(mod_abs)
+
+dplyr::bind_rows(
+  dplyr::mutate(ev$metrics, outcome_def = "outbreak_pc"),
+  dplyr::mutate(ev_abs$metrics, outcome_def = "outbreak_abs")
+) |>
+  dplyr::select(outcome_def, train_end, n_train, n_test, accuracy, brier, log_loss, auc)
+```
+
+### B) Lag sensitivity
+
+```{r}
+lags <- c(1, 2)
+lag_metrics <- purrr::map_dfr(lags, function(l) {
+  mod_l <- make_modelling_panel(panel, suscept, outcome = "outbreak_pc", lag_years = l)
+  m <- tryCatch(
+    evaluate_outbreak_time_split(mod_l)$metrics,
+    error = function(e) {
+      tibble::tibble(
+        train_end = NA_real_,
+        n_train = nrow(mod_l),
+        n_test = NA_integer_,
+        prevalence = NA_real_,
+        accuracy = NA_real_,
+        brier = NA_real_,
+        log_loss = NA_real_,
+        auc = NA_real_
+      )
+    }
+  )
+  dplyr::mutate(m, lag_years = l)
+})
+
+dplyr::select(lag_metrics, lag_years, accuracy, brier, log_loss, auc, n_test)
+```
+
+### C) Rolling-origin evaluation (recommended default for research claims)
+
+```{r}
+ev_roll <- evaluate_models_rolling_origin(mod_pc, min_train_years = 1)
+ev_roll
+```
+
+### D) Regional heterogeneity snapshot
+
+```{r}
+region_perf <- ev$predictions |>
+  dplyr::group_by(who_region) |>
+  dplyr::summarise(
+    n = dplyr::n(),
+    accuracy = mean(pred_outbreak == outcome),
+    prevalence = mean(outcome),
+    .groups = "drop"
+  ) |>
+  dplyr::arrange(dplyr::desc(n))
+
+region_perf
+```
+
+## Take-home interpretation
+
+- This module already tests an interesting and useful public-health hypothesis:
+  whether susceptibility helps predict next-year outbreak risk.
+- The current baseline model is intentionally simple and transparent.
+- Next upgrades for a research project are richer model classes, rolling-origin
+  validation, and explicit baseline comparators.
