@@ -1,0 +1,22 @@
+variable,type,definition
+iso3,string,ISO3 country code
+year,int,Calendar year
+country,string,Country name from vpdsus panel
+coverage,float,"MCV1 coverage proportion [0,1]"
+mcv2,float,MCV2 coverage percentage when available
+cases,float,Reported measles cases
+pop_total,float,Total population
+pop_0_4,float,Population age 0-4
+pop_5_14,float,Population age 5-14
+births,float,Estimated births
+conflict_data_available,bool,Year within UCDP GED availability window
+conflict_events_total,float,Total conflict events in country-year
+conflict_fatalities_best,float,Best estimate total fatalities in conflict events
+conflict_fatalities_high,float,High estimate fatalities
+conflict_fatalities_low,float,Low estimate fatalities
+conflict_state_based_events,float,Count of state-based events (type_of_violence=1)
+conflict_non_state_events,float,Count of non-state events (type_of_violence=2)
+conflict_one_sided_events,float,Count of one-sided events (type_of_violence=3)
+conflict_any_event,float,"1 if any conflict event in country-year, else 0"
+conflict_any_fatality,float,"1 if best fatalities > 0 in country-year, else 0"
+measles_incidence_per_100k,float,cases / pop_total * 100000

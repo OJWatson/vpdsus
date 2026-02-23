@@ -32,3 +32,8 @@ vpdsus_*.tar.gz
 /analysis/targets/_targets_store/
 /analysis/outputs/example/
 /analysis/outputs/first_project/
+
+# Python conflict pipeline cache/artifacts
+/analysis/data-raw/conflict/*.zip
+**/__pycache__/
+.pytest_cache/
