@@ -1,3 +1,62 @@
+# Internal helpers for building/parsing GHO requests
+
+# Build a stable WHO GHO OData URL from endpoint + query list
+# (Used in tests/fixtures; not exported)
+gho_build_url <- function(endpoint, query = list()) {
+  assert_is_scalar_chr(endpoint)
+  base <- gho_base_url()
+  url <- paste0(base, "/", endpoint)
+  if (length(query)) {
+    qs <- paste0(
+      utils::URLencode(names(query)),
+      "=",
+      utils::URLencode(as.character(query)),
+      collapse = "&"
+    )
+    url <- paste0(url, "?", qs)
+  }
+  url
+}
+
+gho_cache_key <- function(endpoint, query = list()) {
+  url <- gho_build_url(endpoint, query)
+  paste0(gsub("[^A-Za-z0-9]+", "_", endpoint), "_", hash_list(list(url = url)))
+}
+
+gho_parse_json <- function(txt) {
+  parsed <- jsonlite::fromJSON(txt, simplifyVector = TRUE)
+  value <- parsed$value %||% parsed
+  tibble::as_tibble(value)
+}
+
+gho_parse_number <- function(x) {
+  # GHO sometimes returns formatted numbers like "18 617".
+  # Strip non-numeric formatting before coercion.
+  x <- as.character(x)
+  x <- gsub("[^0-9\\.-]", "", x)
+  suppressWarnings(as.numeric(x))
+}
+
+gho_standardise_coverage <- function(raw) {
+  out <- dplyr::transmute(
+    raw,
+    iso3 = standardise_iso3(.data$SpatialDim %||% .data$SpatialDimValueCode %||% .data$COUNTRY_CODE),
+    year = as.integer(.data$TimeDim %||% .data$TimeDimValueCode %||% .data$YEAR),
+    coverage = gho_parse_number(.data$Value)
+  )
+  out <- dplyr::filter(out, !is.na(.data$iso3), !is.na(.data$year))
+  dplyr::mutate(out, coverage = dplyr::if_else(.data$coverage > 1, .data$coverage / 100, .data$coverage))
+}
+
+gho_standardise_cases <- function(raw) {
+  out <- dplyr::transmute(
+    raw,
+    iso3 = standardise_iso3(.data$SpatialDim %||% .data$SpatialDimValueCode %||% .data$COUNTRY_CODE),
+    year = as.integer(.data$TimeDim %||% .data$TimeDimValueCode %||% .data$YEAR),
+    cases = gho_parse_number(.data$Value)
+  )
+  dplyr::filter(out, !is.na(.data$iso3), !is.na(.data$year))
+}
 gho_base_url <- function() {
   "https://ghoapi.azureedge.net/api"
 }
@@ -170,6 +229,60 @@ vpd_indicators <- function() {
   )
 }
 
+#' Measles-related indicator registry (explicit + optional dynamic expansion)
+#'
+#' @param expand One of `\"explicit\"`, `\"dynamic\"`, or `\"both\"`.
+#' @param top_n Maximum number of dynamic matches to request from WHO metadata.
+#' @param quiet Logical; passed to [gho_get()] through [gho_find_indicator()].
+#'
+#' @return tibble with `indicator_code`, `indicator_name`, and `source`.
+#' @export
+vpd_indicators_measles <- function(expand = c("explicit", "dynamic", "both"), top_n = 500, quiet = TRUE) {
+  expand <- match.arg(expand)
+
+  explicit <- tibble::tibble(
+    indicator_code = c("WHS8_110", "MCV2", "WHS3_62"),
+    indicator_name = c("MCV1 coverage", "MCV2 coverage", "Measles - number of reported cases"),
+    source = "explicit"
+  )
+
+  dynamic <- tibble::tibble(
+    indicator_code = character(),
+    indicator_name = character(),
+    source = character()
+  )
+
+  if (expand %in% c("dynamic", "both")) {
+    dynamic <- tryCatch(
+      gho_find_indicator("measles", top_n = top_n, offline = FALSE) |>
+        dplyr::transmute(
+          indicator_code = as.character(.data$indicator_code),
+          indicator_name = as.character(.data$indicator_name),
+          source = "dynamic"
+        ),
+      error = function(e) {
+        if (!quiet) {
+          cli::cli_warn("Dynamic measles indicator discovery failed; returning explicit list only")
+        }
+        tibble::tibble(
+          indicator_code = character(),
+          indicator_name = character(),
+          source = character()
+        )
+      }
+    )
+  }
+
+  out <- dplyr::bind_rows(
+    if (expand %in% c("explicit", "both")) explicit else explicit[0, ],
+    dynamic
+  ) |>
+    dplyr::filter(!is.na(.data$indicator_code), .data$indicator_code != "") |>
+    dplyr::distinct(.data$indicator_code, .keep_all = TRUE)
+
+  out
+}
+
 #' Get vaccination coverage series
 #'
 #' @param antigen Antigen string (e.g., "MCV1", "DTP3").
@@ -226,4 +339,90 @@ get_cases <- function(disease, indicator_code = NULL, years = NULL, countries = 
   if (!is.null(countries)) out <- dplyr::filter(out, .data$iso3 %in% standardise_iso3(countries))
 
   dplyr::distinct(out, .data$iso3, .data$year, .keep_all = TRUE)
+}
+#' Get country metadata (name, WHO region)
+#'
+#' Retrieve metadata for countries from the WHO GHO OData dimension values.
+#' This is useful for joining human-readable country names and WHO region codes
+#' onto country-year panels.
+#'
+#' By default this function uses the live GHO API (with optional caching via
+#' [gho_get()]). For deterministic vignettes/tests you can set `offline = TRUE`
+#' to use a small pinned fixture shipped with the package.
+#'
+#' @param countries Optional ISO3 character vector. If `NULL`, returns metadata
+#'   for all available countries.
+#' @param cache Logical; passed to [gho_get()].
+#' @param quiet Logical; passed to [gho_get()].
+#' @param offline Logical; if `TRUE`, use a pinned fixture instead of calling the
+#'   live API.
+#'
+#' @return A tibble with columns:
+#'   - `iso3`: ISO3 country code
+#'   - `country`: country name
+#'   - `who_region`: WHO region code (e.g. "AFR")
+#'   - `who_region_name`: WHO region name (e.g. "Africa")
+#' @export
+get_country_metadata <- function(
+    countries = NULL,
+    cache = TRUE,
+    quiet = TRUE,
+    offline = FALSE) {
+  if (!is.null(countries)) {
+    countries <- standardise_iso3(countries)
+  }
+
+  if (isTRUE(offline)) {
+    out <- country_metadata_offline_fixture()
+  } else {
+    # Dimension values: Code (ISO3), Title (country name), ParentCode/Title (region)
+    raw <- gho_get(
+      "Dimension/COUNTRY/DimensionValues",
+      query = list(`$top` = 10000),
+      cache = cache,
+      quiet = quiet
+    )
+
+    out <- tibble::as_tibble(raw) |>
+      dplyr::transmute(
+        iso3 = standardise_iso3(.data$Code),
+        country = as.character(.data$Title),
+        who_region = as.character(.data$ParentCode),
+        who_region_name = as.character(.data$ParentTitle)
+      ) |>
+      dplyr::filter(!is.na(.data$iso3), nchar(.data$iso3) == 3)
+  }
+
+  out <- dplyr::distinct(out, .data$iso3, .keep_all = TRUE)
+
+  if (!is.null(countries)) {
+    out <- dplyr::filter(out, .data$iso3 %in% countries)
+  }
+
+  out
+}
+
+# Small deterministic fixture used in tests/vignettes
+#
+# Columns: iso3,country,who_region,who_region_name
+#
+# @keywords internal
+# @noRd
+country_metadata_offline_fixture <- function() {
+  path <- system.file("extdata", "country_metadata_small.csv", package = "vpdsus")
+  if (identical(path, "")) {
+    cli::cli_abort("Could not find country metadata fixture file in inst/extdata")
+  }
+
+  df <- utils::read.csv(path, stringsAsFactors = FALSE)
+  out <- tibble::as_tibble(df) |>
+    dplyr::transmute(
+      iso3 = standardise_iso3(.data$iso3),
+      country = as.character(.data$country),
+      who_region = as.character(.data$who_region),
+      who_region_name = as.character(.data$who_region_name)
+    ) |>
+    dplyr::filter(!is.na(.data$iso3), nchar(.data$iso3) == 3)
+
+  dplyr::distinct(out, .data$iso3, .keep_all = TRUE)
 }

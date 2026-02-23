@@ -1,6 +1,8 @@
 # vpdsus
 
-`vpdsus` is an R package for building reproducible country–year panels for vaccine-preventable disease (VPD) surveillance, susceptibility estimation, and downstream risk scanning / modelling.
+`vpdsus` is an R package for building reproducible country-year panels for
+vaccine-preventable disease (VPD) surveillance, susceptibility estimation, and
+outbreak risk modelling.
 
 It is organised around a stepped workflow:
 
@@ -8,8 +10,9 @@ It is organised around a stepped workflow:
 2. Retrieve vaccination coverage and reported cases
 3. Combine with demography to build a harmonised panel
 4. Estimate susceptible proportions (multiple methods)
-5. Rank and visualise risk in WHO-style outputs
-6. (Planned) Mechanistic susceptibility inference using an explicit SIRV model
+5. Validate panel schema and key data constraints
+6. Rank and visualise risk in WHO-style outputs
+7. Mechanistic susceptibility inference hooks (odin2/dust2)
 
 ## Installation
 
@@ -20,9 +23,11 @@ Install from GitHub:
 remotes::install_github("OJWatson/vpdsus")
 ```
 
-## Quick start (example panel)
+## Quick start (global example panel)
 
-The package ships an example panel for learning the end-to-end workflow without downloading any data:
+The package ships a global measles-focused country-year panel (all available
+years, worldwide coverage/cases + demography fields) for end-to-end learning
+without live downloads:
 
 ```r
 library(vpdsus)
@@ -40,6 +45,28 @@ plot_coverage_rank(rank, top_n = 10)
 plot_susceptible_rank(rank, top_n = 10)
 ```
 
+## First project workflow (recommended)
+
+For a first project, use this path:
+
+1. Run an end-to-end demo on bundled data:
+
+```sh
+make first-project
+```
+
+2. Read outputs in `analysis/outputs/first_project/`:
+- `rank_table.csv`
+- `model_coefficients.csv`
+- `coverage_rank_top10.png`
+- `susceptible_rank_top10.png`
+
+3. Then work through vignettes in order:
+- `data_access`
+- `susceptibility_simple`
+- `outbreak_models`
+- `mechanistic_odin2`
+
 ## Tutorials (vignettes)
 
 Vignettes are intended to be **offline-friendly**: they should run without live downloads.
@@ -47,7 +74,7 @@ Vignettes are intended to be **offline-friendly**: they should run without live 
 - `vignette("data_access", package = "vpdsus")`: indicator discovery + coverage/cases access
 - `vignette("susceptibility_simple", package = "vpdsus")`: susceptibility methods + ranking parameters
 - `vignette("outbreak_models", package = "vpdsus")`: modelling panel + baseline models + evaluation
-- `vignette("mechanistic_odin2", package = "vpdsus")`: mechanistic workflow (under redevelopment)
+- `vignette("mechanistic_odin2", package = "vpdsus")`: mechanistic workflow
 
 Live data acquisition and full report pipelines belong under `analysis/`.
 
@@ -68,13 +95,37 @@ You can discover WHO indicator codes with `gho_find_indicator()` and override th
 - `iso3`: country ISO3 code
 - population columns are named `pop_*` (e.g. `pop_0_4`, `pop_total`)
 
+Use `panel_validate()` to check schema and value ranges before downstream
+susceptibility/modelling steps.
+
+## Mechanistic setup (odin2 + dust2)
+
+Mechanistic models are first-class in this package and are compiled into the
+package binary using `odin2::odin_package()`.
+
+- odin source files live in `inst/odin/`
+- generated C++/R bindings live in `inst/dust/`, `src/`, and `R/dust.R`
+
+After editing any file under `inst/odin/`, regenerate bindings:
+
+```sh
+Rscript scripts/update_odin_models.R
+```
+
+To rebuild the shipped global example panel from live WHO/World Bank sources:
+
+```sh
+Rscript scripts/rebuild_example_panel_full.R
+```
+
 ## Reproducibility and checks
 
 From the repository root:
 
 ```sh
-R CMD check --no-manual
-Rscript -e 'pkgdown::build_site()'
+make test
+make check
+make site
 ```
 
 To test that vignettes can build in an offline-friendly mode (best-effort):
@@ -83,13 +134,13 @@ To test that vignettes can build in an offline-friendly mode (best-effort):
 ./scripts/build_vignettes_offline.sh
 ```
 
-## Redevelopment roadmap
+To reproduce the example analysis artefacts (table + plots):
 
-A binding redevelopment specification is included in:
+```sh
+make reproduce
+```
 
-- `docs/internal/vpdsus_redevelopment_spec_md.md`
-
-This roadmap defines the target end-state (including an explicit SIRV mechanistic model and fully tutorial-style vignettes) and the milestone sequence for getting there.
+Outputs are written to `analysis/outputs/example/`.
 
 ## License
 
