@@ -15,18 +15,27 @@ reference:
   - get_country_metadata
   - get_demography
   - vpdsus_cache_info
+  - summarise_age_groups
+  - vpd_indicators_measles
 - title: Panel and susceptibility
   contents:
   - build_panel
+  - build_panel_from_sources
+  - panel_validate
+  - estimate_susceptible
   - estimate_susceptible_static
   - estimate_susceptible_cohort
   - estimate_susceptible_cohort_ve
   - estimate_susceptible_case_balance
+  - estimate_susceptible_mechanistic
 - title: Risk and plotting
   contents:
   - risk_rank
   - plot_coverage_rank
+  - plot_coverage_rank_by_region
   - plot_susceptible_rank
+  - plot_susceptible_stack_by_age
+  - plot_who_style_dashboard
   - plot_panel_diagnostics
   - panel_diagnostics
 - title: Modelling
@@ -35,6 +44,7 @@ reference:
   - make_modelling_panel
   - fit_outbreak_models
   - evaluate_models
+  - evaluate_models_rolling_origin
   - evaluate_outbreak_time_split
   - plot_outbreak_predictions_time
   - plot_outbreak_calibration
@@ -46,6 +56,8 @@ reference:
 - title: Calibration
   contents:
   - calibrate_rho_case_balance
+  - fit_mechanistic_model
+  - infer_susceptibility_mechanistic
 - title: Datasets and helpers
   contents:
   - vpdsus_example_panel

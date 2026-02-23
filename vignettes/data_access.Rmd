@@ -37,7 +37,13 @@ Live downloads are cached as JSON under the user cache directory. You can inspec
 the cache location and size:
 
 ```{r}
-vpdsus_cache_info()
+cache_dir <- tools::R_user_dir("vpdsus", which = "cache")
+cache_files <- if (dir.exists(cache_dir)) list.files(cache_dir, recursive = TRUE, full.names = TRUE) else character()
+tibble::tibble(
+  cache_dir = cache_dir,
+  n_files = length(cache_files),
+  bytes = if (length(cache_files)) sum(file.info(cache_files)$size, na.rm = TRUE) else 0
+)
 ```
 
 ### Indicator discovery (deterministic example)
