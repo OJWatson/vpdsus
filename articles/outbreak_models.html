@@ -37,6 +37,7 @@
     <li><a class="dropdown-item" href="../articles/susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
     <li><a class="dropdown-item" href="../articles/outbreak_models.html">Outbreak modelling</a></li>
     <li><a class="dropdown-item" href="../articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (annual SIRV)</a></li>
+    <li><a class="dropdown-item" href="../articles/conflict_outbreaks.html">Conflict, vaccination, and outbreaks</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -433,12 +434,63 @@ claims)<a class="anchor" aria-label="anchor" href="#c-rolling-origin-evaluation-
 </div>
 </div>
 <div class="section level2">
+<h2 id="conflict-exposure-as-an-additional-predictor">5) Conflict exposure as an additional predictor<a class="anchor" aria-label="anchor" href="#conflict-exposure-as-an-additional-predictor"></a>
+</h2>
+<p>To test whether country-year conflict exposure helps explain outbreak
+risk and changes in cases/coverage, we can merge conflict indicators
+onto the same panel.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_conflict.html">get_conflict</a></span><span class="op">(</span></span>
+<span>  years <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">panel</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  countries <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">panel</span><span class="op">$</span><span class="va">iso3</span><span class="op">)</span>,</span>
+<span>  source <span class="op">=</span> <span class="st">"ucdp_fixture"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">panel_conf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/merge_conflict_with_panel.html">merge_conflict_with_panel</a></span><span class="op">(</span><span class="va">panel</span>, <span class="va">conf</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">conf_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_conflict_modelling_panel.html">make_conflict_modelling_panel</a></span><span class="op">(</span></span>
+<span>  <span class="va">panel_conf</span>,</span>
+<span>  lag_years <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"outbreak_pc"</span>,</span>
+<span>  require_conflict_available <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>  <span class="va">conf_mod</span>,</span>
+<span>  n_rows <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  conflict_share <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">conflict_any_event</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  mean_conflict_fatalities_per_100k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">conflict_fatalities_per_100k</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
+<span><span class="co">#&gt;   n_rows conflict_share mean_conflict_fatalities_per_100k</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   <span style="text-decoration: underline;">6</span>487          0.294                              3.92</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_conf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_conflict_effect_models.html">fit_conflict_effect_models</a></span><span class="op">(</span><span class="va">conf_mod</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_conf</span><span class="op">$</span><span class="va">coefficients</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^conflict_"</span>, <span class="va">term</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">term</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">#&gt;   model              term                   estimate std_error statistic p_value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> delta_coverage_lm  conflict_any_event     -<span style="color: #BB0000;">6.46</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.001<span style="text-decoration: underline;">92</span>      -<span style="color: #BB0000;">3.37</span>  7.71<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> delta_coverage_lm  conflict_fatalities_p… -<span style="color: #BB0000;">1.86</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-5</span> 0.000<span style="text-decoration: underline;">060</span>1    -<span style="color: #BB0000;">0.309</span> 7.57<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> delta_log_cases_lm conflict_any_event      4.60<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.069<span style="text-decoration: underline;">8</span>        0.659 5.10<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> delta_log_cases_lm conflict_fatalities_p…  3.09<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.002<span style="text-decoration: underline;">15</span>       0.143 8.86<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> outbreak_logit     conflict_any_event      4.27<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.119         3.57  3.52<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> outbreak_logit     conflict_fatalities_p… -<span style="color: #BB0000;">3.65</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-3</span> 0.004<span style="text-decoration: underline;">13</span>      -<span style="color: #BB0000;">0.886</span> 3.76<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="take-home-interpretation">Take-home interpretation<a class="anchor" aria-label="anchor" href="#take-home-interpretation"></a>
 </h2>
 <ul>
 <li>This module already tests an interesting and useful public-health
 hypothesis: whether susceptibility helps predict next-year outbreak
 risk.</li>
+<li>The conflict extension lets you test whether conflict occurrence
+(discrete) and intensity (continuous) add predictive information for
+outbreak risk and changes in incidence/coverage.</li>
 <li>The current baseline model is intentionally simple and
 transparent.</li>
 <li>Next upgrades for a research project are richer model classes,

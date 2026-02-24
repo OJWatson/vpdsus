@@ -39,6 +39,7 @@
     <li><a class="dropdown-item" href="articles/susceptibility_simple.html">Susceptibility estimates and WHO-style ranking plots</a></li>
     <li><a class="dropdown-item" href="articles/outbreak_models.html">Outbreak modelling</a></li>
     <li><a class="dropdown-item" href="articles/mechanistic_odin2.html">Mechanistic modelling in odin2 (annual SIRV)</a></li>
+    <li><a class="dropdown-item" href="articles/conflict_outbreaks.html">Conflict, vaccination, and outbreaks</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -195,6 +196,13 @@
 <p>To reproduce the example analysis artefacts (table + plots):</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">make</span> reproduce</span></code></pre></div>
 <p>Outputs are written to <code>analysis/outputs/example/</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="conflict--measles-integration-workflow">Conflict + measles integration workflow<a class="anchor" aria-label="anchor" href="#conflict--measles-integration-workflow"></a>
+</h2>
+<p>A reproducible R-native conflict merge and analysis workflow is available under <code>analysis/conflict/</code>. It merges annual conflict exposure into the measles/vaccine panel and produces starter exploratory outputs.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="ex">Rscript</span> analysis/conflict/run_conflict_analysis.R</span></code></pre></div>
+<p>Outputs are written to <code>analysis/outputs/conflict/</code>. See <code>analysis/conflict/README.md</code> for workflow details.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
