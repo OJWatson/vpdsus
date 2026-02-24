@@ -1,4 +1,4 @@
-.PHONY: test check site reproduce first-project as-cran update-odin
+.PHONY: test check site reproduce first-project as-cran update-odin conflict-analysis conflict-all
 
 test:
 	R -q -e "devtools::test()"
@@ -22,3 +22,8 @@ as-cran:
 
 update-odin:
 	Rscript scripts/update_odin_models.R
+
+conflict-analysis:
+	Rscript analysis/conflict/run_conflict_analysis.R
+
+conflict-all: conflict-analysis

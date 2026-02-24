@@ -14,7 +14,10 @@ build_panel_from_sources(
   coverage = NULL,
   cases = NULL,
   demography = NULL,
-  country_metadata = NULL
+  country_metadata = NULL,
+  conflict = NULL,
+  include_conflict = FALSE,
+  conflict_source = c("ucdp_fixture", "wb_battle_deaths")
 )
 }
 \arguments{
@@ -38,6 +41,13 @@ One of \verb{\\"explicit\\"}, \verb{\\"dynamic\\"}, \verb{\\"both\\"}. Stored as
 \item{demography}{Optional precomputed demography tibble.}
 
 \item{country_metadata}{Optional precomputed country metadata tibble.}
+
+\item{conflict}{Optional precomputed conflict tibble.}
+
+\item{include_conflict}{Logical; if \code{TRUE}, merge conflict indicators.}
+
+\item{conflict_source}{Conflict source passed to \code{\link[=get_conflict]{get_conflict()}} when
+\code{include_conflict = TRUE} and \code{conflict} is \code{NULL}.}
 }
 \value{
 A \link{vpd_panel}.

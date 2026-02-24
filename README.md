@@ -142,6 +142,19 @@ make reproduce
 
 Outputs are written to `analysis/outputs/example/`.
 
+## Conflict + measles integration workflow
+
+A reproducible R-native conflict merge and analysis workflow is available under
+`analysis/conflict/`. It merges annual conflict exposure into the
+measles/vaccine panel and produces starter exploratory outputs.
+
+```sh
+Rscript analysis/conflict/run_conflict_analysis.R
+```
+
+Outputs are written to `analysis/outputs/conflict/`. See
+`analysis/conflict/README.md` for workflow details.
+
 ## License
 
 MIT.

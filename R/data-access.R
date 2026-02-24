@@ -426,3 +426,151 @@ country_metadata_offline_fixture <- function() {
 
   dplyr::distinct(out, .data$iso3, .keep_all = TRUE)
 }
+
+#' Get conflict exposure series (country-year)
+#'
+#' Returns conflict exposure indicators aligned to `iso3` + `year`. The default
+#' source is a shipped UCDP annual fixture for deterministic analysis.
+#'
+#' @param years Optional integer vector.
+#' @param countries Optional ISO3 vector.
+#' @param source One of `"ucdp_fixture"` (default) or `"wb_battle_deaths"`.
+#' @param indicator_code World Bank indicator code used when
+#'   `source = "wb_battle_deaths"`. Default is `"VC.BTL.DETH"` (battle-related
+#'   deaths, number of people).
+#' @param cache Logical; cache live World Bank pulls.
+#' @param quiet Logical.
+#'
+#' @return tibble with columns:
+#'   - `iso3`, `year`
+#'   - `conflict_events_total`
+#'   - `conflict_fatalities_best`
+#'   - `conflict_any_event` (discrete indicator)
+#' @export
+get_conflict <- function(
+    years = NULL,
+    countries = NULL,
+    source = c("ucdp_fixture", "wb_battle_deaths"),
+    indicator_code = "VC.BTL.DETH",
+    cache = TRUE,
+    quiet = TRUE) {
+  source <- match.arg(source)
+
+  if (source == "ucdp_fixture") {
+    p <- system.file("extdata", "conflict_ucdp_annual_v251.csv", package = "vpdsus")
+    if (!nzchar(p)) {
+      cli::cli_abort("Could not find shipped conflict fixture file in inst/extdata")
+    }
+    out <- tibble::as_tibble(utils::read.csv(p, stringsAsFactors = FALSE)) |>
+      dplyr::transmute(
+        iso3 = standardise_iso3(.data$iso3),
+        year = as.integer(.data$year),
+        conflict_events_total = as.numeric(.data$conflict_events_total),
+        conflict_fatalities_best = as.numeric(.data$conflict_fatalities_best),
+        conflict_any_event = as.integer(.data$conflict_any_event)
+      ) |>
+      dplyr::distinct(.data$iso3, .data$year, .keep_all = TRUE)
+  } else {
+    key <- paste0(
+      "wb_conflict_",
+      gsub("[^A-Za-z0-9]+", "_", indicator_code),
+      "_",
+      hash_list(list(years = sort(unique(years)), countries = sort(unique(countries))))
+    )
+    path <- cache_paths(key, ext = "json")
+    if (cache && file.exists(path)) {
+      txt <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+      parsed <- jsonlite::fromJSON(txt, simplifyVector = TRUE)
+    } else {
+      url <- sprintf(
+        "https://api.worldbank.org/v2/country/all/indicator/%s?format=json&per_page=20000",
+        utils::URLencode(indicator_code, reserved = TRUE)
+      )
+      if (!quiet) cli::cli_inform("Downloading {url}")
+      resp <- httr2::request(url) |>
+        httr2::req_user_agent("vpdsus (https://github.com/OJWatson/vpdsus)") |>
+        httr2::req_retry(max_tries = 3) |>
+        httr2::req_perform()
+      txt <- httr2::resp_body_string(resp, encoding = "UTF-8")
+      parsed <- jsonlite::fromJSON(txt, simplifyVector = TRUE)
+      if (cache) {
+        dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+        writeLines(txt, path, useBytes = TRUE)
+      }
+    }
+    d <- parsed[[2]]
+    if (is.null(d) || NROW(d) == 0) {
+      out <- tibble::tibble(
+        iso3 = character(),
+        year = integer(),
+        conflict_events_total = numeric(),
+        conflict_fatalities_best = numeric(),
+        conflict_any_event = integer()
+      )
+    } else {
+      out <- tibble::as_tibble(d) |>
+        dplyr::transmute(
+          iso3 = standardise_iso3(.data$countryiso3code),
+          year = as.integer(.data$date),
+          conflict_events_total = as.numeric(.data$value),
+          conflict_fatalities_best = as.numeric(.data$value),
+          conflict_any_event = as.integer(as.numeric(.data$value) > 0)
+        ) |>
+        dplyr::filter(!is.na(.data$iso3), nchar(.data$iso3) == 3, !is.na(.data$year)) |>
+        dplyr::distinct(.data$iso3, .data$year, .keep_all = TRUE)
+    }
+  }
+
+  if (!is.null(years)) out <- dplyr::filter(out, .data$year %in% as.integer(years))
+  if (!is.null(countries)) out <- dplyr::filter(out, .data$iso3 %in% standardise_iso3(countries))
+  out
+}
+
+#' Merge conflict indicators onto a country-year panel
+#'
+#' @param panel A panel data.frame/tibble with at least `iso3`, `year`, and `pop_total`.
+#' @param conflict Output of [get_conflict()].
+#'
+#' @return Panel with added conflict columns:
+#'   `conflict_events_total`, `conflict_fatalities_best`, `conflict_any_event`,
+#'   `conflict_data_available`, `conflict_fatalities_per_100k`,
+#'   `conflict_fatalities_log1p`.
+#' @export
+merge_conflict_with_panel <- function(panel, conflict) {
+  assert_has_cols(panel, c("iso3", "year", "pop_total"), "panel")
+  assert_has_cols(conflict, c("iso3", "year", "conflict_fatalities_best"), "conflict")
+
+  p <- tibble::as_tibble(panel) |>
+    dplyr::mutate(
+      iso3 = standardise_iso3(.data$iso3),
+      year = as.integer(.data$year),
+      pop_total = as.numeric(.data$pop_total)
+    )
+  c <- tibble::as_tibble(conflict) |>
+    dplyr::mutate(
+      iso3 = standardise_iso3(.data$iso3),
+      year = as.integer(.data$year),
+      conflict_events_total = as.numeric(.data$conflict_events_total),
+      conflict_fatalities_best = as.numeric(.data$conflict_fatalities_best),
+      conflict_any_event = as.integer(.data$conflict_any_event)
+    )
+
+  y0 <- min(c$year, na.rm = TRUE)
+  y1 <- max(c$year, na.rm = TRUE)
+
+  out <- dplyr::left_join(p, c, by = c("iso3", "year")) |>
+    dplyr::mutate(
+      conflict_data_available = .data$year >= y0 & .data$year <= y1,
+      conflict_events_total = dplyr::if_else(.data$conflict_data_available & is.na(.data$conflict_events_total), 0, .data$conflict_events_total),
+      conflict_fatalities_best = dplyr::if_else(.data$conflict_data_available & is.na(.data$conflict_fatalities_best), 0, .data$conflict_fatalities_best),
+      conflict_any_event = dplyr::if_else(.data$conflict_data_available & is.na(.data$conflict_any_event), 0L, .data$conflict_any_event),
+      conflict_fatalities_per_100k = dplyr::if_else(
+        !is.na(.data$conflict_fatalities_best) & .data$pop_total > 0,
+        .data$conflict_fatalities_best / .data$pop_total * 1e5,
+        NA_real_
+      ),
+      conflict_fatalities_log1p = dplyr::if_else(!is.na(.data$conflict_fatalities_best), log1p(.data$conflict_fatalities_best), NA_real_)
+    )
+
+  out
+}

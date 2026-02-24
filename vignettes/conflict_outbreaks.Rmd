@@ -1,0 +1,115 @@
+---
+title: "Conflict, vaccination, and outbreaks"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Conflict, vaccination, and outbreaks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This vignette demonstrates how to extend the core measles panel with conflict
+exposure indicators and test whether conflict predicts:
+
+1. next-year outbreak occurrence,
+2. changes in vaccine coverage,
+3. changes in measles case burden.
+
+The full workflow runs in R and uses the package's bundled fixture data.
+
+## 1) Build a panel with conflict indicators
+
+```{r}
+library(vpdsus)
+library(dplyr)
+library(ggplot2)
+
+panel <- vpdsus_example_panel()
+
+conf <- get_conflict(
+  years = sort(unique(panel$year)),
+  countries = unique(panel$iso3),
+  source = "ucdp_fixture"
+)
+
+panel_conf <- merge_conflict_with_panel(panel, conf)
+
+dplyr::summarise(
+  panel_conf,
+  n_rows = dplyr::n(),
+  n_countries = dplyr::n_distinct(iso3),
+  year_min = min(year, na.rm = TRUE),
+  year_max = max(year, na.rm = TRUE),
+  share_any_conflict = mean(conflict_any_event, na.rm = TRUE),
+  mean_fatalities_per_100k = mean(conflict_fatalities_per_100k, na.rm = TRUE)
+)
+```
+
+Conflict predictors used in this vignette:
+
+- `conflict_any_event`: discrete indicator (0/1).
+- `conflict_fatalities_per_100k`: continuous intensity indicator.
+
+## 2) Prepare lagged modelling data
+
+```{r}
+conf_mod <- make_conflict_modelling_panel(
+  panel_conf,
+  lag_years = 1,
+  outcome = "outbreak_pc",
+  require_conflict_available = TRUE
+)
+
+dplyr::glimpse(conf_mod)
+```
+
+The modelling panel aligns year `t` predictors with year `t + 1` outcomes.
+
+## 3) Fit conflict-effect models
+
+```{r}
+fit_conf <- fit_conflict_effect_models(conf_mod)
+
+fit_conf$coefficients |>
+  dplyr::filter(grepl("^conflict_", term)) |>
+  dplyr::arrange(model, term)
+```
+
+Model outputs include:
+
+- `model_outbreak`: logistic model for next-year outbreak occurrence.
+- `model_delta_coverage`: linear model for next-year coverage change.
+- `model_delta_cases`: linear model for next-year change in log cases.
+
+## 4) Visualise conflict exposure over time
+
+```{r}
+conf_ts <- panel_conf |>
+  dplyr::filter(conflict_data_available) |>
+  dplyr::group_by(year) |>
+  dplyr::summarise(
+    any_conflict_share = mean(conflict_any_event, na.rm = TRUE),
+    mean_fatalities_per_100k = mean(conflict_fatalities_per_100k, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(conf_ts, aes(x = year, y = any_conflict_share)) +
+  geom_line(linewidth = 0.8, colour = "#B22222") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    x = "Year",
+    y = "Share of countries with conflict",
+    title = "Global conflict occurrence in the panel"
+  ) +
+  theme_minimal(base_size = 11)
+```
+
+## Interpretation notes
+
+- Treat this as a baseline explanatory analysis, not causal identification.
+- Discrete and continuous conflict indicators can move differently; inspect both.
+- Use rolling-origin validation from the outbreak vignette when making predictive claims.
+
