@@ -142,21 +142,18 @@ make reproduce
 
 Outputs are written to `analysis/outputs/example/`.
 
-## Conflict + measles integration workflow (Python)
+## Conflict + measles integration workflow
 
-A reproducible conflict ETL and merge workflow is available under `analysis/conflict/`.
-It builds monthly and annual country conflict exposure panels (UCDP GED), merges
-annual conflict features into the existing measles/vaccine panel, and produces
-starter exploratory outputs.
+A reproducible R-native conflict merge and analysis workflow is available under
+`analysis/conflict/`. It merges annual conflict exposure into the
+measles/vaccine panel and produces starter exploratory outputs.
 
 ```sh
-python -m pip install -r analysis/conflict/requirements.txt
-python analysis/conflict/run_conflict_etl.py --workdir /home/kana/git/vpdsus
-python analysis/conflict/run_conflict_analysis.py --workdir /home/kana/git/vpdsus
+Rscript analysis/conflict/run_conflict_analysis.R
 ```
 
-See `analysis/conflict/README.md` for source documentation, merge logic,
-schema, QA checks, and limitations.
+Outputs are written to `analysis/outputs/conflict/`. See
+`analysis/conflict/README.md` for workflow details.
 
 ## License
 
